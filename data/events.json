@@ -1,0 +1,13 @@
+{
+  "_comment": "Events are transient and add color. Conditions (war, plague, etc.) are in modifiers.json and gate availability more structurally.",
+  "events": [
+    { "id": "none",             "label": "No event",         "price_mult": 1.0, "boost_tags": [],                   "boost_roles": [],             "note": null },
+    { "id": "harvest-festival", "label": "Harvest Festival", "price_mult": 0.9, "boost_tags": ["autumn"],           "boost_roles": ["fruit","sweetener"], "note": "Harvest stalls crowd the square. Cider flows cheap tonight." },
+    { "id": "market-day",       "label": "Market Day",       "price_mult": 0.95,"boost_tags": ["common"],           "boost_roles": ["vegetable","dairy"], "note": "Fresh goods crowd the inn kitchen — the cook bought in bulk." },
+    { "id": "merchant-caravan", "label": "Merchant Caravan", "price_mult": 1.0, "boost_tags": ["foreign","exotic"], "boost_roles": ["spice"],      "note": "A southern caravan passed through. Strange spices on offer." },
+    { "id": "noble-visit",      "label": "Noble Visit",      "price_mult": 1.2, "boost_tags": ["noble","refined"],  "boost_roles": [],             "note": "A lord rests here tonight. The kitchen has been put to the test." },
+    { "id": "hunting-return",   "label": "Hunters Return",   "price_mult": 0.95,"boost_tags": ["forest"],           "boost_roles": ["protein","game"], "note": "Game hangs thick in the larder." },
+    { "id": "fishing-good",     "label": "Good Catch",       "price_mult": 0.9, "boost_tags": ["coastal"],          "boost_roles": ["fish","shellfish"], "note": "The boats came in heavy. Fish is cheap and fresh." },
+    { "id": "religious-fast",   "label": "Religious Fast",   "price_mult": 1.0, "boost_tags": [],                   "boost_roles": ["fish","vegetable"], "note": "No meat tonight. The kitchen keeps the calendar." }
+  ]
+}

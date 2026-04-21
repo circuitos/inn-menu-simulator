@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inn Menu Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1712;
+  --ink-soft: #4a4339;
+  --ink-faint: #8a8072;
+  --paper: #f4ede0;
+  --paper-warm: #ebe2d1;
+  --rule: #c9bfa9;
+  --accent: #7a2a1e;
+  --serif: "EB Garamond", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--serif); font-size: 18px; line-height: 1.5; min-height: 100vh;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(0,0,0,0.015), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02), transparent 50%);
+  z-index: 0;
+}
+.layout {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 320px 1fr; min-height: 100vh;
+}
+@media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+
+.controls {
+  background: var(--paper-warm); border-right: 1px solid var(--rule);
+  padding: 2.5rem 2rem;
+  font-family: var(--mono); font-size: 13px; color: var(--ink-soft);
+}
+.controls h1 {
+  font-family: var(--serif); font-weight: 500; font-style: italic;
+  color: var(--ink); font-size: 1.75rem; line-height: 1.1;
+  margin: 0 0 0.25rem 0; letter-spacing: -0.01em;
+}
+.controls .tagline {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-faint); margin: 0 0 2rem 0;
+}
+.controls fieldset { border: none; padding: 0; margin: 0 0 1rem 0; }
+.controls label {
+  display: block; font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.35rem;
+}
+.controls select, .controls input[type="text"] {
+  width: 100%; padding: 0.5rem 0.6rem; background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 0;
+  font-family: var(--mono); font-size: 13px; color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+.controls select:focus, .controls input[type="text"]:focus {
+  outline: none; border-color: var(--accent);
+}
+.button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+.btn {
+  flex: 1; padding: 0.65rem 0.5rem;
+  background: var(--ink); color: var(--paper); border: none;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; cursor: pointer; transition: background 0.15s ease;
+}
+.btn:hover { background: var(--accent); }
+.btn.secondary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.btn.secondary:hover { background: var(--ink); color: var(--paper); }
+.divider { height: 1px; background: var(--rule); margin: 2rem 0 1.5rem; }
+.polish-block { font-size: 12px; line-height: 1.45; }
+.polish-block p { margin: 0 0 0.75rem 0; color: var(--ink-soft); }
+#polish-status { font-size: 11px; color: var(--ink-faint); margin-top: 0.5rem; min-height: 1em; }
+.footnote {
+  margin-top: 2.5rem; font-size: 10px; color: var(--ink-faint);
+  letter-spacing: 0.05em; line-height: 1.6;
+}
+
+.menu { padding: 4rem 5rem 5rem; max-width: 680px; margin: 0 auto; }
+@media (max-width: 600px) { .menu { padding: 2.5rem 1.5rem 3rem; } }
+
+.menu-header {
+  text-align: center; margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem; border-bottom: 1px solid var(--rule);
+}
+.menu-header h2 {
+  font-family: var(--serif); font-weight: 500; font-size: 2.75rem;
+  line-height: 1; margin: 0 0 0.5rem 0; letter-spacing: -0.015em;
+}
+.menu-sub {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-faint); margin: 0;
+}
+.event-note {
+  text-align: center; font-style: italic; color: var(--ink-soft);
+  margin: 0 0 1rem 0; font-size: 1rem; padding: 0 1rem;
+}
+.event-note + .event-note { margin-top: -0.75rem; margin-bottom: 2rem; }
+.section-heading {
+  font-family: var(--serif); font-weight: 500; font-style: italic;
+  font-size: 1.35rem; margin: 2.25rem 0 1rem 0; color: var(--ink);
+  text-align: center; position: relative;
+}
+.section-heading::before, .section-heading::after {
+  content: ""; display: inline-block; width: 2rem; height: 1px;
+  background: var(--rule); vertical-align: middle; margin: 0 0.75rem;
+}
+.dish-list { list-style: none; padding: 0; margin: 0; }
+.dish {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: baseline; gap: 1rem;
+  padding: 0.75rem 0; border-bottom: 1px dotted var(--rule);
+}
+.dish:last-child { border-bottom: none; }
+.dish-name { font-size: 1.05rem; color: var(--ink); }
+.dish-price {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--ink-soft); white-space: nowrap; letter-spacing: 0.02em;
+}
+.dish-desc {
+  grid-column: 1 / -1; font-size: 0.9rem; font-style: italic;
+  color: var(--ink-soft); margin-top: 0.25rem; line-height: 1.4;
+}
+.menu-footer {
+  margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--rule);
+  text-align: center; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint);
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="controls">
+    <h1>Inn Menu</h1>
+    <p class="tagline">a system-agnostic generator</p>
+
+    <fieldset>
+      <label for="biome">Biome</label>
+      <select id="biome"></select>
+    </fieldset>
+
+    <fieldset>
+      <label for="season">Season</label>
+      <select id="season">
+        <option value="spring">Spring</option>
+        <option value="summer">Summer</option>
+        <option value="autumn" selected>Autumn</option>
+        <option value="winter">Winter</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <label for="weather">Weather</label>
+      <select id="weather">
+        <option value="clear" selected>Clear</option>
+        <option value="rain">Rain</option>
+        <option value="storm">Storm</option>
+        <option value="snow">Snow</option>
+        <option value="heatwave">Heatwave</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <label for="inn_tier">Inn Tier</label>
+      <select id="inn_tier">
+        <option value="roadside">Roadside</option>
+        <option value="common" selected>Common</option>
+        <option value="fine">Fine</option>
+        <option value="noble">Noble</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <label for="economy">Economy</label>
+      <select id="economy">
+        <option value="plenty">Plenty</option>
+        <option value="normal" selected>Normal</option>
+        <option value="shortage">Shortage</option>
+        <option value="famine">Famine</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <label for="condition">Condition</label>
+      <select id="condition"></select>
+    </fieldset>
+
+    <fieldset>
+      <label for="event">Event</label>
+      <select id="event"></select>
+    </fieldset>
+
+    <fieldset>
+      <label for="seed">Seed</label>
+      <input type="text" id="seed" placeholder="any-text" />
+    </fieldset>
+
+    <div class="button-row">
+      <button class="btn" id="generate">Generate</button>
+      <button class="btn secondary" id="reroll">New seed</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="polish-block">
+      <label for="api-key">LLM Polish (optional)</label>
+      <input type="text" id="api-key" placeholder="sk-ant-..." autocomplete="off" />
+      <p style="margin-top:0.5rem">Key stays in your browser. Sent only to api.anthropic.com.</p>
+      <button class="btn" id="polish" style="width:100%;margin-top:0.5rem">Polish menu</button>
+      <div id="polish-status"></div>
+    </div>
+
+    <p class="footnote">
+      Edit data files on GitHub to change the content pool. See <code>docs/DESIGN.md</code>.
+    </p>
+  </aside>
+
+  <main class="menu" id="menu-output"></main>
+</div>
+
+<script src="src/generator.js"></script>
+<script src="src/llm.js"></script>
+<script src="src/ui.js"></script>
+</body>
+</html>

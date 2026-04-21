@@ -1,0 +1,109 @@
+{
+  "_comment": "Procedural fallback templates. Only used when authored dishes cannot fill a section. Kept intentionally small — the authored pool carries the aesthetic load.",
+  "templates": [
+    {
+      "id": "hearty-stew",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "starch", "name_key": "starch", "optional": true }
+      ],
+      "name_template": "{protein} stewed with {vegetable}",
+      "name_template_with_starch": "{protein} stewed with {vegetable} and {starch}"
+    },
+    {
+      "id": "roast-plate",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["roasted","pan-fried"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "side" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{prep} {protein} with {side}",
+      "name_template_with_herb": "{prep} {protein} with {side}, finished with {herb}"
+    },
+    {
+      "id": "grilled-plate",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["grilled","pan-fried"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "starch", "name_key": "starch" }
+      ],
+      "name_template": "{prep} {protein} over {starch}"
+    },
+    {
+      "id": "pottage",
+      "section": "main",
+      "tier_max": 2,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "{starch} pottage with {vegetable}"
+    },
+    {
+      "id": "cheese-board",
+      "section": "appetizer",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "cheese", "name_key": "cheese" },
+        { "role": "fruit", "name_key": "fruit", "optional": true }
+      ],
+      "name_template": "board of {cheese}",
+      "name_template_with_fruit": "board of {cheese} with {fruit}"
+    },
+    {
+      "id": "pickle-plate",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["pickled"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "pickled {vegetable}"
+    },
+    {
+      "id": "broth",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "base", "optional": true },
+        { "role": "herb", "name_key": "herb" }
+      ],
+      "name_template": "clear broth with {herb}",
+      "name_template_with_base": "{base} broth with {herb}"
+    },
+    {
+      "id": "fruit-dessert",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet", "optional": true }
+      ],
+      "name_template": "{prep} {fruit}",
+      "name_template_with_sweet": "{prep} {fruit} with {sweet}"
+    },
+    {
+      "id": "drink-simple",
+      "section": "drink",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" }
+      ],
+      "name_template": "{drink}"
+    }
+  ]
+}
