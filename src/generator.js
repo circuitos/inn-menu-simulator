@@ -1,7 +1,26 @@
 // generator.js
-// Authored-first menu generator. Given world state and seed, returns a deterministic menu.
-// Filters the authored dish pool by world tags, fills sections with authored dishes first,
-// falls back to procedural assembly only when authored pool is insufficient.
+// Menu generator. Given world state and seed, returns a deterministic menu.
+// Mixes authored dishes and procedural assemblies per slot, ratio controlled by TUNING.
+
+// ---------- tuning ----------
+// Edit these to bias generation behavior. All defaults preserve the v1 "authored-first" feel.
+const TUNING = {
+  // Probability per slot that authored is tried first. 1.0 = always prefer authored (authored-only
+  // unless the filtered pool is empty); 0.0 = always prefer procedural; 0.5 = roughly half-and-half.
+  // When the preferred source has nothing to offer, the other source fills in.
+  authored_ratio: 0.75,
+
+  // Scales how strongly events bias dish and ingredient weighting. 0.0 = events affect only
+  // price and notes, not dish selection; 1.0 = default; >1.0 = events dominate the menu.
+  event_weight_mult: 1.0,
+
+  // Base boost applied to an authored dish per matching event tag (before event_weight_mult).
+  // Same idea for ingredient boosts on the procedural path. These are the v1 numbers; left
+  // as knobs for fine-tuning without chasing magic numbers through the file.
+  authored_event_tag_boost: 1.7,
+  ingredient_event_tag_boost: 1.8,
+  ingredient_event_role_boost: 1.6
+};
 
 // ---------- seeded RNG ----------
 function hashSeed(str) {
@@ -116,8 +135,9 @@ function weightAuthored(d, w) {
   // Seasonal match boost
   if (d.seasons.includes(w.season)) weight *= 1.8;
 
-  // Event boosts: if any dish tag matches a boost tag
-  for (const t of w.event.boost_tags || []) if ((d.tags || []).includes(t)) weight *= 1.7;
+  // Event boosts: if any dish tag matches a boost tag (scaled by TUNING.event_weight_mult)
+  const eventBoost = 1 + (TUNING.authored_event_tag_boost - 1) * TUNING.event_weight_mult;
+  for (const t of w.event.boost_tags || []) if ((d.tags || []).includes(t)) weight *= eventBoost;
 
   // Condition tone: under war/plague/siege, favor peasant/common fare
   if (["war","plague","siege","isolation"].includes(w.condition.label ? w.condition.label.toLowerCase() : "")) {
@@ -204,8 +224,10 @@ function weightIngredient(ing, w) {
   const roles = ing.roles || [];
   if (tags.includes(w.season)) weight *= 1.8;
   if (tags.includes(w.biome)) weight *= 1.6;
-  for (const t of w.event.boost_tags || []) if (tags.includes(t)) weight *= 1.8;
-  for (const r of w.event.boost_roles || []) if (roles.includes(r)) weight *= 1.6;
+  const tagBoost = 1 + (TUNING.ingredient_event_tag_boost - 1) * TUNING.event_weight_mult;
+  const roleBoost = 1 + (TUNING.ingredient_event_role_boost - 1) * TUNING.event_weight_mult;
+  for (const t of w.event.boost_tags || []) if (tags.includes(t)) weight *= tagBoost;
+  for (const r of w.event.boost_roles || []) if (roles.includes(r)) weight *= roleBoost;
   if (w.weather.drops_sensitive && tags.includes("weather-robust")) weight *= 1.2;
   return weight;
 }
@@ -259,27 +281,47 @@ function fillTemplate(template, prep, pool, rng, w) {
 }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-function generateProcedural(section, count, pool, rng, w, data) {
+// Pick a single procedural dish for the given section, avoiding already-used templates and
+// existing dish names. Returns null if nothing valid can be built.
+function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data) {
   const templates = data.dishes.templates.filter(t => t.section === section);
-  const dishes = [];
-  const usedTpl = new Set();
+  if (!templates.length) return null;
   let attempts = 0;
-  while (dishes.length < count && attempts < 40) {
+  while (attempts < 20) {
     attempts++;
     const available = templates.filter(t => !usedTpl.has(t.id));
     const from = available.length ? available : templates;
     const tpl = pick(rng, from);
-    if (!tpl) break;
+    if (!tpl) return null;
     const prepId = pick(rng, tpl.prep_pool);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
     if (!prep) continue;
     const dish = fillTemplate(tpl, prep, pool, rng, w);
-    if (dish && !dishes.some(d => d.name === dish.name)) {
-      dishes.push(dish);
+    if (dish && !existingNames.has(dish.name)) {
       usedTpl.add(tpl.id);
+      return dish;
     }
   }
-  return dishes;
+  return null;
+}
+
+// Pick a single authored dish, avoiding already-used ids. Returns null if pool exhausted.
+function pickAuthoredDish(sectionAuthored, usedIds, rng, w) {
+  const remaining = sectionAuthored.filter(d => !usedIds.has(d.id));
+  if (!remaining.length) return null;
+  const choice = weightedPick(rng, remaining, d => weightAuthored(d, w));
+  if (!choice) return null;
+  usedIds.add(choice.id);
+  const price = priceAuthoredDish(choice, w);
+  return {
+    source: "authored",
+    section: choice.section,
+    name: choice.name + (choice._imported ? " (imported)" : ""),
+    flavor: choice.flavor,
+    imported: !!choice._imported,
+    price_cp: price,
+    price_text: formatPrice(price)
+  };
 }
 
 // ---------- main generator ----------
@@ -330,34 +372,28 @@ function generateMenu(world, data, seed) {
         });
       }
     } else {
-      // Authored-first
+      // Per-slot mix. Each slot rolls authored-first vs procedural-first by TUNING.authored_ratio.
+      // Whichever source is preferred is tried first; the other serves as fallback.
       const sectionAuthored = authoredPool.filter(d => d.section === sectionId);
-      const used = new Set();
-      let tries = 0;
-      while (dishes.length < count && tries < 40 && sectionAuthored.length > used.size) {
-        tries++;
-        const remaining = sectionAuthored.filter(d => !used.has(d.id));
-        const choice = weightedPick(rng, remaining, d => weightAuthored(d, w));
-        if (!choice) break;
-        used.add(choice.id);
-        const price = priceAuthoredDish(choice, w);
-        dishes.push({
-          source: "authored",
-          section: sectionId,
-          name: choice.name + (choice._imported ? " (imported)" : ""),
-          flavor: choice.flavor,
-          imported: !!choice._imported,
-          price_cp: price,
-          price_text: formatPrice(price)
-        });
-      }
-      // Fallback: procedural if we didn't hit count
-      if (dishes.length < count) {
-        const need = count - dishes.length;
-        const filler = generateProcedural(sectionId, need, ingPool, rng, w, data);
-        for (const f of filler) {
-          if (!dishes.some(d => d.name === f.name)) dishes.push(f);
+      const usedAuthored = new Set();
+      const usedTpl = new Set();
+      const names = new Set();
+      let safety = 0;
+      while (dishes.length < count && safety < count * 8) {
+        safety++;
+        const preferAuthored = rng() < TUNING.authored_ratio;
+        let dish = null;
+        if (preferAuthored) {
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          if (!dish) dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data);
+        } else {
+          dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data);
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
         }
+        if (!dish) break;
+        if (names.has(dish.name)) continue;
+        names.add(dish.name);
+        dishes.push(dish);
       }
     }
 

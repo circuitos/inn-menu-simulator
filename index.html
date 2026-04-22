@@ -67,6 +67,7 @@ body::before {
   outline: none; border-color: var(--accent);
 }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+.button-row + .button-row { margin-top: 0.5rem; }
 .btn {
   flex: 1; padding: 0.65rem 0.5rem;
   background: var(--ink); color: var(--paper); border: none;
@@ -207,6 +208,10 @@ body::before {
     <div class="button-row">
       <button class="btn" id="generate">Generate</button>
       <button class="btn secondary" id="reroll">New seed</button>
+    </div>
+    <div class="button-row">
+      <button class="btn secondary" id="randomize">Randomize</button>
+      <button class="btn secondary" id="reset">Reset</button>
     </div>
 
     <div class="divider"></div>

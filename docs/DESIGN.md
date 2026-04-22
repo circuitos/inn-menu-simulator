@@ -4,11 +4,29 @@ Read this before editing data files or changing generation logic. It is the sour
 
 ## Core principle
 
-The authored pool is the product. The procedural engine is the safety net.
+The authored pool sets the tone; the procedural engine widens the vocabulary.
 
-A menu in a real medieval inn wasn't assembled from slots. A cook made specific dishes they knew how to make, and served whatever was in the larder that day. This generator mirrors that: 96 hand-authored dishes (`data/authored_dishes.json`) are the primary pool; filtered by world state, drawn with weighted randomness, and served. The procedural template system (`data/dishes.json`) only fires when the authored pool cannot fill a section. In practice, with 96 dishes, procedural rarely runs — and that's fine.
+A menu in a real medieval inn wasn't assembled from slots. A cook made specific dishes they knew how to make, and served whatever was in the larder that day. Hand-authored dishes (`data/authored_dishes.json`) are the primary pool — filtered by world state, drawn with weighted randomness. The procedural template system (`data/dishes.json` + `data/ingredients.json`) fills any remaining slots by assembling plausible dish names from ingredients and preparations, giving a much larger surface of permutations so repeated generations don't feel same-y.
 
-The consequence: **to change what appears, edit `authored_dishes.json`.** Don't touch code. Don't touch templates. Just add, remove, or retag dishes.
+How much procedural vs authored mixes into any given slot is controlled by `TUNING.authored_ratio` in `src/generator.js` (default `0.75` — roughly three authored for every one procedural, with fallback to the other pool when the preferred source is empty).
+
+The consequence: **to change the stable, named dishes, edit `authored_dishes.json`.** To change the procedural flavor, edit ingredients and templates. To change the mix, edit the tuning block.
+
+## Tuning knobs
+
+At the top of `src/generator.js`:
+
+```js
+const TUNING = {
+  authored_ratio: 0.75,           // 1.0 authored-only, 0.0 procedural-only
+  event_weight_mult: 1.0,         // 0.0 events affect only prices/notes, 1.0 default
+  authored_event_tag_boost: 1.7,  // base boost per event tag match on authored dishes
+  ingredient_event_tag_boost: 1.8,
+  ingredient_event_role_boost: 1.6
+};
+```
+
+These are edit-in-place. No UI exposure — change the file, reload, see the effect. `authored_ratio` is the main lever for variety: lower it to lean on the 400+ ingredient pool; raise it to pin the menu to curated dishes. `event_weight_mult` lets a campaign where events are narrative centerpieces (Harvest Festival actually changes the menu) coexist with a gritty world where events are incidental.
 
 ## World state
 
@@ -96,12 +114,15 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
      cost within economy ceiling
 4. For each section (appetizer, main, dessert, drink):
      Determine count via (min + rng * range).
-     For non-drink sections:
-       Pick dishes from filtered authored pool using weighted random.
-         weights: native biome ×2.0, season match ×1.8, event boost ×1.7,
-                  'any' biome ×1.2, imported ×0.35, unusual ×0.3,
-                  peasant-under-war ×1.5, noble-at-roadside ×0.4, etc.
-       If authored pool insufficient → generate procedural fillers from templates.
+     For non-drink sections, per slot:
+       Roll rng() < TUNING.authored_ratio → prefer authored this slot; else prefer procedural.
+       Try the preferred source first; fall back to the other if empty.
+         authored weights: native biome ×2.0, season match ×1.8, event boost ×1.7
+                           (scaled by event_weight_mult), 'any' biome ×1.2,
+                           imported ×0.35, unusual ×0.3, peasant-under-war ×1.5,
+                           noble-at-roadside ×0.4, etc.
+         procedural: pick a template for the section, roll a prep from its pool,
+                     fill slots by role + affinity with ingredient weights.
      For drinks:
        Pull from ingredients with role=drink, weighted by world.
 5. Compute prices:
@@ -119,11 +140,13 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
 - At/above 100 cp, `gp` comes first.
 - No decimals. Round to nearest copper.
 
-## Procedural fallback
+## Procedural path
 
-Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Runs only when authored pool for a section is empty or insufficient for the required count. Uses the ingredient pool (filtered by the same world rules, minus `unusual`) and preparation compatibility to assemble plausible dish names.
+Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Uses the ingredient pool (filtered by the same world rules, minus `unusual`) and preparation compatibility to assemble plausible dish names.
 
-Deliberately small. If you find procedural firing often, the fix is to add authored dishes for the gap, not to expand templates.
+Templates are invoked either as fallback when the authored pool is empty for a slot, or proactively when `TUNING.authored_ratio` routes a slot to procedural. The larger the ingredient pool, the more variety procedural delivers across regenerations; the ingredient file is where to add regional nuance.
+
+If procedural fires too often with awkward combinations, adjust in one of three places depending on symptom: add authored dishes (stabilizes specific gaps), add ingredient affinities (expands valid combinations within existing templates), or add templates (new dish shapes).
 
 ## Editing data
 
