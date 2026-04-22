@@ -69,6 +69,36 @@ function populateSelects(data) {
   }
 }
 
+// Defaults used by the Reset button — a calm baseline to start exploration from.
+const DEFAULTS = {
+  biome: "heartland",
+  season: "spring",
+  weather: "clear",
+  inn_tier: "common",
+  economy: "normal",
+  condition: "peace",
+  event: "none"
+};
+
+function setSelect(id, value) {
+  const el = qs(id);
+  if (!el) return;
+  const option = Array.from(el.options).find(o => o.value === value);
+  if (option) el.value = value;
+}
+
+function randomizeSelects() {
+  for (const id of ["biome","season","weather","inn_tier","economy","condition","event"]) {
+    const el = qs(id);
+    if (!el || !el.options.length) continue;
+    el.value = el.options[Math.floor(Math.random() * el.options.length)].value;
+  }
+}
+
+function resetSelects() {
+  for (const [id, v] of Object.entries(DEFAULTS)) setSelect(id, v);
+}
+
 function renderMenu(menu) {
   const root = qs("menu-output");
   root.innerHTML = "";
@@ -158,6 +188,8 @@ async function init() {
   qs("seed").value = randomSeed();
   qs("generate").addEventListener("click", generate);
   qs("reroll").addEventListener("click", () => { qs("seed").value = randomSeed(); generate(); });
+  qs("randomize").addEventListener("click", () => { randomizeSelects(); qs("seed").value = randomSeed(); generate(); });
+  qs("reset").addEventListener("click", () => { resetSelects(); qs("seed").value = randomSeed(); generate(); });
   qs("polish").addEventListener("click", polish);
   generate();
 }
