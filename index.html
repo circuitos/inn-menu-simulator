@@ -19,12 +19,39 @@
   --serif: "EB Garamond", Georgia, "Times New Roman", serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
+[data-theme="dark"] {
+  --ink: #ece3cf;
+  --ink-soft: #b3a992;
+  --ink-faint: #7a7162;
+  --paper: #24211c;
+  --paper-warm: #2c2822;
+  --rule: #403a32;
+  --accent: #c97a55;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
   background: var(--paper); color: var(--ink);
   font-family: var(--serif); font-size: 18px; line-height: 1.5; min-height: 100vh;
+  transition: background 0.25s ease, color 0.25s ease;
 }
+
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem; z-index: 10;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--paper-warm); color: var(--ink);
+  border: 1px solid var(--rule);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.theme-toggle:hover { border-color: var(--ink-soft); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-toggle svg { width: 18px; height: 18px; display: block; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 body::before {
   content: ""; position: fixed; inset: 0; pointer-events: none;
   background:
@@ -137,8 +164,27 @@ body::before {
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint);
 }
 </style>
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z" />
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
+  </svg>
+</button>
 <div class="layout">
   <aside class="controls">
     <h1>Inn Menu</h1>
@@ -235,5 +281,15 @@ body::before {
 <script src="src/generator.js"></script>
 <script src="src/llm.js"></script>
 <script src="src/ui.js"></script>
+<script>
+  (function () {
+    var btn = document.getElementById("theme-toggle");
+    btn.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("theme", next); } catch (e) {}
+    });
+  })();
+</script>
 </body>
 </html>
