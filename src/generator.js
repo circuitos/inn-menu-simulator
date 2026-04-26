@@ -22,6 +22,131 @@ const TUNING = {
   ingredient_event_role_boost: 1.6
 };
 
+// ---------- condition-based menu caps ----------
+// Roadside and Common inns get tightened up by world conditions: a poorer world
+// produces a smaller menu, with little or no meat/fish unless a special event
+// justifies abundance. See docs/DESIGN.md and the plan in /root/.claude/plans/.
+//
+// Plentiful events bypass the caps entirely (the cook splurges).
+const PLENTIFUL_EVENTS = new Set([
+  "harvest-festival", "market-day", "noble-visit",
+  "hunting-return", "fishing-good"
+]);
+
+// Extreme scarcity is counted independently from `economy === "famine"`. Each
+// condition met removes 1 from every numeric cap. War is intentionally NOT
+// listed — it disrupts trade but doesn't necessarily empty the larder.
+const EXTREME_SCARCITY_CONDITIONS = new Set(["plague", "isolation", "siege"]);
+
+// Per-tier base caps. `null` means no caps applied for this tier.
+// Roadside uses a single combined meat-or-fish cap; Common splits them.
+const TIER_CAPS = {
+  roadside: { appetizer: 2, main_meatfish: 1, main_meatless: 2, drink: 2 },
+  common:   { appetizer: 3, main_meat: 1, main_fish: 1, main_meatless: 2, drink: 3 },
+  fine:     null,
+  noble:    null
+};
+
+// Protein-role buckets used to classify procedurally-built mains.
+const MEAT_ROLES = new Set(["fowl", "ruminant", "game", "offal"]);
+const FISH_ROLES = new Set(["fish", "shellfish"]);
+// Ingredients whose only role is "protein" but which are unambiguously meat.
+const PLAIN_MEAT_IDS = new Set(["pork", "bacon", "sausage"]);
+
+function ingredientMainKind(ing) {
+  if (!ing) return null;
+  const roles = ing.roles || [];
+  if (roles.some(r => FISH_ROLES.has(r))) return "fish";
+  if (roles.some(r => MEAT_ROLES.has(r))) return "meat";
+  if (PLAIN_MEAT_IDS.has(ing.id)) return "meat";
+  return null; // egg, skyr, plant proteins → meatless
+}
+
+// classifyMain: "meat" | "fish" | "meatless". Authored mains carry an explicit
+// `contains` field; procedural dishes have `_mainKind` stamped at build time.
+function classifyMain(dish) {
+  if (!dish) return "meatless";
+  if (dish.contains === "meat") return "meat";
+  if (dish.contains === "fish") return "fish";
+  if (dish._mainKind === "meat") return "meat";
+  if (dish._mainKind === "fish") return "fish";
+  return "meatless";
+}
+
+// Compute caps for the given world. Returns null when caps should not apply
+// (plentiful event, or tier without caps). Cap values are post-scarcity and
+// post-floor; the caller can spend them directly.
+function computeCaps(world) {
+  if (PLENTIFUL_EVENTS.has(world.event)) return null;
+  const base = TIER_CAPS[world.inn_tier];
+  if (!base) return null;
+
+  let scarcity = 0;
+  if (world.economy === "famine") scarcity++;
+  if (EXTREME_SCARCITY_CONDITIONS.has(world.condition)) scarcity++;
+
+  const sub = (n) => Math.max(0, n - scarcity);
+
+  // Floor appetizer and drink at 1 (every section must render at least 1 dish).
+  const caps = {
+    appetizer: Math.max(1, sub(base.appetizer)),
+    drink:     Math.max(1, sub(base.drink)),
+    main: {},
+    scarcityHits: scarcity
+  };
+
+  if ("main_meatfish" in base) {
+    caps.main.meatfish = sub(base.main_meatfish);
+    caps.main.meatless = sub(base.main_meatless);
+  } else {
+    caps.main.meat = sub(base.main_meat);
+    caps.main.fish = sub(base.main_fish);
+    caps.main.meatless = sub(base.main_meatless);
+  }
+
+  // Mains floor: if total of all main caps is 0, force meatless ≥ 1.
+  const mainTotal = Object.values(caps.main).reduce((a, b) => a + b, 0);
+  if (mainTotal === 0) caps.main.meatless = 1;
+
+  return caps;
+}
+
+// True if `kind` (meat|fish|meatless) still has room under `caps.main`.
+function mainCapHasRoom(caps, kind, used) {
+  const m = caps.main;
+  if ("meatfish" in m) {
+    if (kind === "meat" || kind === "fish") {
+      return used.meatfish < m.meatfish;
+    }
+    return used.meatless < m.meatless;
+  }
+  if (kind === "meat") return used.meat < m.meat;
+  if (kind === "fish") return used.fish < m.fish;
+  return used.meatless < m.meatless;
+}
+
+function bumpMainCounter(caps, kind, used) {
+  const m = caps.main;
+  if ("meatfish" in m) {
+    if (kind === "meat" || kind === "fish") used.meatfish++;
+    else used.meatless++;
+  } else {
+    if (kind === "meat") used.meat++;
+    else if (kind === "fish") used.fish++;
+    else used.meatless++;
+  }
+}
+
+function mainTotalTarget(caps) {
+  return Object.values(caps.main).reduce((a, b) => a + b, 0);
+}
+
+function makeMainUsed(caps) {
+  return "meatfish" in caps.main
+    ? { meatfish: 0, meatless: 0 }
+    : { meat: 0, fish: 0, meatless: 0 };
+}
+
 // ---------- seeded RNG ----------
 function hashSeed(str) {
   let h = 2166136261 >>> 0;
@@ -271,12 +396,21 @@ function fillTemplate(template, prep, pool, rng, w) {
   const labor = prep.labor_add || 0;
   const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1);
 
+  // Stamp meat/fish/meatless on mains so the cap loop can classify procedural dishes.
+  let mainKind = null;
+  if (template.section === "main") {
+    const proteinSlot = template.slots.find(s => s.role === "protein");
+    const proteinIng = proteinSlot ? picked[proteinSlot.name_key] : null;
+    mainKind = ingredientMainKind(proteinIng) || "meatless";
+  }
+
   return {
     source: "procedural",
     section: template.section,
     name: capitalize(name),
     price_cp: Math.max(1, Math.round(priceCp)),
-    price_text: formatPrice(priceCp)
+    price_text: formatPrice(priceCp),
+    _mainKind: mainKind
   };
 }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
@@ -320,7 +454,8 @@ function pickAuthoredDish(sectionAuthored, usedIds, rng, w) {
     flavor: choice.flavor,
     imported: !!choice._imported,
     price_cp: price,
-    price_text: formatPrice(price)
+    price_text: formatPrice(price),
+    contains: choice.contains
   };
 }
 
@@ -329,6 +464,7 @@ function generateMenu(world, data, seed) {
   const rng = makeRng(seed || String(Date.now()));
   const w = resolveWorld(world, data);
   const sections = data.modifiers.sections;
+  const caps = computeCaps(world);
 
   // Clone authored list so we can mark _imported without polluting source data
   const authoredCopy = data.authored_dishes.dishes.map(d => ({ ...d }));
@@ -348,15 +484,17 @@ function generateMenu(world, data, seed) {
 
   for (const sectionId of Object.keys(sections)) {
     const spec = sections[sectionId];
-    const count = spec.count_min + Math.floor(rng() * (spec.count_max - spec.count_min + 1));
+    const rolledCount = spec.count_min + Math.floor(rng() * (spec.count_max - spec.count_min + 1));
     const dishes = [];
 
     if (sectionId === "drink") {
       // Drinks come from ingredients tagged role 'drink'. No authored-dish work here.
+      let target = rolledCount;
+      if (caps) target = Math.max(1, Math.min(target, caps.drink));
       const drinks = ingPool.filter(i => (i.roles || []).includes("drink"));
       const used = new Set();
       let tries = 0;
-      while (dishes.length < count && tries < 30 && drinks.length) {
+      while (dishes.length < target && tries < 30 && drinks.length) {
         tries++;
         const pickD = weightedPick(rng, drinks.filter(d => !used.has(d.id)), i => weightIngredient(i, w));
         if (!pickD) break;
@@ -371,15 +509,53 @@ function generateMenu(world, data, seed) {
           price_text: formatPrice(price)
         });
       }
+    } else if (sectionId === "main" && caps) {
+      // Cap-enforced main loop: classify each candidate and only accept it
+      // if its kind (meat/fish/meatless) still has room.
+      const sectionAuthored = authoredPool.filter(d => d.section === "main");
+      const usedAuthored = new Set();
+      const usedTpl = new Set();
+      const names = new Set();
+      const used = makeMainUsed(caps);
+      const target = mainTotalTarget(caps);
+      let safety = 0;
+      while (dishes.length < target && safety < target * 12 + 20) {
+        safety++;
+        const preferAuthored = rng() < TUNING.authored_ratio;
+        let dish = null;
+        if (preferAuthored) {
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          if (!dish) dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
+        } else {
+          dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+        }
+        if (!dish) break;
+        if (names.has(dish.name)) continue;
+        const kind = classifyMain(dish);
+        if (!mainCapHasRoom(caps, kind, used)) continue;
+        names.add(dish.name);
+        bumpMainCounter(caps, kind, used);
+        dishes.push(dish);
+      }
+      // Floor: every section must render at least 1 dish, and mains must have
+      // at least 1 meatless if no meat/fish slot was filled.
+      if (dishes.length === 0) {
+        const meatless = forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names);
+        if (meatless) dishes.push(meatless);
+      }
     } else {
-      // Per-slot mix. Each slot rolls authored-first vs procedural-first by TUNING.authored_ratio.
-      // Whichever source is preferred is tried first; the other serves as fallback.
+      // Per-slot mix for appetizer / dessert (and main when caps are off).
+      let target = rolledCount;
+      if (caps) {
+        if (sectionId === "appetizer") target = Math.max(1, Math.min(target, caps.appetizer));
+      }
       const sectionAuthored = authoredPool.filter(d => d.section === sectionId);
       const usedAuthored = new Set();
       const usedTpl = new Set();
       const names = new Set();
       let safety = 0;
-      while (dishes.length < count && safety < count * 8) {
+      while (dishes.length < target && safety < target * 8 + 4) {
         safety++;
         const preferAuthored = rng() < TUNING.authored_ratio;
         let dish = null;
@@ -401,6 +577,42 @@ function generateMenu(world, data, seed) {
   }
 
   return menu;
+}
+
+// When caps zero out the mains section, this guarantees at least one meatless
+// main. Tries authored meatless mains first (the curated, named ones), then
+// falls back to procedural templates whose protein slot can land on plant or
+// dairy proteins. As a last resort, accepts any procedurally-built main.
+function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names) {
+  // 1. Authored meatless: those without `contains`.
+  const candidates = authoredPool
+    .filter(d => d.section === "main" && !d.contains && !usedAuthored.has(d.id));
+  if (candidates.length) {
+    const choice = weightedPick(rng, candidates, d => weightAuthored(d, w));
+    if (choice && !names.has(choice.name)) {
+      usedAuthored.add(choice.id);
+      const price = priceAuthoredDish(choice, w);
+      return {
+        source: "authored",
+        section: "main",
+        name: choice.name + (choice._imported ? " (imported)" : ""),
+        flavor: choice.flavor,
+        imported: !!choice._imported,
+        price_cp: price,
+        price_text: formatPrice(price)
+      };
+    }
+  }
+  // 2. Procedural: try repeatedly; accept only meatless results.
+  const usedTpl = new Set();
+  for (let i = 0; i < 30; i++) {
+    const dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
+    if (!dish) break;
+    if (classifyMain(dish) === "meatless") return dish;
+  }
+  // 3. Last resort: any procedural main.
+  const fallback = pickProceduralDish("main", new Set(), new Set(), ingPool, rng, w, data);
+  return fallback;
 }
 
 window.InnMenu = { generateMenu, formatPrice };
