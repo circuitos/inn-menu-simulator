@@ -96,6 +96,56 @@ Field notes:
 
 If a dish's native biome doesn't match the world AND the current condition permits imports AND the inn is fine or noble, it can appear as an import. Imports are labeled "(imported)" in the menu and carry a 1.5× price multiplier. Imports are always suppressed under war, plague, isolation, or siege.
 
+## Flavor packs
+
+The generic pool aims to be system-agnostic — recognizable medieval-fantasy fare that fits most worlds. Setting-specific named dishes (proper nouns, regional cuisines, in-fiction beverages) live in **flavor packs** instead, so other DMs forking the project don't inherit one author's setting.
+
+A flavor pack is a single JSON file under `data/flavor_packs/`, registered in `data/flavor_packs/index.json`. Each pack carries the same kinds of records as the generic pool, plus an override hook:
+
+```json
+{
+  "id": "mog",
+  "label": "Mog",
+  "description": "...",
+  "ingredient_overrides": [
+    { "id": "sunchoke", "name": "Altay artichoke" },
+    { "id": "red-wine", "name": "Briggan wine" }
+  ],
+  "ingredients": [
+    { "id": "ghostfish", "name": "Sasani ghostfish", "roles": ["protein","fish"], "tags": ["coastal","summer","autumn","refined"], "cost": 4, "affinities": ["bakes-into","grills-well"] }
+  ],
+  "dishes": [
+    { "id": "stokvis-cod-buttermilk", "name": "Stokvis Bay cod in sour buttermilk", "section": "main", "biomes": ["coastal"], "seasons": ["spring","summer","autumn"], "tier_min": 2, "cost": 3, "tags": ["common"] }
+  ]
+}
+```
+
+- **`ingredient_overrides`** — replace a generic ingredient by id. Used to rename `red-wine` → `Briggan wine` without forking the whole entry. Other fields on the override are merged onto the generic record.
+- **`ingredients`** — net-new ingredients only the pack introduces (e.g. a fish that doesn't exist in the generic pool). Same schema as `data/ingredients.json` entries.
+- **`dishes`** — net-new authored dishes. Same schema as `data/authored_dishes.json` entries. Filter rules (biome, season, tier, condition, imports) apply identically.
+
+### Loading and merging
+
+`src/ui.js → loadFlavorPacks()` reads the manifest at startup; `applyFlavorPacks(base, activeIds)` produces a new data object on each generate by:
+
+1. Concatenating each active pack's `dishes` onto `authored_dishes.dishes`.
+2. Concatenating each active pack's `ingredients` onto `ingredients.ingredients`.
+3. Replacing generic ingredient entries by id where `ingredient_overrides` apply.
+
+The generator (`src/generator.js`) is unaware of packs — it sees a single merged data object. All filtering, weighting, and pricing rules apply unchanged.
+
+### No deduplication
+
+Generic dishes and pack dishes can share themes ("cod in buttermilk" generic vs. "Stokvis Bay cod in sour buttermilk" Mog) without the generator caring. They are distinct ids; both can appear in the same menu when the pack is active. If a generic twin feels redundant against a pack version, prune by hand — don't add code paths.
+
+### Authoring a new pack
+
+1. Create `data/flavor_packs/<your-id>.json` with the schema above.
+2. Add an entry to `data/flavor_packs/index.json` with `{ "id", "label", "file", "description", "default_active": false }`.
+3. Reload the page. Your pack appears as a checkbox under the Seed field.
+
+Packs are pure data — no JS changes needed for new packs.
+
 ### Unusual dishes
 
 Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.3 in selection, so they appear sparingly — in the biome where they're native, they'll show in roughly 1 in 3–5 menus; elsewhere, much less.
@@ -154,8 +204,10 @@ Common edits and the file to touch:
 
 | Edit | File |
 |------|------|
-| Add a dish you wrote | `authored_dishes.json` |
+| Add a generic dish you wrote | `authored_dishes.json` |
+| Add a setting-specific named dish | a flavor pack under `data/flavor_packs/` |
 | New ingredient (so procedural and drinks can use it) | `ingredients.json` |
+| Rename an ingredient for a specific setting | `ingredient_overrides` in a flavor pack |
 | New condition (e.g. "fey-incursion") | `modifiers.json` → `conditions` |
 | New transient event | `events.json` |
 | Change inn-tier pricing | `modifiers.json` → `inn_tiers` |

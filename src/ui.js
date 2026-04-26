@@ -15,7 +15,57 @@ async function loadData() {
     if (!r.ok) throw new Error(`Failed to load ${p}`);
     out[k] = await r.json();
   }
+  out.flavor_packs = await loadFlavorPacks();
   return out;
+}
+
+// Flavor packs are optional opt-in data overlays (e.g. setting-specific named dishes).
+// The manifest at data/flavor_packs/index.json lists available packs; each pack file
+// holds dishes, optional new ingredients, and optional ingredient_overrides keyed by id.
+async function loadFlavorPacks() {
+  try {
+    const idxRes = await fetch("data/flavor_packs/index.json");
+    if (!idxRes.ok) return { manifest: { packs: [] }, packs: {} };
+    const manifest = await idxRes.json();
+    const packs = {};
+    for (const entry of manifest.packs || []) {
+      const r = await fetch(`data/flavor_packs/${entry.file}`);
+      if (!r.ok) continue;
+      packs[entry.id] = await r.json();
+    }
+    return { manifest, packs };
+  } catch (e) {
+    console.warn("No flavor packs loaded:", e);
+    return { manifest: { packs: [] }, packs: {} };
+  }
+}
+
+// Apply currently-active packs onto a shallow copy of base data. Pack dishes and
+// ingredients are concatenated; ingredient_overrides replace generic entries by id.
+// Returns a new data object — the original DATA stays untouched.
+function applyFlavorPacks(base, activeIds) {
+  if (!activeIds.length) return base;
+  const ingMap = new Map(base.ingredients.ingredients.map(i => [i.id, i]));
+  const dishes = [...base.authored_dishes.dishes];
+  for (const id of activeIds) {
+    const pack = base.flavor_packs.packs[id];
+    if (!pack) continue;
+    for (const ing of pack.ingredients || []) ingMap.set(ing.id, ing);
+    for (const ov of pack.ingredient_overrides || []) {
+      const current = ingMap.get(ov.id);
+      if (current) ingMap.set(ov.id, { ...current, ...ov });
+    }
+    for (const d of pack.dishes || []) dishes.push(d);
+  }
+  return {
+    ...base,
+    ingredients: { ingredients: Array.from(ingMap.values()) },
+    authored_dishes: { dishes }
+  };
+}
+
+function activeFlavorPackIds() {
+  return Array.from(document.querySelectorAll(".flavor-pack-toggle:checked")).map(el => el.value);
 }
 
 function qs(id) { return document.getElementById(id); }
@@ -38,6 +88,32 @@ function collectWorld() {
     condition: qs("condition").value,
     event: qs("event").value
   };
+}
+
+function populateFlavorPacks(data) {
+  const root = qs("flavor-packs");
+  const fieldset = qs("flavor-packs-fieldset");
+  if (!root || !fieldset) return;
+  const entries = (data.flavor_packs && data.flavor_packs.manifest.packs) || [];
+  if (!entries.length) { fieldset.style.display = "none"; return; }
+  root.innerHTML = "";
+  for (const entry of entries) {
+    const wrap = document.createElement("label");
+    wrap.className = "flavor-pack-row";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "flavor-pack-toggle";
+    cb.value = entry.id;
+    cb.id = `flavor-pack-${entry.id}`;
+    if (entry.default_active) cb.checked = true;
+    cb.addEventListener("change", () => generate());
+    const text = document.createElement("span");
+    text.textContent = entry.label;
+    if (entry.description) text.title = entry.description;
+    wrap.appendChild(cb);
+    wrap.appendChild(text);
+    root.appendChild(wrap);
+  }
 }
 
 function populateSelects(data) {
@@ -185,6 +261,7 @@ let DATA = null;
 async function init() {
   DATA = await loadData();
   populateSelects(DATA);
+  populateFlavorPacks(DATA);
   qs("seed").value = randomSeed();
   qs("generate").addEventListener("click", generate);
   qs("reroll").addEventListener("click", () => { qs("seed").value = randomSeed(); generate(); });
@@ -198,7 +275,8 @@ function generate() {
   const world = collectWorld();
   const seed = qs("seed").value.trim() || randomSeed();
   qs("seed").value = seed;
-  const menu = window.InnMenu.generateMenu(world, DATA, seed);
+  const data = applyFlavorPacks(DATA, activeFlavorPackIds());
+  const menu = window.InnMenu.generateMenu(world, data, seed);
   window.__lastMenu = menu;
   renderMenu(menu);
 }
