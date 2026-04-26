@@ -19,6 +19,12 @@ To host it live via GitHub Pages, see `docs/SETUP.md`.
 5. Prices compute from `cost × tier × economy × condition × event × (1.5 if imported)`, rendered in cp/sp/gp.
 6. Optional "Polish with LLM" sends the raw menu to Anthropic's API (using a key you paste locally — never stored server-side) and returns flavor text.
 
+## Flavor packs
+
+The default content pool is system-agnostic — generic medieval-fantasy fare that should fit most settings. **Flavor packs** are optional opt-in overlays that add setting-specific named dishes (e.g. "Stokvis Bay cod" instead of "cod") on top of the generic pool. Each pack is a single JSON file under `data/flavor_packs/`, listed in `data/flavor_packs/index.json`. Toggle them on or off with the checkboxes under the Seed field — all default off.
+
+The repo ships with **Mog**, the author's campaign setting. Leave it unchecked for a generic pool; check it to add Mog's regional cuisine. Forks can drop their own packs into `data/flavor_packs/` and add an entry to `index.json` — no code changes required. See `docs/DESIGN.md` for the pack schema.
+
 ## Project layout
 
 ```
@@ -26,15 +32,18 @@ inn-menu-simulator/
 ├── index.html                  # the app
 ├── src/
 │   ├── generator.js            # authored-first generation logic
-│   ├── ui.js                   # form wiring + rendering
+│   ├── ui.js                   # form wiring + rendering + pack merging
 │   └── llm.js                  # optional flavor polish
 ├── data/
-│   ├── authored_dishes.json    # hand-written dishes (primary pool)
+│   ├── authored_dishes.json    # hand-written generic dishes (primary pool)
 │   ├── ingredients.json        # for procedural fallback and drinks
 │   ├── preparations.json       # stew, roast, grill, etc.
 │   ├── dishes.json             # procedural templates (fallback only)
 │   ├── modifiers.json          # biomes, tiers, economy, conditions, weather
-│   └── events.json             # transient events
+│   ├── events.json             # transient events
+│   └── flavor_packs/           # optional setting-specific overlays
+│       ├── index.json          # manifest of available packs
+│       └── mog.json            # the Mog setting pack (off by default)
 ├── docs/
 │   ├── DESIGN.md               # architecture, tag taxonomy, decision log
 │   └── SETUP.md                # GitHub + Pages walkthrough
@@ -44,6 +53,6 @@ inn-menu-simulator/
 
 ## Contributing
 
-The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`.
+The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`. For setting-specific contributions (named regional dishes, proper-noun ingredients), add a flavor pack instead of touching the generic pool — see the Flavor packs section above.
 
 Code is MIT licensed. Data files are CC-BY-SA 4.0 — fork and remix freely, credit appreciated.

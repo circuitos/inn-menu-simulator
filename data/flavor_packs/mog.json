@@ -1,0 +1,11 @@
+{
+  "id": "mog",
+  "label": "Mog",
+  "description": "Setting-specific dishes and ingredient overrides for the Mog campaign world.",
+  "ingredient_overrides": [
+    { "id": "sunchoke",  "name": "Altay artichoke" },
+    { "id": "red-wine",  "name": "Briggan wine" }
+  ],
+  "ingredients": [],
+  "dishes": []
+}

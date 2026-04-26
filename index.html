@@ -93,6 +93,13 @@ body::before {
 .controls select:focus, .controls input[type="text"]:focus {
   outline: none; border-color: var(--accent);
 }
+.flavor-packs { display: flex; flex-direction: column; gap: 0.4rem; }
+.flavor-pack-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--mono); font-size: 12px; color: var(--ink);
+  text-transform: none; letter-spacing: 0; cursor: pointer;
+}
+.flavor-pack-row input { accent-color: var(--accent); cursor: pointer; }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
 .button-row + .button-row { margin-top: 0.5rem; }
 .btn {
@@ -249,6 +256,11 @@ body::before {
     <fieldset>
       <label for="seed">Seed</label>
       <input type="text" id="seed" placeholder="any-text" />
+    </fieldset>
+
+    <fieldset id="flavor-packs-fieldset">
+      <label>Flavor packs</label>
+      <div class="flavor-packs" id="flavor-packs"></div>
     </fieldset>
 
     <div class="button-row">
