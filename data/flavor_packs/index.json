@@ -1,0 +1,11 @@
+{
+  "packs": [
+    {
+      "id": "mog",
+      "label": "Mog",
+      "file": "mog.json",
+      "description": "Setting-specific dishes and ingredient names for the Mog campaign world. Adds named regional fare (Stokvis Bay cod, Briggan wine, Sasani ghostfish) on top of the generic pool.",
+      "default_active": false
+    }
+  ]
+}

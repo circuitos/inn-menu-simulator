@@ -4,11 +4,29 @@ Read this before editing data files or changing generation logic. It is the sour
 
 ## Core principle
 
-The authored pool is the product. The procedural engine is the safety net.
+The authored pool sets the tone; the procedural engine widens the vocabulary.
 
-A menu in a real medieval inn wasn't assembled from slots. A cook made specific dishes they knew how to make, and served whatever was in the larder that day. This generator mirrors that: 96 hand-authored dishes (`data/authored_dishes.json`) are the primary pool; filtered by world state, drawn with weighted randomness, and served. The procedural template system (`data/dishes.json`) only fires when the authored pool cannot fill a section. In practice, with 96 dishes, procedural rarely runs — and that's fine.
+A menu in a real medieval inn wasn't assembled from slots. A cook made specific dishes they knew how to make, and served whatever was in the larder that day. Hand-authored dishes (`data/authored_dishes.json`) are the primary pool — filtered by world state, drawn with weighted randomness. The procedural template system (`data/dishes.json` + `data/ingredients.json`) fills any remaining slots by assembling plausible dish names from ingredients and preparations, giving a much larger surface of permutations so repeated generations don't feel same-y.
 
-The consequence: **to change what appears, edit `authored_dishes.json`.** Don't touch code. Don't touch templates. Just add, remove, or retag dishes.
+How much procedural vs authored mixes into any given slot is controlled by `TUNING.authored_ratio` in `src/generator.js` (default `0.75` — roughly three authored for every one procedural, with fallback to the other pool when the preferred source is empty).
+
+The consequence: **to change the stable, named dishes, edit `authored_dishes.json`.** To change the procedural flavor, edit ingredients and templates. To change the mix, edit the tuning block.
+
+## Tuning knobs
+
+At the top of `src/generator.js`:
+
+```js
+const TUNING = {
+  authored_ratio: 0.75,           // 1.0 authored-only, 0.0 procedural-only
+  event_weight_mult: 1.0,         // 0.0 events affect only prices/notes, 1.0 default
+  authored_event_tag_boost: 1.7,  // base boost per event tag match on authored dishes
+  ingredient_event_tag_boost: 1.8,
+  ingredient_event_role_boost: 1.6
+};
+```
+
+These are edit-in-place. No UI exposure — change the file, reload, see the effect. `authored_ratio` is the main lever for variety: lower it to lean on the 400+ ingredient pool; raise it to pin the menu to curated dishes. `event_weight_mult` lets a campaign where events are narrative centerpieces (Harvest Festival actually changes the menu) coexist with a gritty world where events are incidental.
 
 ## World state
 
@@ -78,6 +96,56 @@ Field notes:
 
 If a dish's native biome doesn't match the world AND the current condition permits imports AND the inn is fine or noble, it can appear as an import. Imports are labeled "(imported)" in the menu and carry a 1.5× price multiplier. Imports are always suppressed under war, plague, isolation, or siege.
 
+## Flavor packs
+
+The generic pool aims to be system-agnostic — recognizable medieval-fantasy fare that fits most worlds. Setting-specific named dishes (proper nouns, regional cuisines, in-fiction beverages) live in **flavor packs** instead, so other DMs forking the project don't inherit one author's setting.
+
+A flavor pack is a single JSON file under `data/flavor_packs/`, registered in `data/flavor_packs/index.json`. Each pack carries the same kinds of records as the generic pool, plus an override hook:
+
+```json
+{
+  "id": "mog",
+  "label": "Mog",
+  "description": "...",
+  "ingredient_overrides": [
+    { "id": "sunchoke", "name": "Altay artichoke" },
+    { "id": "red-wine", "name": "Briggan wine" }
+  ],
+  "ingredients": [
+    { "id": "ghostfish", "name": "Sasani ghostfish", "roles": ["protein","fish"], "tags": ["coastal","summer","autumn","refined"], "cost": 4, "affinities": ["bakes-into","grills-well"] }
+  ],
+  "dishes": [
+    { "id": "stokvis-cod-buttermilk", "name": "Stokvis Bay cod in sour buttermilk", "section": "main", "biomes": ["coastal"], "seasons": ["spring","summer","autumn"], "tier_min": 2, "cost": 3, "tags": ["common"] }
+  ]
+}
+```
+
+- **`ingredient_overrides`** — replace a generic ingredient by id. Used to rename `red-wine` → `Briggan wine` without forking the whole entry. Other fields on the override are merged onto the generic record.
+- **`ingredients`** — net-new ingredients only the pack introduces (e.g. a fish that doesn't exist in the generic pool). Same schema as `data/ingredients.json` entries.
+- **`dishes`** — net-new authored dishes. Same schema as `data/authored_dishes.json` entries. Filter rules (biome, season, tier, condition, imports) apply identically.
+
+### Loading and merging
+
+`src/ui.js → loadFlavorPacks()` reads the manifest at startup; `applyFlavorPacks(base, activeIds)` produces a new data object on each generate by:
+
+1. Concatenating each active pack's `dishes` onto `authored_dishes.dishes`.
+2. Concatenating each active pack's `ingredients` onto `ingredients.ingredients`.
+3. Replacing generic ingredient entries by id where `ingredient_overrides` apply.
+
+The generator (`src/generator.js`) is unaware of packs — it sees a single merged data object. All filtering, weighting, and pricing rules apply unchanged.
+
+### No deduplication
+
+Generic dishes and pack dishes can share themes ("cod in buttermilk" generic vs. "Stokvis Bay cod in sour buttermilk" Mog) without the generator caring. They are distinct ids; both can appear in the same menu when the pack is active. If a generic twin feels redundant against a pack version, prune by hand — don't add code paths.
+
+### Authoring a new pack
+
+1. Create `data/flavor_packs/<your-id>.json` with the schema above.
+2. Add an entry to `data/flavor_packs/index.json` with `{ "id", "label", "file", "description", "default_active": false }`.
+3. Reload the page. Your pack appears as a checkbox under the Seed field.
+
+Packs are pure data — no JS changes needed for new packs.
+
 ### Unusual dishes
 
 Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.3 in selection, so they appear sparingly — in the biome where they're native, they'll show in roughly 1 in 3–5 menus; elsewhere, much less.
@@ -96,12 +164,15 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
      cost within economy ceiling
 4. For each section (appetizer, main, dessert, drink):
      Determine count via (min + rng * range).
-     For non-drink sections:
-       Pick dishes from filtered authored pool using weighted random.
-         weights: native biome ×2.0, season match ×1.8, event boost ×1.7,
-                  'any' biome ×1.2, imported ×0.35, unusual ×0.3,
-                  peasant-under-war ×1.5, noble-at-roadside ×0.4, etc.
-       If authored pool insufficient → generate procedural fillers from templates.
+     For non-drink sections, per slot:
+       Roll rng() < TUNING.authored_ratio → prefer authored this slot; else prefer procedural.
+       Try the preferred source first; fall back to the other if empty.
+         authored weights: native biome ×2.0, season match ×1.8, event boost ×1.7
+                           (scaled by event_weight_mult), 'any' biome ×1.2,
+                           imported ×0.35, unusual ×0.3, peasant-under-war ×1.5,
+                           noble-at-roadside ×0.4, etc.
+         procedural: pick a template for the section, roll a prep from its pool,
+                     fill slots by role + affinity with ingredient weights.
      For drinks:
        Pull from ingredients with role=drink, weighted by world.
 5. Compute prices:
@@ -119,11 +190,13 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
 - At/above 100 cp, `gp` comes first.
 - No decimals. Round to nearest copper.
 
-## Procedural fallback
+## Procedural path
 
-Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Runs only when authored pool for a section is empty or insufficient for the required count. Uses the ingredient pool (filtered by the same world rules, minus `unusual`) and preparation compatibility to assemble plausible dish names.
+Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Uses the ingredient pool (filtered by the same world rules, minus `unusual`) and preparation compatibility to assemble plausible dish names.
 
-Deliberately small. If you find procedural firing often, the fix is to add authored dishes for the gap, not to expand templates.
+Templates are invoked either as fallback when the authored pool is empty for a slot, or proactively when `TUNING.authored_ratio` routes a slot to procedural. The larger the ingredient pool, the more variety procedural delivers across regenerations; the ingredient file is where to add regional nuance.
+
+If procedural fires too often with awkward combinations, adjust in one of three places depending on symptom: add authored dishes (stabilizes specific gaps), add ingredient affinities (expands valid combinations within existing templates), or add templates (new dish shapes).
 
 ## Editing data
 
@@ -131,8 +204,10 @@ Common edits and the file to touch:
 
 | Edit | File |
 |------|------|
-| Add a dish you wrote | `authored_dishes.json` |
+| Add a generic dish you wrote | `authored_dishes.json` |
+| Add a setting-specific named dish | a flavor pack under `data/flavor_packs/` |
 | New ingredient (so procedural and drinks can use it) | `ingredients.json` |
+| Rename an ingredient for a specific setting | `ingredient_overrides` in a flavor pack |
 | New condition (e.g. "fey-incursion") | `modifiers.json` → `conditions` |
 | New transient event | `events.json` |
 | Change inn-tier pricing | `modifiers.json` → `inn_tiers` |
