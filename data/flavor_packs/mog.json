@@ -4,7 +4,7 @@
   "description": "Setting-specific dishes and ingredient overrides for the Mog campaign world.",
   "ingredient_overrides": [
     { "id": "sunchoke",  "name": "Altay artichoke" },
-    { "id": "red-wine",  "name": "Briggan wine" }
+    { "id": "red-wine",  "name": "Briggan Red" }
   ],
   "ingredients": [],
   "dishes": [
@@ -67,9 +67,9 @@
     { "id": "mog-pomace-rakia",         "name": "Pomace rakia",                               "section": "drink",     "biomes": ["arid"],       "seasons": ["all-seasons"],            "tier_max": 3, "cost": 1, "tags": ["peasant","common"],            "flavor": "Clear firewater made from the rotting dregs of the wine press." },
 
     { "id": "mog-vuk-black-bread",      "name": "Vük black bread",                            "section": "appetizer", "biomes": ["frostlands"], "seasons": ["all-seasons"],            "tier_max": 3, "cost": 1, "tags": ["peasant","common","nordic"],   "flavor": "Baked hard beneath the ash. You can break a tooth on it, but it does not rot." },
-    { "id": "mog-auroch-spord",         "name": "Auroch spord",                               "section": "main",      "biomes": ["frostlands"], "seasons": ["autumn","winter"],                       "cost": 2, "tags": ["peasant","common","nordic","unusual"], "flavor": "Fresh blood mixed with grain and fat. Stuffed into gut string and boiled.", "contains": "meat" },
+    { "id": "mog-auroch-spord",         "name": "Auroch spord",                               "section": "main",      "biomes": ["frostlands"], "seasons": ["all-seasons"],                       "cost": 2, "tags": ["peasant","common","nordic"], "flavor": "Fresh blood mixed with grain and fat. Stuffed into gut string and boiled.", "contains": "meat" },
     { "id": "mog-gruit-beer",           "name": "Gruit cloudy beer",                          "section": "drink",     "biomes": ["frostlands"], "seasons": ["all-seasons"],            "tier_max": 3, "cost": 1, "tags": ["peasant","common","nordic"],   "flavor": "Thick, bitter ale fermented with wild scrub instead of hops." },
-    { "id": "mog-harengus-aquavit",     "name": "Harengus aquavit",                           "section": "drink",     "biomes": ["frostlands"], "seasons": ["all-seasons"],            "tier_min": 2, "cost": 3, "tags": ["common","refined","nordic"],   "flavor": "Distilled three times over, burns the frost from the lungs." },
-    { "id": "mog-pickled-parsnips",     "name": "Pickled parsnips",                           "section": "appetizer", "biomes": ["frostlands"], "seasons": ["winter","spring"],                       "cost": 1, "tags": ["peasant","common","nordic"],   "flavor": "Roots and cabbage packed in salt, left to sour in the cold." }
+    { "id": "mog-harengus-aquavit",     "name": "Harengus aquavit",                           "section": "drink",     "biomes": ["frostlands"], "seasons": ["all-seasons"],                       "cost": 2, "tags": ["common","refined","nordic"],   "flavor": "Distilled three times over, burns the frost from the lungs." },
+    { "id": "mog-pickled-parsnips",     "name": "Pickled parsnips",                           "section": "appetizer", "biomes": ["frostlands"], "seasons": ["all-seasons"],                       "cost": 1, "tags": ["peasant","common","nordic"],   "flavor": "Roots and cabbage packed in salt, left to sour in the cold." }
   ]
 }
