@@ -134,6 +134,10 @@ A flavor pack is a single JSON file under `data/flavor_packs/`, registered in `d
 
 The generator (`src/generator.js`) is unaware of packs — it sees a single merged data object. All filtering, weighting, and pricing rules apply unchanged.
 
+### Toggling a pack reshuffles the whole menu
+
+A consequence of the "merge, don't filter" approach: turning a pack on or off changes the **input** the seeded generator draws from, not just which dishes are eligible at render time. Even on the same seed, slots that don't end up picking a pack dish can still flip to a different generic dish, because weighted random selection over a larger pool lands on different items for the same RNG draw. This is expected, not a bug — packs are first-class participants in selection, not a post-hoc overlay. If you want a pack toggle to leave the rest of the menu untouched, you'd need a different architecture (e.g. reserving slots for pack dishes, or filtering at render time), which is out of scope for v1.
+
 ### No deduplication
 
 Generic dishes and pack dishes can share themes ("cod in buttermilk" generic vs. "Stokvis Bay cod in sour buttermilk" Mog) without the generator caring. They are distinct ids; both can appear in the same menu when the pack is active. If a generic twin feels redundant against a pack version, prune by hand — don't add code paths.
