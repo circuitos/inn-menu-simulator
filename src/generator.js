@@ -260,11 +260,11 @@ function filterAuthored(dishes, w) {
 function weightAuthored(d, w) {
   let weight = 1;
   // Native biome gets a big boost
-  if (d.biomes.includes(w.biome)) weight *= 2.0;
+  if (d.biomes.includes(w.biome)) weight *= 3.0;
   // "Any" biome dishes are neutral
   else if (d.biomes.includes("any")) weight *= 1.2;
   // Imports are possible but less likely
-  if (d._imported) weight *= 0.35;
+  if (d._imported) weight *= 0.25;
 
   // Seasonal match boost
   if (d.seasons.includes(w.season)) weight *= 1.8;
@@ -509,26 +509,45 @@ function generateMenu(world, data, seed) {
     const dishes = [];
 
     if (sectionId === "drink") {
-      // Drinks come from ingredients tagged role 'drink'. No authored-dish work here.
+      // Drinks mix authored entries (with flavor text) and procedural ingredient-based
+      // drinks, using the same authored/procedural interleave as appetizer/dessert.
       let target = rolledCount;
       if (caps) target = Math.max(1, Math.min(target, caps.drink));
+      const sectionAuthored = authoredPool.filter(d => d.section === "drink");
+      const usedAuthored = new Set();
       const drinks = ingPool.filter(i => (i.roles || []).includes("drink"));
-      const used = new Set();
-      let tries = 0;
-      while (dishes.length < target && tries < 30 && drinks.length) {
-        tries++;
-        const pickD = weightedPick(rng, drinks.filter(d => !used.has(d.id)), i => weightIngredient(i, w));
-        if (!pickD) break;
-        used.add(pickD.id);
+      const usedIng = new Set();
+      const names = new Set();
+      const pickProceduralDrink = () => {
+        const pickD = weightedPick(rng, drinks.filter(d => !usedIng.has(d.id)), i => weightIngredient(i, w));
+        if (!pickD) return null;
+        usedIng.add(pickD.id);
         const baseCopper = COST_BASE[pickD.cost] || 2;
         const price = baseCopper * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult;
-        dishes.push({
+        return {
           source: "drink",
           section: "drink",
           name: capitalize(pickD.name),
           price_cp: Math.max(1, Math.round(price)),
           price_text: formatPrice(price)
-        });
+        };
+      };
+      let safety = 0;
+      while (dishes.length < target && safety < target * 8 + 4) {
+        safety++;
+        const preferAuthored = rng() < TUNING.authored_ratio;
+        let dish = null;
+        if (preferAuthored) {
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          if (!dish) dish = pickProceduralDrink();
+        } else {
+          dish = pickProceduralDrink();
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+        }
+        if (!dish) break;
+        if (names.has(dish.name)) continue;
+        names.add(dish.name);
+        dishes.push(dish);
       }
     } else if (sectionId === "main" && caps) {
       // Cap-enforced main loop: classify each candidate and only accept it
