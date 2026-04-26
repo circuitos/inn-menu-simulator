@@ -38,14 +38,23 @@ const PLENTIFUL_EVENTS = new Set([
 // listed — it disrupts trade but doesn't necessarily empty the larder.
 const EXTREME_SCARCITY_CONDITIONS = new Set(["plague", "isolation", "siege"]);
 
-// Per-tier base caps. `null` means no caps applied for this tier.
-// Roadside uses a single combined meat-or-fish cap; Common splits them.
+// Per-tier base caps. Roadside uses a single combined meat-or-fish cap;
+// the others split meat and fish. Fine and Noble are sized so their default
+// (0 scarcity) behavior matches the existing count_max for each section —
+// the caps only bite once scarcity reductions kick in.
 const TIER_CAPS = {
   roadside: { appetizer: 2, main_meatfish: 1, main_meatless: 2, drink: 2 },
   common:   { appetizer: 3, main_meat: 1, main_fish: 1, main_meatless: 2, drink: 3 },
-  fine:     null,
-  noble:    null
+  fine:     { appetizer: 4, main_meat: 2, main_fish: 2, main_meatless: 2, drink: 4 },
+  noble:    { appetizer: 4, main_meat: 2, main_fish: 2, main_meatless: 2, drink: 5 }
 };
+
+// Under severe scarcity (>= 2 extreme hits) the kitchen's allowed palette is
+// rewritten: gilded tags drop out, and plain-fare tags are added in so the
+// cellar/larder's basic stock can carry the menu. A noble inn under siege
+// shouldn't be locked into refined-only ingredients.
+const TAGS_STRIPPED_AT_SEVERE_SCARCITY = new Set(["noble", "exotic"]);
+const TAGS_ADDED_AT_SEVERE_SCARCITY = new Set(["peasant", "common"]);
 
 // Protein-role buckets used to classify procedurally-built mains.
 const MEAT_ROLES = new Set(["fowl", "ruminant", "game", "offal"]);
@@ -466,6 +475,18 @@ function generateMenu(world, data, seed) {
   const sections = data.modifiers.sections;
   const caps = computeCaps(world);
 
+  // Severe-scarcity tier downgrade: with 2+ extreme scarcity hits, even a
+  // noble kitchen can't put on airs. Strip the gilded tags from allowed_tags
+  // and add the plain-fare tags so the menu falls back to whatever the
+  // cellar still holds. Plentiful events (caps === null) bypass this on
+  // the assumption that the event itself replenishes the larder.
+  if (caps && caps.scarcityHits >= 2) {
+    const tags = new Set(w.tier.allowed_tags);
+    for (const t of TAGS_STRIPPED_AT_SEVERE_SCARCITY) tags.delete(t);
+    for (const t of TAGS_ADDED_AT_SEVERE_SCARCITY) tags.add(t);
+    w.tier = { ...w.tier, allowed_tags: Array.from(tags) };
+  }
+
   // Clone authored list so we can mark _imported without polluting source data
   const authoredCopy = data.authored_dishes.dishes.map(d => ({ ...d }));
   const authoredPool = filterAuthored(authoredCopy, w);
@@ -511,13 +532,15 @@ function generateMenu(world, data, seed) {
       }
     } else if (sectionId === "main" && caps) {
       // Cap-enforced main loop: classify each candidate and only accept it
-      // if its kind (meat/fish/meatless) still has room.
+      // if its kind (meat/fish/meatless) still has room. Total is also
+      // clamped to the section's rolled count so that generous tier caps
+      // don't blow past the existing count_max for the section.
       const sectionAuthored = authoredPool.filter(d => d.section === "main");
       const usedAuthored = new Set();
       const usedTpl = new Set();
       const names = new Set();
       const used = makeMainUsed(caps);
-      const target = mainTotalTarget(caps);
+      const target = Math.min(rolledCount, mainTotalTarget(caps));
       let safety = 0;
       while (dishes.length < target && safety < target * 12 + 20) {
         safety++;

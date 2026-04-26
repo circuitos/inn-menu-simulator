@@ -66,6 +66,69 @@ Two different concepts, deliberately separated.
 
 **Conditions** are durative and structural. War, Plague, Isolation, Siege. They gate entire categories of goods (no imports during war) and raise baseline prices (rationing). A condition note overrides the mood of the menu; an event decorates it. Both can coexist ("Market Day during the Plague" is a valid, grim scenario).
 
+## Condition-based menu caps
+
+Material conditions don't just nudge prices — they shrink the menu. The cap system in `src/generator.js` enforces tier-specific upper bounds on each section, and tightens those bounds further when the world is in extreme scarcity.
+
+### Base caps (per tier)
+
+When no plentiful event is active, every menu is clamped to a per-tier cap:
+
+| Tier | Starters | Meat main | Fish main | Meatless main | Drinks |
+|------|----------|-----------|-----------|---------------|--------|
+| Roadside | 2 | combined: 1 (meat OR fish) | — | 2 | 2 |
+| Common | 3 | 1 | 1 | 2 | 3 |
+| Fine | 4 | 2 | 2 | 2 | 4 |
+| Noble | 4 | 2 | 2 | 2 | 5 |
+
+Roadside uses a single combined "meat or fish" cap because at the lowest tier the distinction blurs — you get whatever the cook has. The other tiers split meat and fish so a Common inn can serve one of each.
+
+The caps are *upper* bounds. The section's existing `count_min/count_max` (in `modifiers.json`) still rolls a target inside its range; the final count is `min(rolled, sum-of-caps)`. Under no scarcity, Fine and Noble caps are sized to match `count_max`, so behavior is unchanged from peace-time.
+
+### Plentiful events bypass caps
+
+If the active event is one of `harvest-festival`, `market-day`, `noble-visit`, `hunting-return`, `fishing-good`, **all caps are skipped** for that menu. The cook splurges. This is the scaffolding's escape hatch: when the narrative justifies abundance, the math gets out of the way.
+
+The list of plentiful events lives in `PLENTIFUL_EVENTS` at the top of `src/generator.js`.
+
+### Extreme scarcity reductions
+
+Two world-state flags count as "extreme scarcity":
+
+- `economy === "famine"`
+- `condition` ∈ `{plague, isolation, siege}` (war is intentionally **not** counted — it disrupts trade but doesn't necessarily empty the larder)
+
+The number of these active at once (0, 1, or 2) is the **scarcity hits**. Each hit subtracts 1 from every numeric cap. So a Common inn under famine + plague (2 hits) drops to 1 starter / 0 meat / 0 fish / 0 meatless / 1 drink — except for the floor.
+
+### Floors
+
+- Every section renders **at least 1 dish**. After scarcity subtraction, each section's effective total is floored at 1.
+- For mains specifically, if all meat/fish/meatless caps reduce to 0, the meatless cap is forced to 1, and the generator falls back to a meatless dish (preferring authored meatless mains, then procedural meatless templates, then any procedural main as a last resort).
+
+### Severe-scarcity tier downgrade
+
+At **2 scarcity hits**, even Fine and Noble kitchens lose access to their gilded options. The inn's `allowed_tags` is rewritten:
+
+- `noble` and `exotic` are stripped out
+- `peasant` and `common` are added in
+
+For a Noble inn under famine + siege, that means `["refined","noble","foreign","exotic"]` becomes `["peasant","common","refined","foreign"]` — the kitchen serves whatever's still in the cellar (ale, kvass, pottage), regardless of how rich the inn normally is. The price multipliers from condition + economy still apply, so even the plain food carries a markup.
+
+The strip/add lists live in `TAGS_STRIPPED_AT_SEVERE_SCARCITY` and `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js`.
+
+### Meat / fish / meatless classification
+
+Mains are classified into three buckets so the per-kind caps can be enforced:
+
+- **Authored mains** carry an explicit `contains: "meat"` or `contains: "fish"` field (omitted when meatless). See the Authored dishes section below for the schema.
+- **Procedural mains** are classified at build time from the chosen protein ingredient's `roles`/id:
+  - roles include `fish` or `shellfish` → `fish`
+  - roles include `fowl`, `ruminant`, `game`, or `offal` → `meat`
+  - id ∈ `{pork, bacon, sausage}` → `meat` (these have only the generic `protein` role)
+  - everything else (egg, skyr, chickpea, beans, lentils, broad-beans, no protein at all) → `meatless`
+
+The "meatless" bucket follows the user-facing rule that animal byproducts (lard, butter, cream, eggs, dairy) don't disqualify a dish from counting as meatless.
+
 ## Authored dishes
 
 Each dish in `authored_dishes.json` carries:
@@ -90,6 +153,7 @@ Field notes:
 - **tier_min / tier_max** — inn-tier range. A `tier_min: 3` dish only appears at fine or noble inns. A `tier_max: 2` caps it at common or roadside. Defaults: no min, no max.
 - **cost** — 1 to 5. Drives base price. Scales through tier/economy/condition/event multipliers.
 - **tags** — cultural (`peasant`, `common`, `refined`, `noble`), origin (`foreign`, `exotic`), cuisine (`mediterranean`, `nordic`), and flags (`unusual`). Conditions exclude dishes by tag: war excludes `foreign` and `exotic`.
+- **contains** (mains only, optional) — `"meat"` or `"fish"`. Omit for meatless mains (the bucket the cap system treats as the safe fallback under scarcity). Used by the per-kind cap loop; see the Condition-based menu caps section. Animal byproducts (eggs, dairy, lard) do not require this field — they count as meatless.
 - **flavor** (optional) — a short description the optional LLM polish can use. Mostly used for dishes whose names don't fully explain themselves ("Hypocras" → "spiced wine").
 
 ### Imports
@@ -214,6 +278,10 @@ Common edits and the file to touch:
 | Rename an ingredient for a specific setting | `ingredient_overrides` in a flavor pack |
 | New condition (e.g. "fey-incursion") | `modifiers.json` → `conditions` |
 | New transient event | `events.json` |
+| Mark a new condition as "extreme scarcity" | `EXTREME_SCARCITY_CONDITIONS` in `src/generator.js` |
+| Mark a new event as "plentiful" (bypasses caps) | `PLENTIFUL_EVENTS` in `src/generator.js` |
+| Tune per-tier section caps | `TIER_CAPS` in `src/generator.js` |
+| Adjust which tags are stripped/added at -2 scarcity | `TAGS_STRIPPED_AT_SEVERE_SCARCITY` / `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js` |
 | Change inn-tier pricing | `modifiers.json` → `inn_tiers` |
 | Change biome labels or add a biome | `modifiers.json` → `biomes` (and retag dishes/ingredients accordingly) |
 
