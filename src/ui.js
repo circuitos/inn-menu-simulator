@@ -116,6 +116,14 @@ function populateFlavorPacks(data) {
   }
 }
 
+// Seasons and the weather order are intentionally fixed here — modifiers.json
+// stores them as objects (insertion-ordered in practice, but not load-bearing
+// in the generator). Listing them explicitly keeps dropdown order stable.
+const SEASON_ORDER = [
+  ["spring","Spring"], ["summer","Summer"], ["autumn","Autumn"], ["winter","Winter"]
+];
+const WEATHER_ORDER = ["clear","rain","snow","heatwave"];
+
 function populateSelects(data) {
   // Biome
   const bsel = qs("biome");
@@ -125,6 +133,26 @@ function populateSelects(data) {
     o.value = id; o.textContent = b.label;
     if (id === "heartland") o.selected = true;
     bsel.appendChild(o);
+  }
+  // Season
+  const ssel = qs("season");
+  ssel.innerHTML = "";
+  for (const [id, label] of SEASON_ORDER) {
+    const o = document.createElement("option");
+    o.value = id; o.textContent = label;
+    if (id === "autumn") o.selected = true;
+    ssel.appendChild(o);
+  }
+  // Weather
+  const wsel = qs("weather");
+  wsel.innerHTML = "";
+  for (const id of WEATHER_ORDER) {
+    const def = data.modifiers.weather[id];
+    if (!def) continue;
+    const o = document.createElement("option");
+    o.value = id; o.textContent = def.label;
+    if (id === "clear") o.selected = true;
+    wsel.appendChild(o);
   }
   // Condition
   const csel = qs("condition");
@@ -143,6 +171,27 @@ function populateSelects(data) {
     o.value = e.id; o.textContent = e.label;
     esel.appendChild(o);
   }
+}
+
+// Some weathers don't make sense in some biomes/seasons — e.g. snow in arid or
+// summer, heatwave in frostlands or winter. The rule table lives in
+// modifiers.json so it stays adjustable without touching code. We disable the
+// offending options in the weather <select>; if the user's current pick just
+// became invalid, fall back to "clear".
+function applyWeatherCompatibility() {
+  const wsel = qs("weather");
+  if (!wsel || !DATA) return;
+  const rules = DATA.modifiers.weather_incompatibilities || {};
+  const biome = qs("biome").value;
+  const season = qs("season").value;
+  let currentBecameInvalid = false;
+  for (const opt of wsel.options) {
+    const r = rules[opt.value];
+    const bad = r && ((r.biomes || []).includes(biome) || (r.seasons || []).includes(season));
+    opt.disabled = !!bad;
+    if (bad && opt.value === wsel.value) currentBecameInvalid = true;
+  }
+  if (currentBecameInvalid) wsel.value = "clear";
 }
 
 // Defaults used by the Reset button — a calm baseline to start exploration from.
@@ -164,15 +213,24 @@ function setSelect(id, value) {
 }
 
 function randomizeSelects() {
-  for (const id of ["biome","season","weather","inn_tier","economy","condition","event"]) {
+  // Biome and season first — weather's available set depends on them.
+  for (const id of ["biome","season","inn_tier","economy","condition","event"]) {
     const el = qs(id);
     if (!el || !el.options.length) continue;
     el.value = el.options[Math.floor(Math.random() * el.options.length)].value;
+  }
+  applyWeatherCompatibility();
+  const wsel = qs("weather");
+  if (wsel && wsel.options.length) {
+    const allowed = Array.from(wsel.options).filter(o => !o.disabled);
+    const pool = allowed.length ? allowed : Array.from(wsel.options);
+    wsel.value = pool[Math.floor(Math.random() * pool.length)].value;
   }
 }
 
 function resetSelects() {
   for (const [id, v] of Object.entries(DEFAULTS)) setSelect(id, v);
+  applyWeatherCompatibility();
 }
 
 function renderMenu(menu) {
@@ -262,6 +320,9 @@ async function init() {
   DATA = await loadData();
   populateSelects(DATA);
   populateFlavorPacks(DATA);
+  applyWeatherCompatibility();
+  qs("biome").addEventListener("change", applyWeatherCompatibility);
+  qs("season").addEventListener("change", applyWeatherCompatibility);
   qs("seed").value = randomSeed();
   qs("generate").addEventListener("click", generate);
   qs("reroll").addEventListener("click", () => { qs("seed").value = randomSeed(); generate(); });

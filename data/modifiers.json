@@ -26,11 +26,17 @@
     "siege":     { "label": "Siege",     "price_mult": 2.0, "excludes_tags": ["foreign","exotic"],    "excludes_imports": true,  "note": "Walls stand closed. Every ingredient is rationed." }
   },
   "weather": {
-    "clear":    { "label": "Clear",    "drops_sensitive": false },
-    "rain":     { "label": "Rain",     "drops_sensitive": false },
-    "storm":    { "label": "Storm",    "drops_sensitive": true },
-    "snow":     { "label": "Snow",     "drops_sensitive": true },
-    "heatwave": { "label": "Heatwave", "drops_sensitive": true }
+    "clear":    { "label": "Clear" },
+    "rain":     { "label": "Rain",
+                  "sensitive_mult": 0.5, "robust_mult": 1.6,
+                  "prep_bias": { "stewed": 1.6, "braised": 1.4, "smoked": 1.2,
+                                 "baked": 0.7, "roasted": 0.6, "grilled": 0.5, "pan-fried": 0.8 } },
+    "snow":     { "label": "Snow",     "drops_tags": ["weather-sensitive"],                  "robust_mult": 1.2 },
+    "heatwave": { "label": "Heatwave", "drops_tags": ["weather-sensitive","heat-sensitive"], "robust_mult": 1.2 }
+  },
+  "weather_incompatibilities": {
+    "snow":     { "biomes": ["arid"],       "seasons": ["summer"] },
+    "heatwave": { "biomes": ["frostlands"], "seasons": ["winter"] }
   },
   "sections": {
     "appetizer": { "label": "To Begin",         "count_min": 2, "count_max": 3 },
