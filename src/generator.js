@@ -280,7 +280,7 @@ function weightAuthored(d, w) {
   }
 
   // "unusual" dishes get dampened by default
-  if ((d.tags || []).includes("unusual")) weight *= 0.3;
+  if ((d.tags || []).includes("unusual")) weight *= 0.5;
 
   // Roadside inns shouldn't lean noble even if allowed
   if (w.tierIdx <= 2 && (d.tags || []).includes("noble")) weight *= 0.4;
@@ -426,7 +426,10 @@ function fillTemplate(template, prep, pool, rng, w, trace) {
   }
 
   if (trace) {
-    trace.preparations.push(prep.id);
+    // Drinks route through templates with prep "raw", but a drink isn't really
+    // "prepared" — counting it would swamp the prep histogram. Skip the prep
+    // log for drink templates; ingredients still get traced.
+    if (template.section !== "drink") trace.preparations.push(prep.id);
     for (const ing of ingredientsUsed) trace.ingredients.push(ing.id);
   }
 
@@ -545,30 +548,16 @@ function generateMenuInternal(world, data, seed, trace) {
     const dishes = [];
 
     if (sectionId === "drink") {
-      // Drinks mix authored entries (with flavor text) and procedural ingredient-based
-      // drinks, using the same authored/procedural interleave as appetizer/dessert.
+      // Drinks route through the same template pipeline as other sections.
+      // drink-simple (single ingredient) covers the simple "Pale ale" form;
+      // mulled/infused/sweetened templates layer spices/herbs/sweeteners onto
+      // a base drink so this section also surfaces those role pools.
       let target = rolledCount;
       if (caps) target = Math.max(1, Math.min(target, caps.drink));
       const sectionAuthored = authoredPool.filter(d => d.section === "drink");
       const usedAuthored = new Set();
-      const drinks = ingPool.filter(i => (i.roles || []).includes("drink"));
-      const usedIng = new Set();
+      const usedTpl = new Set();
       const names = new Set();
-      const pickProceduralDrink = () => {
-        const pickD = weightedPick(rng, drinks.filter(d => !usedIng.has(d.id)), i => weightIngredient(i, w));
-        if (!pickD) return null;
-        usedIng.add(pickD.id);
-        if (trace) trace.ingredients.push(pickD.id);
-        const baseCopper = COST_BASE[pickD.cost] || 2;
-        const price = baseCopper * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult;
-        return {
-          source: "drink",
-          section: "drink",
-          name: capitalize(pickD.name),
-          price_cp: Math.max(1, Math.round(price)),
-          price_text: formatPrice(price)
-        };
-      };
       let safety = 0;
       while (dishes.length < target && safety < target * 8 + 4) {
         safety++;
@@ -576,9 +565,9 @@ function generateMenuInternal(world, data, seed, trace) {
         let dish = null;
         if (preferAuthored) {
           dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-          if (!dish) dish = pickProceduralDrink();
+          if (!dish) dish = pickProceduralDish("drink", usedTpl, names, ingPool, rng, w, data, trace);
         } else {
-          dish = pickProceduralDrink();
+          dish = pickProceduralDish("drink", usedTpl, names, ingPool, rng, w, data, trace);
           if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
         }
         if (!dish) break;
