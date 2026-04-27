@@ -378,7 +378,7 @@ function weightIngredient(ing, w) {
   return weight;
 }
 
-function fillTemplate(template, prep, pool, rng, w) {
+function fillTemplate(template, prep, pool, rng, w, trace) {
   if (template.tier_min && w.tierIdx < template.tier_min) return null;
   if (template.tier_max && w.tierIdx > template.tier_max) return null;
 
@@ -425,6 +425,11 @@ function fillTemplate(template, prep, pool, rng, w) {
     mainKind = ingredientMainKind(proteinIng) || "meatless";
   }
 
+  if (trace) {
+    trace.preparations.push(prep.id);
+    for (const ing of ingredientsUsed) trace.ingredients.push(ing.id);
+  }
+
   return {
     source: "procedural",
     section: template.section,
@@ -438,7 +443,7 @@ function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; 
 
 // Pick a single procedural dish for the given section, avoiding already-used templates and
 // existing dish names. Returns null if nothing valid can be built.
-function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data) {
+function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data, trace) {
   const templates = data.dishes.templates.filter(t => t.section === section);
   if (!templates.length) return null;
   let attempts = 0;
@@ -454,9 +459,10 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data)
     const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
     if (!prep) continue;
-    const dish = fillTemplate(tpl, prep, pool, rng, w);
+    const dish = fillTemplate(tpl, prep, pool, rng, w, trace);
     if (dish && !existingNames.has(dish.name)) {
       usedTpl.add(tpl.id);
+      if (trace) trace.templates.push(tpl.id);
       return dish;
     }
   }
@@ -464,12 +470,13 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data)
 }
 
 // Pick a single authored dish, avoiding already-used ids. Returns null if pool exhausted.
-function pickAuthoredDish(sectionAuthored, usedIds, rng, w) {
+function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
   const remaining = sectionAuthored.filter(d => !usedIds.has(d.id));
   if (!remaining.length) return null;
   const choice = weightedPick(rng, remaining, d => weightAuthored(d, w));
   if (!choice) return null;
   usedIds.add(choice.id);
+  if (trace) trace.authored.push(choice.id);
   const price = priceAuthoredDish(choice, w);
   return {
     source: "authored",
@@ -485,6 +492,20 @@ function pickAuthoredDish(sectionAuthored, usedIds, rng, w) {
 
 // ---------- main generator ----------
 function generateMenu(world, data, seed) {
+  return generateMenuInternal(world, data, seed, null);
+}
+
+// Same generation pipeline, but returns { menu, trace } where trace lists the
+// ids actually committed during this run (authored dish ids, ingredient ids,
+// preparation ids, template ids). Used by the smoke runner; UI does not need
+// this. Multiplicity is preserved — each emission appends one id.
+function generateMenuTraced(world, data, seed) {
+  const trace = { authored: [], ingredients: [], preparations: [], templates: [] };
+  const menu = generateMenuInternal(world, data, seed, trace);
+  return { menu, trace };
+}
+
+function generateMenuInternal(world, data, seed, trace) {
   const rng = makeRng(seed || String(Date.now()));
   const w = resolveWorld(world, data);
   const sections = data.modifiers.sections;
@@ -537,6 +558,7 @@ function generateMenu(world, data, seed) {
         const pickD = weightedPick(rng, drinks.filter(d => !usedIng.has(d.id)), i => weightIngredient(i, w));
         if (!pickD) return null;
         usedIng.add(pickD.id);
+        if (trace) trace.ingredients.push(pickD.id);
         const baseCopper = COST_BASE[pickD.cost] || 2;
         const price = baseCopper * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult;
         return {
@@ -553,11 +575,11 @@ function generateMenu(world, data, seed) {
         const preferAuthored = rng() < TUNING.authored_ratio;
         let dish = null;
         if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
           if (!dish) dish = pickProceduralDrink();
         } else {
           dish = pickProceduralDrink();
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
         }
         if (!dish) break;
         if (names.has(dish.name)) continue;
@@ -581,11 +603,11 @@ function generateMenu(world, data, seed) {
         const preferAuthored = rng() < TUNING.authored_ratio;
         let dish = null;
         if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
-          if (!dish) dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
+          if (!dish) dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data, trace);
         } else {
-          dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data, trace);
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
         }
         if (!dish) break;
         if (names.has(dish.name)) continue;
@@ -598,7 +620,7 @@ function generateMenu(world, data, seed) {
       // Floor: every section must render at least 1 dish, and mains must have
       // at least 1 meatless if no meat/fish slot was filled.
       if (dishes.length === 0) {
-        const meatless = forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names);
+        const meatless = forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names, trace);
         if (meatless) dishes.push(meatless);
       }
     } else {
@@ -617,11 +639,11 @@ function generateMenu(world, data, seed) {
         const preferAuthored = rng() < TUNING.authored_ratio;
         let dish = null;
         if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
-          if (!dish) dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data);
+          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
+          if (!dish) dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data, trace);
         } else {
-          dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data);
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w);
+          dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data, trace);
+          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
         }
         if (!dish) break;
         if (names.has(dish.name)) continue;
@@ -640,7 +662,7 @@ function generateMenu(world, data, seed) {
 // main. Tries authored meatless mains first (the curated, named ones), then
 // falls back to procedural templates whose protein slot can land on plant or
 // dairy proteins. As a last resort, accepts any procedurally-built main.
-function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names) {
+function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names, trace) {
   // 1. Authored meatless: those without `contains`.
   const candidates = authoredPool
     .filter(d => d.section === "main" && !d.contains && !usedAuthored.has(d.id));
@@ -648,6 +670,7 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
     const choice = weightedPick(rng, candidates, d => weightAuthored(d, w));
     if (choice && !names.has(choice.name)) {
       usedAuthored.add(choice.id);
+      if (trace) trace.authored.push(choice.id);
       const price = priceAuthoredDish(choice, w);
       return {
         source: "authored",
@@ -663,13 +686,13 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
   // 2. Procedural: try repeatedly; accept only meatless results.
   const usedTpl = new Set();
   for (let i = 0; i < 30; i++) {
-    const dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data);
+    const dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data, trace);
     if (!dish) break;
     if (classifyMain(dish) === "meatless") return dish;
   }
   // 3. Last resort: any procedural main.
-  const fallback = pickProceduralDish("main", new Set(), new Set(), ingPool, rng, w, data);
+  const fallback = pickProceduralDish("main", new Set(), new Set(), ingPool, rng, w, data, trace);
   return fallback;
 }
 
-window.InnMenu = { generateMenu, formatPrice };
+window.InnMenu = { generateMenu, generateMenuTraced, formatPrice };
