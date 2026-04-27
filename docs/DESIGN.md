@@ -36,7 +36,7 @@ A menu is generated from seven parameters. All are user-selected.
 |-----------|--------|
 | biome | `coastal`, `heartland`, `highland`, `arid`, `frostlands` |
 | season | `spring`, `summer`, `autumn`, `winter` |
-| weather | `clear`, `rain`, `storm`, `snow`, `heatwave` |
+| weather | `clear`, `rain`, `snow`, `heatwave` |
 | inn_tier | `roadside`, `common`, `fine`, `noble` |
 | economy | `plenty`, `normal`, `shortage`, `famine` |
 | condition | `peace`, `war`, `plague`, `isolation`, `siege` |
@@ -57,6 +57,59 @@ Five biomes, chosen to give food a distinct character in each. These are the fir
 | Frostlands | Arctic and subarctic | Seal, reindeer, fermented dairy, preserved fish, rye |
 
 Sub-biome nuance — `forest`, `river`, `lake`, `subterranean` — exists only as **tags on ingredients and dishes**, biasing availability rather than gating it. There is no "forest highland" selector; if a dish needs forest mushrooms, it carries a `forest` tag and the weighting handles the rest.
+
+## Weather
+
+Weather is a four-option world dial — `clear`, `rain`, `snow`, `heatwave` — that biases the procedural ingredient pool and (under rain) the cooking method pool. Authored dishes are **not** weather-filtered; the weather effect rides on the procedural side, which is roughly 20–50% of any given menu depending on tier and `authored_ratio`.
+
+The schema lives in `modifiers.json → weather`. Each entry can carry any of these optional fields:
+
+| Field | Meaning |
+|-------|---------|
+| `drops_tags` | Tags that are **hard-removed** from the procedural ingredient pool. |
+| `robust_mult` | Weight multiplier on ingredients tagged `weather-robust` (preserved/shelf-stable items). |
+| `sensitive_mult` | Weight multiplier on ingredients tagged `weather-sensitive` *only when not in `drops_tags`*. Lets a weather "soft-dampen" fresh items rather than removing them. |
+| `prep_bias` | Map of `prep id → multiplier` used to weight the procedural prep selection (default for missing keys is 1.0). |
+
+A weather with none of these fields (e.g. `clear`) is a true no-op — the pool and weighting behave as if no weather were set.
+
+### What each weather does
+
+| Weather | Behavior |
+|---------|----------|
+| **Clear** | No filtering, no weighting. Baseline. |
+| **Rain** | Soft tilt — no ingredients dropped. `weather-sensitive` items are weighted ×0.5; `weather-robust` items ×1.6. The `prep_bias` favors `stewed`, `braised`, `smoked` and dampens `roasted`, `grilled`, `baked`, `pan-fried` — the kitchen pulls food indoors and reaches for the cauldron. |
+| **Snow** | Drops `weather-sensitive` (greens, fruits, fresh fish, fresh organ meats — harvest and trade routes are disrupted). Boosts `weather-robust` ×1.2. Fresh dairy survives — cold preserves it (see split tag below). |
+| **Heatwave** | Drops `weather-sensitive` *and* `heat-sensitive` (the latter covers fresh dairy and similar perishables that spoil in heat). Boosts `weather-robust` ×1.2. |
+
+### Two sensitivity tags, not one
+
+Ingredients carry one of:
+
+- `weather-sensitive` — crops, fresh fish, offal. Drops in **snow** (harvest disrupted) and **heatwave** (spoils, wilts).
+- `heat-sensitive` — fresh dairy and similar perishables that don't suit heat but are fine in cold. Drops in **heatwave** only; survives **snow**.
+- `weather-robust` — preserved/shelf-stable (breads, dried legumes, root vegetables, salted meats, hard cheese). Boosted under any harsh weather.
+
+This split is the reason fresh butter, milk, cream, sheep's milk, mare's milk, soft ripened cheese, and fresh curds appear on a snow menu but not on a heatwave menu. Edit the tag on an ingredient to change which weathers it survives.
+
+### Compatibility with biome and season
+
+Some weathers don't make sense in some biomes or seasons. The rules live next to the weathers in `modifiers.json → weather_incompatibilities`:
+
+| Weather | Incompatible biome | Incompatible season |
+|---------|--------------------|---------------------|
+| Snow | Arid | Summer |
+| Heatwave | Frostlands | Winter |
+
+The UI enforces this at the dropdown layer: the offending weather options are disabled when the user picks an incompatible biome or season, and the Randomize button only picks from the still-allowed set. The generator itself never sees an invalid combo from the UI; if a stored seed or external caller passes one, `resolveWorld` falls back to `clear` rather than throwing.
+
+To add a new incompatibility, append to the appropriate weather's `biomes` or `seasons` array. To soften the rule (e.g. allow snow in arid as a one-off curiosity), remove the entry — no code change needed.
+
+### Authoring guidance
+
+- A new weather is data-only: add an entry to `modifiers.json → weather`, give it whatever combination of `drops_tags` / `robust_mult` / `sensitive_mult` / `prep_bias` fits, add it to `WEATHER_ORDER` in `src/ui.js` so it appears in the dropdown, and (optionally) declare incompatibilities. No generator changes required.
+- Tag balance matters: roughly half the ingredient pool is tagged `weather-robust`, ~30% `weather-sensitive`. Aggressive `sensitive_mult` (e.g. ×0.1) on a common weather will visibly thin menus; a value around ×0.5 reads as "noticeable but not dramatic." See the smoke-test methodology in commit history if you want to retune.
+- Prep bias only affects procedural dishes whose templates list more than one prep option. Drinks, raw plates, and templates with a single prep are unaffected.
 
 ## Events vs conditions
 
@@ -239,8 +292,9 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
                            (scaled by event_weight_mult), 'any' biome ×1.2,
                            imported ×0.35, unusual ×0.3, peasant-under-war ×1.5,
                            noble-at-roadside ×0.4, etc.
-         procedural: pick a template for the section, roll a prep from its pool,
-                     fill slots by role + affinity with ingredient weights.
+         procedural: pick a template for the section, roll a prep from its pool
+                     (weighted by current weather's prep_bias if any), fill slots
+                     by role + affinity with ingredient weights.
      For drinks:
        Pull from ingredients with role=drink, weighted by world.
 5. Compute prices:

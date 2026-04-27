@@ -204,7 +204,7 @@ function resolveWorld(world, data) {
   return {
     biome: world.biome,
     season: world.season,
-    weather: data.modifiers.weather[world.weather],
+    weather: data.modifiers.weather[world.weather] || data.modifiers.weather.clear,
     tier: data.modifiers.inn_tiers[world.inn_tier],
     tierIdx: TIER_INDEX[world.inn_tier],
     economy: data.modifiers.economy[world.economy],
@@ -331,8 +331,11 @@ function filterIngredientPool(ingredients, w) {
     const cultural = tags.filter(t => TIER_TAGS.includes(t));
     if (cultural.length && !cultural.some(t => w.tier.allowed_tags.includes(t))) return false;
 
-    // Weather sensitivity
-    if (w.weather.drops_sensitive && tags.includes("weather-sensitive")) return false;
+    // Weather sensitivity: each weather declares which tags it removes from the
+    // pool. Snow knocks out crop-sensitives; heatwave adds heat-sensitive on top
+    // (fresh dairy, fresh organ meats). Rain doesn't drop anything outright.
+    const dropTags = w.weather.drops_tags || [];
+    if (dropTags.length && tags.some(t => dropTags.includes(t))) return false;
 
     // Economy cap
     if (ing.cost > w.economy.remove_above_cost) return false;
@@ -362,7 +365,16 @@ function weightIngredient(ing, w) {
   const roleBoost = 1 + (TUNING.ingredient_event_role_boost - 1) * TUNING.event_weight_mult;
   for (const t of w.event.boost_tags || []) if (tags.includes(t)) weight *= tagBoost;
   for (const r of w.event.boost_roles || []) if (roles.includes(r)) weight *= roleBoost;
-  if (w.weather.drops_sensitive && tags.includes("weather-robust")) weight *= 1.2;
+  // Weather tilts: robust_mult boosts shelf-stable ingredients, sensitive_mult
+  // softly dampens fresh ones (when not already hard-filtered above). Both
+  // default to 1.0 so weathers without these fields stay neutral.
+  const robustMult = w.weather.robust_mult ?? 1.0;
+  if (tags.includes("weather-robust")) weight *= robustMult;
+  const sensitiveMult = w.weather.sensitive_mult ?? 1.0;
+  const dropTags = w.weather.drops_tags || [];
+  if (sensitiveMult !== 1.0 && tags.includes("weather-sensitive") && !dropTags.includes("weather-sensitive")) {
+    weight *= sensitiveMult;
+  }
   return weight;
 }
 
@@ -436,7 +448,10 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data)
     const from = available.length ? available : templates;
     const tpl = pick(rng, from);
     if (!tpl) return null;
-    const prepId = pick(rng, tpl.prep_pool);
+    // Weighted by weather's prep_bias (e.g. rain favors stewing/braising over
+    // outdoor methods). Missing keys default to 1.0 — i.e. neutral.
+    const prepBias = w.weather.prep_bias || {};
+    const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
     if (!prep) continue;
     const dish = fillTemplate(tpl, prep, pool, rng, w);
