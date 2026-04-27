@@ -12,7 +12,8 @@
 //
 // Output:
 //   stdout: condensed summary
-//   out/smoke-report.md: full report
+//   out/smoke-report.md: latest full report (overwritten each run)
+//   out/history/smoke-report-YYYY-MM-DDTHHMMSS.md: dated archive copy
 
 "use strict";
 
@@ -23,7 +24,12 @@ const vm = require("vm");
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "data");
 const OUT_DIR = path.join(ROOT, "out");
+const HISTORY_DIR = path.join(OUT_DIR, "history");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-report.md");
+// Compact ISO-ish timestamp: 2026-04-27T143015. Sortable, filesystem-safe.
+const RUN_STAMP = new Date().toISOString().replace(/[-:]/g, "").replace(/\..*$/, "")
+  .replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/, "$1-$2-$3T$4$5$6");
+const ARCHIVE_PATH = path.join(HISTORY_DIR, `smoke-report-${RUN_STAMP}.md`);
 
 const SAMPLES = parseInt(process.env.SAMPLES || "5", 10);
 const WORLDS_CAP = process.env.WORLDS ? parseInt(process.env.WORLDS, 10) : null;
@@ -328,7 +334,9 @@ function buildReport() {
 
 const report = buildReport();
 fs.mkdirSync(OUT_DIR, { recursive: true });
+fs.mkdirSync(HISTORY_DIR, { recursive: true });
 fs.writeFileSync(REPORT_PATH, report, "utf8");
+fs.writeFileSync(ARCHIVE_PATH, report, "utf8");
 
 // ---------- stdout summary ----------
 console.log(`\nSmoke run complete in ${(elapsedMs / 1000).toFixed(1)}s`);
@@ -355,3 +363,4 @@ if (ingredientSum.never.length) {
   console.log("");
 }
 console.log(`Full report: ${path.relative(ROOT, REPORT_PATH)}`);
+console.log(`Archived to: ${path.relative(ROOT, ARCHIVE_PATH)}`);

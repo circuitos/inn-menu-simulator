@@ -269,7 +269,7 @@ Packs are pure data — no JS changes needed for new packs.
 
 ### Unusual dishes
 
-Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.3 in selection, so they appear sparingly — in the biome where they're native, they'll show in roughly 1 in 3–5 menus; elsewhere, much less.
+Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.5 in selection, so they appear sparingly but not invisibly — in the biome where they're native, they'll show in roughly 1 in 2–3 menus; elsewhere, much less.
 
 ## Generation pipeline
 
