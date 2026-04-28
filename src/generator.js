@@ -8,7 +8,7 @@ const TUNING = {
   // Probability per slot that authored is tried first. 1.0 = always prefer authored (authored-only
   // unless the filtered pool is empty); 0.0 = always prefer procedural; 0.5 = roughly half-and-half.
   // When the preferred source has nothing to offer, the other source fills in.
-  authored_ratio: 0.80,
+  authored_ratio: 0.65,
 
   // Scales how strongly events bias dish and ingredient weighting. 0.0 = events affect only
   // price and notes, not dish selection; 1.0 = default; >1.0 = events dominate the menu.
