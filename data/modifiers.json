@@ -10,7 +10,7 @@
     "roadside": { "label": "Roadside", "cost_max": 2, "price_mult": 0.8, "allowed_tags": ["peasant","common"] },
     "common":   { "label": "Common",   "cost_max": 3, "price_mult": 1.0, "allowed_tags": ["peasant","common","refined"] },
     "fine":     { "label": "Fine",     "cost_max": 4, "price_mult": 1.3, "allowed_tags": ["common","refined","noble","foreign"] },
-    "noble":    { "label": "Noble",    "cost_max": 5, "price_mult": 1.8, "allowed_tags": ["refined","noble","foreign","exotic"] }
+    "noble":    { "label": "Noble",    "cost_max": 5, "price_mult": 1.8, "allowed_tags": ["common","refined","noble","foreign","exotic"] }
   },
   "economy": {
     "plenty":   { "label": "Plenty",   "price_mult": 0.8, "remove_above_cost": 99 },
