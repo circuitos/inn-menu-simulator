@@ -7,6 +7,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
 
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "data");
@@ -32,7 +33,8 @@ const { generateMenuTraced } = globalThis.window.InnMenu;
 
 const VALID_BIOMES = ["coastal","heartland","highland","arid","frostlands"];
 const SUB_BIOMES = ["forest","river","lake","subterranean","plains"];
-const ALL_BIOME_TOKENS = new Set([...VALID_BIOMES, ...SUB_BIOMES, "any"]);
+// VALID_BIOME_TOKENS comes from checks.js and includes the same set plus "any".
+const ALL_BIOME_TOKENS = VALID_BIOME_TOKENS;
 
 const biomes = VALID_BIOMES;
 const seasons = ["spring","summer","autumn","winter"];
@@ -154,26 +156,13 @@ for (const ing of data.ingredients.ingredients) {
 }
 
 // 4. Reachability: which ingredients can no template ever pull?
-//    A template pulls an ingredient if (a) ingredient role is in some template slot's role,
-//    AND (b) ingredient affinities overlap some prep.accepts for that template.
-const prepsById = new Map(data.preparations.preparations.map(p => [p.id, p]));
-function ingredientReachable(ing) {
-  const roles = ing.roles || [];
-  const affs = ing.affinities || [];
-  if ((ing.tags || []).includes("unusual")) return false; // procedural drops 'unusual'
-  for (const tpl of data.dishes.templates) {
-    for (const slot of tpl.slots) {
-      if (!roles.includes(slot.role)) continue;
-      for (const prepId of tpl.prep_pool) {
-        const p = prepsById.get(prepId);
-        if (!p) continue;
-        if (p.accepts.some(a => affs.includes(a))) return true;
-      }
-    }
-  }
-  return false;
-}
-const unreachableIngredients = data.ingredients.ingredients.filter(i => !ingredientReachable(i));
+//    Uses the shared helper in scripts/lib/checks.js. Reachability is computed
+//    on role + affinity alone (the curatorial `unusual` filter is separate);
+//    a non-unusual ingredient that lands here is genuinely orphaned.
+const unreachableIngredients = data.ingredients.ingredients.filter(i =>
+  !(i.tags || []).includes("unusual") &&
+  !ingredientReachable(i, data.dishes.templates, data.preparations.preparations)
+);
 
 // 5. Authored dish name collisions / near-dupes (case-insensitive trimmed).
 const nameSeen = new Map();
@@ -215,7 +204,11 @@ for (const d of data.authored_dishes.dishes) {
 }
 
 // 8. "contains" coverage on mains: any main missing the field?
-const mainsMissingContains = data.authored_dishes.dishes.filter(d => d.section === "main" && d.contains === undefined);
+// Mains lacking both `contains` and the meatless-intent `_comment`. Matches the
+// assertion in scripts/smoke.js so an explicit meatless dish doesn't get flagged.
+const mainsMissingContains = data.authored_dishes.dishes.filter(d =>
+  d.section === "main" && d.contains === undefined && !d._comment
+);
 
 // 9. Authored biome distribution: dish counts per biome (native).
 const dishesPerBiome = {};
@@ -357,13 +350,13 @@ if (ingredientBadBiomeTags.length) {
 } else lines.push("None worth flagging.");
 lines.push("");
 
-lines.push(`### C5. Procedurally unreachable ingredients (${unreachableIngredients.length})`);
-lines.push("No template+prep combination can pull these. They only matter for authored dishes.");
+lines.push(`### C5. Truly orphaned ingredients (${unreachableIngredients.length})`);
+lines.push("Non-unusual ingredients no template+prep combination can pull. The procedural-pool's `unusual` filter is intentional and excluded from this scan.");
 lines.push("");
 if (unreachableIngredients.length) {
   for (const ing of unreachableIngredients)
     lines.push(`- ${ing.id} — ${ing.name} — roles: ${(ing.roles||[]).join(",")} — affinities: ${(ing.affinities||[]).join(",")}`);
-} else lines.push("All ingredients reachable.");
+} else lines.push("All non-unusual ingredients reachable.");
 lines.push("");
 
 lines.push(`### C6. Duplicate dish names (${dupNames.length})`);
