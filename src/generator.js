@@ -292,6 +292,12 @@ function weightAuthored(d, w) {
   // "unusual" dishes get dampened by default
   if ((d.tags || []).includes("unusual")) weight *= 0.5;
 
+  // Soft penalty for "everywhere" dishes — biomes:["any"] AND seasons:["all-seasons"].
+  // Without it, a handful of unconstrained dishes dominate every world's pool.
+  if ((d.biomes || []).includes("any") && (d.seasons || []).includes("all-seasons")) {
+    weight *= 0.7;
+  }
+
   // Roadside inns shouldn't lean noble even if allowed
   if (w.tierIdx <= 2 && (d.tags || []).includes("noble")) weight *= 0.4;
   // Noble inns shouldn't lean peasant
