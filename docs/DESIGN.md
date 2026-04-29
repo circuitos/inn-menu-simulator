@@ -36,7 +36,7 @@ A menu is generated from seven parameters. All are user-selected.
 |-----------|--------|
 | biome | `coastal`, `heartland`, `highland`, `arid`, `frostlands` |
 | season | `spring`, `summer`, `autumn`, `winter` |
-| weather | `clear`, `rain`, `storm`, `snow`, `heatwave` |
+| weather | `clear`, `rain`, `snow`, `heatwave` |
 | inn_tier | `roadside`, `common`, `fine`, `noble` |
 | economy | `plenty`, `normal`, `shortage`, `famine` |
 | condition | `peace`, `war`, `plague`, `isolation`, `siege` |
@@ -58,6 +58,59 @@ Five biomes, chosen to give food a distinct character in each. These are the fir
 
 Sub-biome nuance — `forest`, `river`, `lake`, `subterranean` — exists only as **tags on ingredients and dishes**, biasing availability rather than gating it. There is no "forest highland" selector; if a dish needs forest mushrooms, it carries a `forest` tag and the weighting handles the rest.
 
+## Weather
+
+Weather is a four-option world dial — `clear`, `rain`, `snow`, `heatwave` — that biases the procedural ingredient pool and (under rain) the cooking method pool. Authored dishes are **not** weather-filtered; the weather effect rides on the procedural side, which is roughly 20–50% of any given menu depending on tier and `authored_ratio`.
+
+The schema lives in `modifiers.json → weather`. Each entry can carry any of these optional fields:
+
+| Field | Meaning |
+|-------|---------|
+| `drops_tags` | Tags that are **hard-removed** from the procedural ingredient pool. |
+| `robust_mult` | Weight multiplier on ingredients tagged `weather-robust` (preserved/shelf-stable items). |
+| `sensitive_mult` | Weight multiplier on ingredients tagged `weather-sensitive` *only when not in `drops_tags`*. Lets a weather "soft-dampen" fresh items rather than removing them. |
+| `prep_bias` | Map of `prep id → multiplier` used to weight the procedural prep selection (default for missing keys is 1.0). |
+
+A weather with none of these fields (e.g. `clear`) is a true no-op — the pool and weighting behave as if no weather were set.
+
+### What each weather does
+
+| Weather | Behavior |
+|---------|----------|
+| **Clear** | No filtering, no weighting. Baseline. |
+| **Rain** | Soft tilt — no ingredients dropped. `weather-sensitive` items are weighted ×0.5; `weather-robust` items ×1.6. The `prep_bias` favors `stewed`, `braised`, `smoked` and dampens `roasted`, `grilled`, `baked`, `pan-fried` — the kitchen pulls food indoors and reaches for the cauldron. |
+| **Snow** | Drops `weather-sensitive` (greens, fruits, fresh fish, fresh organ meats — harvest and trade routes are disrupted). Boosts `weather-robust` ×1.2. Fresh dairy survives — cold preserves it (see split tag below). |
+| **Heatwave** | Drops `weather-sensitive` *and* `heat-sensitive` (the latter covers fresh dairy and similar perishables that spoil in heat). Boosts `weather-robust` ×1.2. |
+
+### Two sensitivity tags, not one
+
+Ingredients carry one of:
+
+- `weather-sensitive` — crops, fresh fish, offal. Drops in **snow** (harvest disrupted) and **heatwave** (spoils, wilts).
+- `heat-sensitive` — fresh dairy and similar perishables that don't suit heat but are fine in cold. Drops in **heatwave** only; survives **snow**.
+- `weather-robust` — preserved/shelf-stable (breads, dried legumes, root vegetables, salted meats, hard cheese). Boosted under any harsh weather.
+
+This split is the reason fresh butter, milk, cream, sheep's milk, mare's milk, soft ripened cheese, and fresh curds appear on a snow menu but not on a heatwave menu. Edit the tag on an ingredient to change which weathers it survives.
+
+### Compatibility with biome and season
+
+Some weathers don't make sense in some biomes or seasons. The rules live next to the weathers in `modifiers.json → weather_incompatibilities`:
+
+| Weather | Incompatible biome | Incompatible season |
+|---------|--------------------|---------------------|
+| Snow | Arid | Summer |
+| Heatwave | Frostlands | Winter |
+
+The UI enforces this at the dropdown layer: the offending weather options are disabled when the user picks an incompatible biome or season, and the Randomize button only picks from the still-allowed set. The generator itself never sees an invalid combo from the UI; if a stored seed or external caller passes one, `resolveWorld` falls back to `clear` rather than throwing.
+
+To add a new incompatibility, append to the appropriate weather's `biomes` or `seasons` array. To soften the rule (e.g. allow snow in arid as a one-off curiosity), remove the entry — no code change needed.
+
+### Authoring guidance
+
+- A new weather is data-only: add an entry to `modifiers.json → weather`, give it whatever combination of `drops_tags` / `robust_mult` / `sensitive_mult` / `prep_bias` fits, add it to `WEATHER_ORDER` in `src/ui.js` so it appears in the dropdown, and (optionally) declare incompatibilities. No generator changes required.
+- Tag balance matters: roughly half the ingredient pool is tagged `weather-robust`, ~30% `weather-sensitive`. Aggressive `sensitive_mult` (e.g. ×0.1) on a common weather will visibly thin menus; a value around ×0.5 reads as "noticeable but not dramatic." See the smoke-test methodology in commit history if you want to retune.
+- Prep bias only affects procedural dishes whose templates list more than one prep option. Drinks, raw plates, and templates with a single prep are unaffected.
+
 ## Events vs conditions
 
 Two different concepts, deliberately separated.
@@ -65,6 +118,69 @@ Two different concepts, deliberately separated.
 **Events** are transient. Market Day, Harvest Festival, Noble Visit, Good Catch. They add color — an italic note at the top of the menu — and nudge weights (boost certain tags, slight price adjustments). They assume the world is functioning.
 
 **Conditions** are durative and structural. War, Plague, Isolation, Siege. They gate entire categories of goods (no imports during war) and raise baseline prices (rationing). A condition note overrides the mood of the menu; an event decorates it. Both can coexist ("Market Day during the Plague" is a valid, grim scenario).
+
+## Condition-based menu caps
+
+Material conditions don't just nudge prices — they shrink the menu. The cap system in `src/generator.js` enforces tier-specific upper bounds on each section, and tightens those bounds further when the world is in extreme scarcity.
+
+### Base caps (per tier)
+
+When no plentiful event is active, every menu is clamped to a per-tier cap:
+
+| Tier | Starters | Meat main | Fish main | Meatless main | Drinks |
+|------|----------|-----------|-----------|---------------|--------|
+| Roadside | 2 | combined: 1 (meat OR fish) | — | 2 | 2 |
+| Common | 3 | 1 | 1 | 2 | 3 |
+| Fine | 4 | 2 | 2 | 2 | 4 |
+| Noble | 4 | 2 | 2 | 2 | 5 |
+
+Roadside uses a single combined "meat or fish" cap because at the lowest tier the distinction blurs — you get whatever the cook has. The other tiers split meat and fish so a Common inn can serve one of each.
+
+The caps are *upper* bounds. The section's existing `count_min/count_max` (in `modifiers.json`) still rolls a target inside its range; the final count is `min(rolled, sum-of-caps)`. Under no scarcity, Fine and Noble caps are sized to match `count_max`, so behavior is unchanged from peace-time.
+
+### Plentiful events bypass caps
+
+If the active event is one of `harvest-festival`, `market-day`, `noble-visit`, `hunting-return`, `fishing-good`, **all caps are skipped** for that menu. The cook splurges. This is the scaffolding's escape hatch: when the narrative justifies abundance, the math gets out of the way.
+
+The list of plentiful events lives in `PLENTIFUL_EVENTS` at the top of `src/generator.js`.
+
+### Extreme scarcity reductions
+
+Two world-state flags count as "extreme scarcity":
+
+- `economy === "famine"`
+- `condition` ∈ `{plague, isolation, siege}` (war is intentionally **not** counted — it disrupts trade but doesn't necessarily empty the larder)
+
+The number of these active at once (0, 1, or 2) is the **scarcity hits**. Each hit subtracts 1 from every numeric cap. So a Common inn under famine + plague (2 hits) drops to 1 starter / 0 meat / 0 fish / 0 meatless / 1 drink — except for the floor.
+
+### Floors
+
+- Every section renders **at least 1 dish**. After scarcity subtraction, each section's effective total is floored at 1.
+- For mains specifically, if all meat/fish/meatless caps reduce to 0, the meatless cap is forced to 1, and the generator falls back to a meatless dish (preferring authored meatless mains, then procedural meatless templates, then any procedural main as a last resort).
+
+### Severe-scarcity tier downgrade
+
+At **2 scarcity hits**, even Fine and Noble kitchens lose access to their gilded options. The inn's `allowed_tags` is rewritten:
+
+- `noble` and `exotic` are stripped out
+- `peasant` and `common` are added in
+
+For a Noble inn under famine + siege, that means `["refined","noble","foreign","exotic"]` becomes `["peasant","common","refined","foreign"]` — the kitchen serves whatever's still in the cellar (ale, kvass, pottage), regardless of how rich the inn normally is. The price multipliers from condition + economy still apply, so even the plain food carries a markup.
+
+The strip/add lists live in `TAGS_STRIPPED_AT_SEVERE_SCARCITY` and `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js`.
+
+### Meat / fish / meatless classification
+
+Mains are classified into three buckets so the per-kind caps can be enforced:
+
+- **Authored mains** carry an explicit `contains: "meat"` or `contains: "fish"` field (omitted when meatless). See the Authored dishes section below for the schema.
+- **Procedural mains** are classified at build time from the chosen protein ingredient's `roles`/id:
+  - roles include `fish` or `shellfish` → `fish`
+  - roles include `fowl`, `ruminant`, `game`, or `offal` → `meat`
+  - id ∈ `{pork, bacon, sausage}` → `meat` (these have only the generic `protein` role)
+  - everything else (egg, skyr, chickpea, beans, lentils, broad-beans, no protein at all) → `meatless`
+
+The "meatless" bucket follows the user-facing rule that animal byproducts (lard, butter, cream, eggs, dairy) don't disqualify a dish from counting as meatless.
 
 ## Authored dishes
 
@@ -90,6 +206,7 @@ Field notes:
 - **tier_min / tier_max** — inn-tier range. A `tier_min: 3` dish only appears at fine or noble inns. A `tier_max: 2` caps it at common or roadside. Defaults: no min, no max.
 - **cost** — 1 to 5. Drives base price. Scales through tier/economy/condition/event multipliers.
 - **tags** — cultural (`peasant`, `common`, `refined`, `noble`), origin (`foreign`, `exotic`), cuisine (`mediterranean`, `nordic`), and flags (`unusual`). Conditions exclude dishes by tag: war excludes `foreign` and `exotic`.
+- **contains** (mains only, optional) — `"meat"` or `"fish"`. Omit for meatless mains (the bucket the cap system treats as the safe fallback under scarcity). Used by the per-kind cap loop; see the Condition-based menu caps section. Animal byproducts (eggs, dairy, lard) do not require this field — they count as meatless.
 - **flavor** (optional) — a short description the optional LLM polish can use. Mostly used for dishes whose names don't fully explain themselves ("Hypocras" → "spiced wine").
 
 ### Imports
@@ -152,7 +269,7 @@ Packs are pure data — no JS changes needed for new packs.
 
 ### Unusual dishes
 
-Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.3 in selection, so they appear sparingly — in the biome where they're native, they'll show in roughly 1 in 3–5 menus; elsewhere, much less.
+Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.5 in selection, so they appear sparingly but not invisibly — in the biome where they're native, they'll show in roughly 1 in 2–3 menus; elsewhere, much less.
 
 ## Generation pipeline
 
@@ -175,8 +292,9 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
                            (scaled by event_weight_mult), 'any' biome ×1.2,
                            imported ×0.35, unusual ×0.3, peasant-under-war ×1.5,
                            noble-at-roadside ×0.4, etc.
-         procedural: pick a template for the section, roll a prep from its pool,
-                     fill slots by role + affinity with ingredient weights.
+         procedural: pick a template for the section, roll a prep from its pool
+                     (weighted by current weather's prep_bias if any), fill slots
+                     by role + affinity with ingredient weights.
      For drinks:
        Pull from ingredients with role=drink, weighted by world.
 5. Compute prices:
@@ -214,6 +332,10 @@ Common edits and the file to touch:
 | Rename an ingredient for a specific setting | `ingredient_overrides` in a flavor pack |
 | New condition (e.g. "fey-incursion") | `modifiers.json` → `conditions` |
 | New transient event | `events.json` |
+| Mark a new condition as "extreme scarcity" | `EXTREME_SCARCITY_CONDITIONS` in `src/generator.js` |
+| Mark a new event as "plentiful" (bypasses caps) | `PLENTIFUL_EVENTS` in `src/generator.js` |
+| Tune per-tier section caps | `TIER_CAPS` in `src/generator.js` |
+| Adjust which tags are stripped/added at -2 scarcity | `TAGS_STRIPPED_AT_SEVERE_SCARCITY` / `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js` |
 | Change inn-tier pricing | `modifiers.json` → `inn_tiers` |
 | Change biome labels or add a biome | `modifiers.json` → `biomes` (and retag dishes/ingredients accordingly) |
 

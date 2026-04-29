@@ -1,0 +1,9 @@
+{
+  "name": "inn-menu-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-based fantasy inn menu generator. The smoke runner is a Node-only utility for sampling dish/ingredient/preparation frequencies.",
+  "scripts": {
+    "smoke": "node scripts/smoke.js"
+  }
+}

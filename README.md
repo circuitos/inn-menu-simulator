@@ -51,6 +51,10 @@ inn-menu-simulator/
 └── README.md
 ```
 
+## Smoke testing the corpus
+
+`npm run smoke` sweeps the Cartesian product of biome × season × weather × tier × economy × condition × event (skipping incompatible combos), generates several menus per world with distinct seeds, and writes a frequency report to `out/smoke-report.md`. The report flags authored dishes, ingredients, preparations, and templates that appear too often, too rarely, or never. Useful after editing JSON data to catch dishes that became unreachable, ingredients that no template can pull, or preparations that the weather bias is crowding out. Tune sample size with `SAMPLES=N npm run smoke` (default 5) or cap worlds with `WORLDS=N` for a quick check.
+
 ## Contributing
 
 The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`. For setting-specific contributions (named regional dishes, proper-noun ingredients), add a flavor pack instead of touching the generic pool — see the Flavor packs section above.

@@ -5,7 +5,7 @@
       "id": "hearty-stew",
       "section": "main",
       "tier_min": 1,
-      "prep_pool": ["stewed"],
+      "prep_pool": ["stewed","braised"],
       "slots": [
         { "role": "protein", "name_key": "protein" },
         { "role": "vegetable", "name_key": "vegetable" },
@@ -18,7 +18,7 @@
       "id": "roast-plate",
       "section": "main",
       "tier_min": 2,
-      "prep_pool": ["roasted","pan-fried"],
+      "prep_pool": ["roasted","pan-fried","braised"],
       "slots": [
         { "role": "protein", "name_key": "protein" },
         { "role": "vegetable", "name_key": "side" },
@@ -53,7 +53,7 @@
       "id": "savory-pie",
       "section": "main",
       "tier_min": 2,
-      "prep_pool": ["stewed","baked"],
+      "prep_pool": ["stewed","baked","braised"],
       "slots": [
         { "role": "protein", "name_key": "protein" },
         { "role": "vegetable", "name_key": "vegetable" }
@@ -98,7 +98,7 @@
       "id": "gratin",
       "section": "main",
       "tier_min": 2,
-      "prep_pool": ["baked","stewed"],
+      "prep_pool": ["baked","roasted"],
       "slots": [
         { "role": "vegetable", "name_key": "vegetable" },
         { "role": "cheese", "name_key": "cheese" }
@@ -255,6 +255,141 @@
         { "role": "drink", "name_key": "drink" }
       ],
       "name_template": "{drink}"
+    },
+    {
+      "id": "spiced-protein",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["braised","stewed","roasted"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "{spice}-spiced {protein} with {vegetable}"
+    },
+    {
+      "id": "spiced-fruit",
+      "section": "dessert",
+      "tier_min": 2,
+      "prep_pool": ["baked","stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "{spice}-scented {fruit}"
+    },
+    {
+      "id": "dairy-braise",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["braised","stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "dairy", "name_key": "dairy" }
+      ],
+      "name_template": "{protein} braised in {dairy}"
+    },
+    {
+      "id": "creamed-vegetable",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "dairy", "name_key": "dairy" }
+      ],
+      "name_template": "{vegetable} in {dairy}"
+    },
+    {
+      "id": "curd-plate",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "dairy", "name_key": "dairy" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "fresh {dairy}",
+      "name_template_with_herb": "fresh {dairy} with {herb}"
+    },
+    {
+      "id": "raw-bar",
+      "section": "appetizer",
+      "tier_min": 3,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" }
+      ],
+      "name_template": "chilled {protein}"
+    },
+    {
+      "id": "tartine",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "cheese", "name_key": "cheese" }
+      ],
+      "name_template": "{starch} with {cheese}"
+    },
+    {
+      "id": "mulled-drink",
+      "section": "drink",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "mulled {drink} with {spice}"
+    },
+    {
+      "id": "infused-drink",
+      "section": "drink",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "herb", "name_key": "herb" }
+      ],
+      "name_template": "{herb}-infused {drink}"
+    },
+    {
+      "id": "sweetened-drink",
+      "section": "drink",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "sweetener", "name_key": "sweet" }
+      ],
+      "name_template": "{drink} with {sweet}"
+    },
+    {
+      "id": "confit",
+      "section": "main",
+      "tier_min": 3,
+      "prep_pool": ["braised"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "fat", "name_key": "fat" }
+      ],
+      "name_template": "{protein} confit in {fat}"
+    },
+    {
+      "id": "grain-stew",
+      "section": "main",
+      "tier_max": 2,
+      "prep_pool": ["stewed","braised"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable", "optional": true }
+      ],
+      "name_template": "{starch} stew with {protein}",
+      "name_template_with_vegetable": "{starch} stew with {protein} and {vegetable}"
     }
   ]
 }
