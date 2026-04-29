@@ -53,7 +53,11 @@ inn-menu-simulator/
 
 ## Smoke testing the corpus
 
+Two Node-only scripts cover regression and curation. `npm run smoke` runs the regression check; `node scripts/smoke-deep.js` runs the editorial audit. See `docs/DESIGN.md` for the full reference.
+
 `npm run smoke` sweeps the Cartesian product of biome × season × weather × tier × economy × condition × event (skipping incompatible combos), generates several menus per world with distinct seeds, and writes a frequency report to `out/smoke-report.md`. The report flags authored dishes, ingredients, preparations, and templates that appear too often, too rarely, or never. Useful after editing JSON data to catch dishes that became unreachable, ingredients that no template can pull, or preparations that the weather bias is crowding out. Tune sample size with `SAMPLES=N npm run smoke` (default 5) or cap worlds with `WORLDS=N` for a quick check.
+
+`node scripts/smoke-deep.js` does the same sweep but reports per-axis (per biome, season, tier, condition, weather, event) top-5 ingredients and dishes, plus structural scans for invalid biome IDs, unreachable ingredients, sparse (biome × season × section) cells, and other data-shape issues. Output goes to `out/smoke-deep.md`. Run before an editorial pass to find what to write next and which existing entries have bugs.
 
 ## Contributing
 
