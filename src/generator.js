@@ -269,9 +269,19 @@ function weightAuthored(d, w) {
   // Seasonal match boost
   if (d.seasons.includes(w.season)) weight *= 1.8;
 
-  // Event boosts: if any dish tag matches a boost tag (scaled by TUNING.event_weight_mult)
+  // Event boosts: match boost_tags against the dish's tags or biomes (some events
+  // key off biome-style values like "coastal"/"forest"), and treat fish/shellfish/game
+  // boost_roles as proxies for the authored `contains` classifier. "protein" is
+  // intentionally not mapped — it's too broad to be a useful focus signal.
   const eventBoost = 1 + (TUNING.authored_event_tag_boost - 1) * TUNING.event_weight_mult;
-  for (const t of w.event.boost_tags || []) if ((d.tags || []).includes(t)) weight *= eventBoost;
+  for (const t of w.event.boost_tags || []) {
+    if ((d.tags || []).includes(t) || (d.biomes || []).includes(t)) weight *= eventBoost;
+  }
+  const ROLE_TO_CONTAINS = { fish: "fish", shellfish: "fish", game: "meat" };
+  for (const r of w.event.boost_roles || []) {
+    const contains = ROLE_TO_CONTAINS[r];
+    if (contains && d.contains === contains) weight *= eventBoost;
+  }
 
   // Condition tone: under war/plague/siege, favor peasant/common fare
   if (["war","plague","siege","isolation"].includes(w.condition.label ? w.condition.label.toLowerCase() : "")) {
