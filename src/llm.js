@@ -9,7 +9,7 @@ async function polishMenu(menu, apiKey) {
   const prompt = buildPrompt(menu);
   const body = {
     model: "claude-sonnet-4-5",
-    max_tokens: 1500,
+    max_tokens: 8000,
     messages: [{ role: "user", content: prompt }]
   };
   const res = await fetch("https://api.anthropic.com/v1/messages", {
