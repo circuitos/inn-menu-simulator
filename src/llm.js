@@ -34,7 +34,7 @@ async function polishMenu(menu, apiKey) {
 }
 
 function buildPrompt(menu) {
-  return `You are helping flavor a fantasy tavern menu. Below is a JSON menu with plain dish names. Rewrite each dish name to sound like it would appear on a real medieval-fantasy inn menu — evocative but grounded, never twee or pun-based. Also add a short description (under 15 words) for each dish. Keep prices unchanged. Return ONLY a JSON object of the same shape with updated "name" and added "description" fields per dish. Do not wrap in markdown.
+  return `You are helping flavor a fantasy tavern menu. Below is a JSON menu with plain dish names. Rewrite each dish name to sound like it would appear on a real medieval-fantasy inn menu — evocative but grounded, never twee or pun-based. Also add a short description (under 15 words) for each dish. Keep prices unchanged. Use a literary tone between Cormac McCarthy and the Narrator in Darkest Dungeon. Generally gritty and austere, the occasional dry humorous observation, sometimes bleak or philosophical. Sensitive and observational but not sentimental. Return ONLY a JSON object of the same shape with updated "name" and added "description" fields per dish. Do not wrap in markdown.
 
 World context: ${JSON.stringify(menu.world)}
 Event note: ${menu.event_note || "none"}
