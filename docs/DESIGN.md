@@ -341,6 +341,44 @@ Common edits and the file to touch:
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 
+## Smoke tests
+
+Two Node-only scripts under `scripts/` exercise the corpus end-to-end. They share the same world sweep and seeded generator path; they answer different questions and have separate outputs.
+
+### `scripts/smoke.js` — regression check
+
+`npm run smoke`. Sweeps the Cartesian product of biome × season × weather × tier × economy × condition × event (skipping incompatible biome/weather/season combos), draws `SAMPLES` menus per world (default 5), and classifies every authored dish, ingredient, preparation, and template as `never` / `rare` / `normal` / `overused` against thresholds derived from a uniform-rate baseline.
+
+- Output: `out/smoke-report.md` (overwritten each run) plus a dated copy in `out/history/`.
+- Knobs: `SAMPLES=N`, `WORLDS=N` (cap world count, deterministic stride sample), `RARE_FACTOR=` (default 0.2), `OVER_FACTOR=` (default 5).
+- Sanity assertions: every preparation appears, every template appears, ≥80% of authored dishes appear, total ingredient slots > 0.
+- Anomaly section: lists never-appearing authored dishes whose static filters would have admitted them in some swept world (suggesting weighting suppression or eviction rather than filter exclusion).
+
+When to run: after editing JSON data, to confirm nothing went unreachable and to diff the dated archives across a refactor.
+
+### `scripts/smoke-deep.js` — editorial audit
+
+`SAMPLES=2 node scripts/smoke-deep.js`. Same sweep, but instead of universe-wide histograms it cross-tabulates by world axis (biome, season, tier, condition, weather, event) and runs structural scans on the source data.
+
+- Output: `out/smoke-deep.md` (overwritten each run; no archive — the structural scans are the point, and they are deterministic from the data).
+- Per-axis blocks: top-5 ingredients, top-5 authored dishes, and the count of ingredients that never appear under that axis cell. Useful for "what dominates a Frostlands menu?" or "what shows up only at Noble inns?".
+- Biome × tier table: top ingredient per (biome, tier) pair.
+- Structural scans (C1–C12) include:
+  - C1: dishes whose `biomes` field contains tokens that aren't real biomes or `any` (catches `mediterranean` / `nordic` mistakes — these are cuisine tags, not biomes).
+  - C2: dishes whose only biomes are orphan tokens (no native biome at all; appear only as imports at fine+ inns).
+  - C4: ingredients with non-biome biome-like tags only (treated as ambient — passes everywhere).
+  - C5: ingredients no template + prep combination can pull (orphaned procedurally; only authored dishes name them).
+  - C6: duplicate authored dish names.
+  - C7: sparse (biome × season × section) cells with fewer than 2 native dishes.
+  - C8: authored mains missing the `contains` field.
+  - C9–C12: distribution counts (dishes per biome, drinks per biome, sections, tier buckets) for at-a-glance coverage gaps.
+
+When to run: before an editorial pass, to find which biomes / sections / tiers need new content and which existing entries have data-shape bugs that the regression check wouldn't notice.
+
+### Why two scripts
+
+`smoke.js` answers "did I break the corpus?" — quantitative, threshold-based, archived for diffs. `smoke-deep.js` answers "what should I write next?" — descriptive, conditional, structural. Either one alone is incomplete; together they cover regression and curation. The shared sweep is duplicated by design — the two scripts are independent so a half-broken data file still lets the other run.
+
 ## Open questions for future versions
 
 - **Thematic coherence.** Menus currently sample dishes independently. A coherence pass could bias toward "all-fish menu in a port town tonight" or "every dish uses saffron, the new caravan's boon."
