@@ -9,7 +9,7 @@ const VALID_BIOME_TOKENS = new Set([
 ]);
 
 // True if some (template, prep) pair could pull this ingredient on role + affinity
-// alone. Independent of the procedural-pool's `unusual` filter — that's a
+// alone. Independent of the procedural-pool's `peculiar` filter — that's a
 // curatorial decision, not a reachability fact.
 function ingredientReachable(ing, templates, preparations) {
   const roles = ing.roles || [];
@@ -46,11 +46,11 @@ function mainsMissingContains(dishes) {
 }
 
 // Ingredients that no template + prep combination could ever pull, ignoring
-// the `unusual` curatorial filter. If a non-unusual ingredient lands here,
+// the `peculiar` curatorial filter. If a non-peculiar ingredient lands here,
 // it's truly orphaned in the procedural pool.
 function unreachableNonUnusualIngredients(ingredients, templates, preparations) {
   return ingredients.filter(i => {
-    if ((i.tags || []).includes("unusual")) return false;
+    if ((i.tags || []).includes("peculiar")) return false;
     return !ingredientReachable(i, templates, preparations);
   });
 }
