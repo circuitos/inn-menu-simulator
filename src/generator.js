@@ -269,7 +269,12 @@ function filterAuthored(dishes, w, data) {
     // Distance gate: combines biome-relation distance with the `exotic` modifier.
     const dist = resolveImportDistance(d, w, data);
     if (dist === null) return false;
-    const maxDist = Math.min(w.tier.max_import_distance ?? 2, w.condition.max_import_distance ?? 2);
+    // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
+    // goods to a common inn that normally allows none). Condition still caps —
+    // siege/plague block trade regardless of caravans.
+    const eventFloor = w.event.import_distance_floor ?? 0;
+    const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+    const maxDist = Math.min(tierMax, w.condition.max_import_distance ?? 2);
     if (dist > maxDist) return false;
     // Biome-only distance for pricing/labeling — exotic native items shouldn't
     // pay transport markup, so we keep this separate from the filtering distance.
@@ -316,6 +321,12 @@ function weightAuthored(d, w) {
   // Imports get progressively rarer with distance.
   if (d._importDistance === 1) weight *= 0.4;
   else if (d._importDistance >= 2) weight *= 0.2;
+
+  // Events that focus on imports (e.g. Merchant Caravan) reverse the dampening:
+  // imported authored dishes get a multiplicative boost so they actually appear
+  // even at common tier where the tier-cap was just barely lifted to allow them.
+  const importBoost = w.event.import_weight_boost;
+  if (importBoost && (d._importDistance || 0) >= 1) weight *= importBoost;
 
   // Seasonal match boost
   if (d.seasons.includes(w.season)) weight *= 1.8;
@@ -577,7 +588,8 @@ function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
     importDistance: choice._importDistance || 0,
     price_cp: price,
     price_text: formatPrice(price),
-    contains: choice.contains
+    contains: choice.contains,
+    _authoredId: choice.id
   };
 }
 
@@ -732,7 +744,73 @@ function generateMenuInternal(world, data, seed, trace) {
     menu.sections[sectionId] = { label: spec.label, dishes };
   }
 
+  // Event-driven import floor (Merchant Caravan): if generation didn't place
+  // enough imports for the tier, swap non-import dishes out for unused
+  // authored imports of the same section (and same meat/fish/meatless kind
+  // for mains, so caps stay intact).
+  enforceImportFloor(menu, world, w, authoredPool, rng, trace);
+
   return menu;
+}
+
+function enforceImportFloor(menu, world, w, authoredPool, rng, trace) {
+  const floorByTier = w.event.import_floor_by_tier;
+  if (!floorByTier) return;
+  const target = floorByTier[world.inn_tier] || 0;
+  if (target <= 0) return;
+
+  const usedIds = new Set();
+  let imports = 0;
+  for (const sec of Object.values(menu.sections)) {
+    for (const d of sec.dishes) {
+      if (d._authoredId) usedIds.add(d._authoredId);
+      if ((d.importDistance || 0) > 0) imports++;
+    }
+  }
+  if (imports >= target) return;
+
+  // Try sections in an order that minimizes disruption: dessert/appetizer/drink
+  // first (no caps to juggle), mains last (need to match the slot's kind).
+  const order = ["dessert", "appetizer", "drink", "main"];
+  for (const secId of order) {
+    if (imports >= target) break;
+    const section = menu.sections[secId];
+    if (!section || !section.dishes.length) continue;
+
+    for (let i = 0; i < section.dishes.length && imports < target; i++) {
+      const existing = section.dishes[i];
+      if ((existing.importDistance || 0) > 0) continue;
+
+      let candidates = authoredPool.filter(d =>
+        d.section === secId
+        && (d._importDistance || 0) > 0
+        && !usedIds.has(d.id)
+      );
+      if (secId === "main") {
+        const kind = classifyMain(existing);
+        candidates = candidates.filter(d => classifyMain(d) === kind);
+      }
+      if (!candidates.length) continue;
+
+      const choice = weightedPick(rng, candidates, d => weightAuthored(d, w));
+      if (!choice) continue;
+      usedIds.add(choice.id);
+      if (trace) trace.authored.push(choice.id);
+      const price = priceAuthoredDish(choice, w);
+      section.dishes[i] = {
+        source: "authored",
+        section: choice.section,
+        name: choice.name + importLabel(choice._importDistance),
+        flavor: choice.flavor,
+        importDistance: choice._importDistance || 0,
+        price_cp: price,
+        price_text: formatPrice(price),
+        contains: choice.contains,
+        _authoredId: choice.id
+      };
+      imports++;
+    }
+  }
 }
 
 // When caps zero out the mains section, this guarantees at least one meatless
@@ -756,7 +834,8 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
         flavor: choice.flavor,
         importDistance: choice._importDistance || 0,
         price_cp: price,
-        price_text: formatPrice(price)
+        price_text: formatPrice(price),
+        _authoredId: choice.id
       };
     }
   }
