@@ -396,7 +396,7 @@
     { "id": "black-beans",   "name": "black beans",          "roles": ["starch","protein"],        "tags": ["all-seasons","weather-robust","peasant","foreign"],                              "cost": 1, "affinities": ["stews-well","requires-cooking"] },
     { "id": "lima-beans",    "name": "lima beans",           "roles": ["vegetable","protein"],     "tags": ["summer","autumn","weather-robust","common","foreign"],                           "cost": 2, "affinities": ["stews-well","requires-cooking"] },
 
-    { "id": "koumiss",       "name": "koumiss",              "roles": ["liquid","drink","dairy"],  "tags": ["all-seasons","weather-robust","common","plains","foreign"],                      "cost": 2, "affinities": ["raw-edible","stews-well"] },
+    { "id": "koumiss",       "name": "koumiss",              "roles": ["liquid","drink","dairy"],  "tags": ["all-seasons","weather-robust","common","plains","arid"],                         "cost": 2, "affinities": ["raw-edible","stews-well"] },
     { "id": "mare-milk",     "name": "mare's milk",          "roles": ["dairy","liquid"],          "tags": ["spring","summer","heat-sensitive","peasant","plains"],                           "cost": 1, "affinities": ["raw-edible","stews-well","bakes-into"] },
     { "id": "horse-meat",    "name": "horse",                "roles": ["protein","ruminant"],      "tags": ["all-seasons","weather-robust","peasant","plains"],                               "cost": 2, "affinities": ["stews-well","grills-well","requires-cooking"] },
     { "id": "juniper",       "name": "juniper berries",      "roles": ["spice"],                   "tags": ["all-seasons","weather-robust","common","highland","forest","nordic"],             "cost": 2, "affinities": ["raw-edible","stews-well"] },
