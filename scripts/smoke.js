@@ -20,6 +20,11 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const {
+  dishesWithBadBiomes,
+  mainsMissingContains,
+  unreachableNonUnusualIngredients,
+} = require("./lib/checks");
 
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "data");
@@ -324,8 +329,34 @@ function buildReport() {
   checks.push(["total ingredient slots > 0", totalIngredientSlots > 0]);
   checks.push(["≥ 80% authored dishes appear at least once",
     (allAuthored.length - authoredSum.never.length) / allAuthored.length >= 0.8]);
+
+  // Structural data-shape checks (don't depend on the sweep — pure on the data files).
+  const badBiomes = dishesWithBadBiomes(allAuthored);
+  const missingContains = mainsMissingContains(allAuthored);
+  const trueOrphans = unreachableNonUnusualIngredients(
+    allIngredients, allTemplates, data.preparations.preparations
+  );
+  checks.push(["all dish.biomes use valid tokens", badBiomes.length === 0]);
+  checks.push(["all mains have explicit contains or _comment", missingContains.length === 0]);
+  checks.push(["all non-unusual ingredients are procedurally reachable", trueOrphans.length === 0]);
+
   for (const [label, ok] of checks) {
     lines.push(`- ${ok ? "[x]" : "[ ]"} ${label}`);
+  }
+  if (badBiomes.length) {
+    lines.push("");
+    lines.push("Dishes with invalid biome tokens:");
+    for (const d of badBiomes) lines.push(`  - ${d.id}: ${(d.biomes || []).join(", ")}`);
+  }
+  if (missingContains.length) {
+    lines.push("");
+    lines.push("Mains missing contains and _comment:");
+    for (const d of missingContains) lines.push(`  - ${d.id}: ${d.name}`);
+  }
+  if (trueOrphans.length) {
+    lines.push("");
+    lines.push("Non-unusual ingredients no template can pull:");
+    for (const i of trueOrphans) lines.push(`  - ${i.id}: ${i.name}`);
   }
   lines.push("");
 
