@@ -165,7 +165,7 @@ At **2 scarcity hits**, even Fine and Noble kitchens lose access to their gilded
 - `noble` and `exotic` are stripped out
 - `peasant` and `common` are added in
 
-For a Noble inn under famine + siege, that means `["refined","noble","foreign","exotic"]` becomes `["peasant","common","refined","foreign"]` — the kitchen serves whatever's still in the cellar (ale, kvass, pottage), regardless of how rich the inn normally is. The price multipliers from condition + economy still apply, so even the plain food carries a markup.
+For a Noble inn under famine + siege, that means `["common","refined","noble","exotic"]` becomes `["peasant","common","refined"]` — the kitchen serves whatever's still in the cellar (ale, kvass, pottage), regardless of how rich the inn normally is. The price multipliers from condition + economy still apply, so even the plain food carries a markup. The condition's `max_import_distance: 0` also clamps imports out independently.
 
 The strip/add lists live in `TAGS_STRIPPED_AT_SEVERE_SCARCITY` and `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js`.
 
@@ -205,13 +205,42 @@ Field notes:
 - **seasons** — array of seasons OR `"all-seasons"`. "Roast pork" is autumn/winter; "pickled cucumber salad" is summer/autumn; "cheese fritters" is all-seasons.
 - **tier_min / tier_max** — inn-tier range. A `tier_min: 3` dish only appears at fine or noble inns. A `tier_max: 2` caps it at common or roadside. Defaults: no min, no max.
 - **cost** — 1 to 5. Drives base price. Scales through tier/economy/condition/event multipliers.
-- **tags** — cultural (`peasant`, `common`, `refined`, `noble`), origin (`foreign`, `exotic`), cuisine (`mediterranean`, `nordic`), and flags (`unusual`). Conditions exclude dishes by tag: war excludes `foreign` and `exotic`.
+- **tags** — cultural (`peasant`, `common`, `refined`, `noble`), origin (`exotic`), cuisine (`mediterranean`, `nordic`), and flags (`peculiar`). The `exotic` tag means "no fixed origin, off-map trade good" — saffron, sugar, hothouse spices — and is treated as effective import distance 2 (see Imports below). The `peculiar` tag marks weird local items (rat, lamprey, seal); it dampens weight but doesn't gate.
 - **contains** (mains only, optional) — `"meat"` or `"fish"`. Omit for meatless mains (the bucket the cap system treats as the safe fallback under scarcity). Used by the per-kind cap loop; see the Condition-based menu caps section. Animal byproducts (eggs, dairy, lard) do not require this field — they count as meatless.
 - **flavor** (optional) — a short description the optional LLM polish can use. Mostly used for dishes whose names don't fully explain themselves ("Hypocras" → "spiced wine").
 
 ### Imports
 
-If a dish's native biome doesn't match the world AND the current condition permits imports AND the inn is fine or noble, it can appear as an import. Imports are labeled "(imported)" in the menu and carry a 1.5× price multiplier. Imports are always suppressed under war, plague, isolation, or siege.
+Imports are modeled as **trade distance** between the dish's native biome and the world's biome. Three concepts decide whether a non-native dish can appear:
+
+| Distance | Source | Label | Price multiplier |
+|----------|--------|-------|------------------|
+| 0 | Native to the world's biome (or `biomes: ["any"]`) | none | ×1.0 |
+| 1 | The dish's biome is a **regional** neighbor of the world's biome | `(imported)` | ×1.3 |
+| 2 | The dish's biome is a **distant** neighbor | `(rare import)` | ×1.7 |
+
+The distance matrix lives in `modifiers.json → biome_relations`. It's symmetric and per-biome — for the default 5-biome map:
+
+| Pair | Distance |
+|------|----------|
+| heartland ↔ any other biome | regional |
+| coastal ↔ any other biome | regional |
+| highland ↔ heartland / coastal / frostlands | regional |
+| highland ↔ arid | distant |
+| arid ↔ heartland / coastal | regional |
+| arid ↔ highland / frostlands | distant |
+| frostlands ↔ heartland / highland / coastal | regional |
+| frostlands ↔ arid | distant |
+
+A dish or ingredient passes the import gate when its effective distance is ≤ both:
+- the inn-tier's `max_import_distance` (roadside/common: 0; fine: 1; noble: 2), and
+- the condition's `max_import_distance` (peace: 2; war: 1; plague/isolation/siege: 0).
+
+So fine inns serve regional imports but not rare ones; noble inns serve everything. War cuts off rare imports but caravans still bring regional goods. Plague/siege/isolation seal the gates entirely — only native items remain.
+
+**The `exotic` tag** is the off-map trade-good signal — saffron, sugar, hothouse spices, true rarities with no biome on the map. It bumps effective filtering distance to 2 regardless of biome (a heartland-native dish tagged `exotic` still requires noble + peace), but pricing uses biome distance only — a native exotic doesn't pay transport markup, since the rarity is already priced into its `cost` field.
+
+When a DM wants to reshape geography (move regions, add a sixth biome, or carve up a 5×5 grid), edit `biome_relations`. The generator never sees coordinates — only the distance table. Symmetry isn't enforced by the code, but breaking it produces strange one-way trade lanes; keep entries reciprocal unless you mean it.
 
 ## Flavor packs
 
@@ -267,9 +296,9 @@ Generic dishes and pack dishes can share themes ("cod in buttermilk" generic vs.
 
 Packs are pure data — no JS changes needed for new packs.
 
-### Unusual dishes
+### Peculiar dishes
 
-Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, mole, lamprey carry the `unusual` tag. They're weighted ×0.5 in selection, so they appear sparingly but not invisibly — in the biome where they're native, they'll show in roughly 1 in 2–3 menus; elsewhere, much less.
+Dishes like rat skewer, seal tail, albatross pie, basking shark, mole, lamprey carry the `peculiar` tag. They're weighted ×0.5 in selection, so they appear sparingly but not invisibly — in the biome where they're native, they'll show in roughly 1 in 2–3 menus; elsewhere, much less. (`peculiar` is the local-weird signal; for off-map rare-trade goods like saffron or megaceront ribs, see `exotic` in the Imports section.)
 
 ## Generation pipeline
 
@@ -277,20 +306,20 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
 1. Resolve world → inn tier, economy, condition, event, etc.
 2. Clone authored dish pool.
 3. Filter authored pool by world:
-     biome match (or 'any', or permitted import)
+     import distance (biome relation + exotic) ≤ min(tier.max, condition.max)
      season match (or 'all-seasons')
      tier within dish's min/max
      cultural tags compatible with inn tier
-     not excluded by condition tags
      cost within economy ceiling
 4. For each section (appetizer, main, dessert, drink):
      Determine count via (min + rng * range).
      For non-drink sections, per slot:
        Roll rng() < TUNING.authored_ratio → prefer authored this slot; else prefer procedural.
        Try the preferred source first; fall back to the other if empty.
-         authored weights: native biome ×2.0, season match ×1.8, event boost ×1.7
+         authored weights: native biome ×3.0, season match ×1.8, event boost ×1.7
                            (scaled by event_weight_mult), 'any' biome ×1.2,
-                           imported ×0.35, unusual ×0.3, peasant-under-war ×1.5,
+                           regional import ×0.4, distant/exotic-effective import ×0.2,
+                           peculiar ×0.5, exotic-tag ×0.5, peasant-under-war ×1.5,
                            noble-at-roadside ×0.4, etc.
          procedural: pick a template for the section, roll a prep from its pool
                      (weighted by current weather's prep_bias if any), fill slots
@@ -299,7 +328,8 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
        Pull from ingredients with role=drink, weighted by world.
 5. Compute prices:
      base = COST_BASE[cost]   (2, 6, 18, 55, 180 cp)
-     price = base × tier.mult × economy.mult × condition.mult × event.mult × (1.5 if imported)
+     import_mult = {0: 1.0, 1: 1.3, 2: 1.7}[biome_distance]
+     price = base × tier.mult × economy.mult × condition.mult × event.mult × import_mult
 6. Return menu { sections, event_note, condition_note }.
 ```
 
@@ -314,7 +344,7 @@ Dishes like rat skewer, seal tail, albatross pie, aurochs ribs, basking shark, m
 
 ## Procedural path
 
-Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Uses the ingredient pool (filtered by the same world rules, minus `unusual`) and preparation compatibility to assemble plausible dish names.
+Lives in `data/dishes.json` as templates. Each template has a section, optional tier range, a `prep_pool`, slot definitions (role required), and a name template. Uses the ingredient pool (filtered by the same world rules, minus `peculiar`) and preparation compatibility to assemble plausible dish names.
 
 Templates are invoked either as fallback when the authored pool is empty for a slot, or proactively when `TUNING.authored_ratio` routes a slot to procedural. The larger the ingredient pool, the more variety procedural delivers across regenerations; the ingredient file is where to add regional nuance.
 
@@ -337,7 +367,10 @@ Common edits and the file to touch:
 | Tune per-tier section caps | `TIER_CAPS` in `src/generator.js` |
 | Adjust which tags are stripped/added at -2 scarcity | `TAGS_STRIPPED_AT_SEVERE_SCARCITY` / `TAGS_ADDED_AT_SEVERE_SCARCITY` in `src/generator.js` |
 | Change inn-tier pricing | `modifiers.json` → `inn_tiers` |
-| Change biome labels or add a biome | `modifiers.json` → `biomes` (and retag dishes/ingredients accordingly) |
+| Change which tier serves which import distance | `max_import_distance` per entry in `modifiers.json` → `inn_tiers` |
+| Change which condition still permits trade | `max_import_distance` per entry in `modifiers.json` → `conditions` |
+| Reshape biome geography (move regions / 5×5 grid) | `modifiers.json` → `biome_relations` |
+| Change biome labels or add a biome | `modifiers.json` → `biomes` (and add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 
