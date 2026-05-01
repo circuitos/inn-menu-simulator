@@ -56,6 +56,18 @@ const TIER_CAPS = {
 const TAGS_STRIPPED_AT_SEVERE_SCARCITY = new Set(["noble", "exotic"]);
 const TAGS_ADDED_AT_SEVERE_SCARCITY = new Set(["peasant", "common"]);
 
+// Cultural-tier tags that gate dishes/ingredients via inn_tier.allowed_tags.
+// `exotic` is intentionally NOT here — it's a distance modifier, not a tier
+// gate (see resolveImportDistance). Noble inns still list `exotic` in their
+// allowed_tags as a coarse signal, but actual gating is via distance.
+const TIER_TAGS = ["peasant", "common", "refined", "noble"];
+
+// Effective import distance contributed by the `exotic` tag — items off the
+// world map (saffron, sugar, true rare spices) act as if they came from two
+// regions away, regardless of their nominal biome. Stacks with biome distance
+// via max(): a heartland-native noble dish tagged `exotic` is still distance 2.
+const EXOTIC_DISTANCE = 2;
+
 // Protein-role buckets used to classify procedurally-built mains.
 const MEAT_ROLES = new Set(["fowl", "ruminant", "game", "offal"]);
 const FISH_ROLES = new Set(["fish", "shellfish"]);
@@ -209,25 +221,79 @@ function resolveWorld(world, data) {
     tierIdx: TIER_INDEX[world.inn_tier],
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
-    event: data.events.events.find(e => e.id === world.event) || data.events.events[0]
+    event: data.events.events.find(e => e.id === world.event) || data.events.events[0],
+    biomeRelations: (data.modifiers || {}).biome_relations || {}
   };
 }
 
-// ---------- authored dish filter ----------
-function filterAuthored(dishes, w) {
-  return dishes.filter(d => {
-    // Biome: 'any' matches; otherwise must include the current biome.
-    if (!d.biomes.includes("any") && !d.biomes.includes(w.biome)) {
-      // Not native. Could still appear as import IF conditions allow and tier is fine+.
-      if (!w.condition.excludes_imports && w.tierIdx >= 3) {
-        // Accept as import — price will be adjusted by a +50% import mult later.
-        d._imported = true;
-      } else {
-        return false;
-      }
-    } else {
-      d._imported = false;
+// Top-level biomes used to identify which ingredient tags are biome-of-origin
+// signals (vs. sub-biome / season / cultural tags).
+const TOP_BIOMES = ["coastal", "heartland", "highland", "arid", "frostlands"];
+
+// ---------- biome-distance helpers ----------
+// Returns 0 (native), 1 (regional), 2 (distant), or null (no relation table /
+// unrecognized biome — caller should treat as "off the map" / not importable).
+function biomeDistance(fromBiome, toBiome, relations) {
+  if (fromBiome === toBiome) return 0;
+  const rel = relations && relations[fromBiome];
+  if (!rel) return null;
+  if ((rel.regional || []).includes(toBiome)) return 1;
+  if ((rel.distant || []).includes(toBiome)) return 2;
+  return null;
+}
+
+// Resolves a dish's effective import distance for the world's biome.
+// - "any"-biome dishes are native (0) everywhere.
+// - Multi-biome dishes use the closest biome (min distance).
+// - The `exotic` tag bumps effective distance to at least EXOTIC_DISTANCE,
+//   modeling off-map trade goods that always count as far-traded.
+// - Returns null if the dish has no biome match in the relation table
+//   (filter caller treats null as "exclude").
+function resolveImportDistance(dish, w, data) {
+  const relations = (data.modifiers || {}).biome_relations || {};
+  const biomes = dish.biomes || [];
+  const isExotic = (dish.tags || []).includes("exotic");
+  let dist = null;
+  if (biomes.includes("any")) {
+    dist = 0;
+  } else {
+    for (const b of biomes) {
+      const d = biomeDistance(b, w.biome, relations);
+      if (d === null) continue;
+      if (dist === null || d < dist) dist = d;
     }
+  }
+  if (dist === null) return null;
+  if (isExotic && dist < EXOTIC_DISTANCE) dist = EXOTIC_DISTANCE;
+  return dist;
+}
+
+// ---------- authored dish filter ----------
+function filterAuthored(dishes, w, data) {
+  return dishes.filter(d => {
+    // Distance gate: combines biome-relation distance with the `exotic` modifier.
+    const dist = resolveImportDistance(d, w, data);
+    if (dist === null) return false;
+    // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
+    // goods to a common inn that normally allows none). Condition still caps —
+    // siege/plague block trade regardless of caravans.
+    const eventFloor = w.event.import_distance_floor ?? 0;
+    const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+    const maxDist = Math.min(tierMax, w.condition.max_import_distance ?? 2);
+    if (dist > maxDist) return false;
+    // Biome-only distance for pricing/labeling — exotic native items shouldn't
+    // pay transport markup, so we keep this separate from the filtering distance.
+    let biomeDist = 0;
+    if (!d.biomes.includes("any")) {
+      let bd = null;
+      for (const b of d.biomes || []) {
+        const dd = biomeDistance(b, w.biome, (data.modifiers || {}).biome_relations || {});
+        if (dd === null) continue;
+        if (bd === null || dd < bd) bd = dd;
+      }
+      biomeDist = bd ?? 0;
+    }
+    d._importDistance = biomeDist;
 
     // Season
     if (!d.seasons.includes("all-seasons") && !d.seasons.includes(w.season)) return false;
@@ -237,21 +303,15 @@ function filterAuthored(dishes, w) {
     if (d.tier_max && w.tierIdx > d.tier_max) return false;
 
     // Cultural tags must overlap with inn's allowed tags (if dish has any tier-relevant tags)
-    const tierTags = ["peasant","common","refined","noble","foreign","exotic"];
-    const culturalDishTags = (d.tags || []).filter(t => tierTags.includes(t));
+    const culturalDishTags = (d.tags || []).filter(t => TIER_TAGS.includes(t));
     if (culturalDishTags.length && !culturalDishTags.some(t => w.tier.allowed_tags.includes(t))) return false;
-
-    // Condition excludes (e.g. war excludes foreign/exotic)
-    if (w.condition.excludes_tags && w.condition.excludes_tags.length) {
-      if ((d.tags || []).some(t => w.condition.excludes_tags.includes(t))) return false;
-    }
 
     // Economy: cost ceiling shrinks under shortage/famine
     if (d.cost > w.economy.remove_above_cost) return false;
 
-    // "unusual" dishes appear only rarely — handled via weighting, not filtering, unless the
-    // condition is restrictive. Under war/plague/siege/isolation, unusual stays allowed because
-    // those are local poor-food dishes mostly.
+    // "peculiar" dishes appear only rarely — handled via weighting, not filtering. Under
+    // war/plague/siege/isolation, peculiar stays allowed because those are local poor-food
+    // dishes mostly.
 
     return true;
   });
@@ -263,8 +323,15 @@ function weightAuthored(d, w) {
   if (d.biomes.includes(w.biome)) weight *= 3.0;
   // "Any" biome dishes are neutral
   else if (d.biomes.includes("any")) weight *= 1.2;
-  // Imports are possible but less likely
-  if (d._imported) weight *= 0.25;
+  // Imports get progressively rarer with distance.
+  if (d._importDistance === 1) weight *= 0.4;
+  else if (d._importDistance >= 2) weight *= 0.2;
+
+  // Events that focus on imports (e.g. Merchant Caravan) reverse the dampening:
+  // imported authored dishes get a multiplicative boost so they actually appear
+  // even at common tier where the tier-cap was just barely lifted to allow them.
+  const importBoost = w.event.import_weight_boost;
+  if (importBoost && (d._importDistance || 0) >= 1) weight *= importBoost;
 
   // Seasonal match boost
   if (d.seasons.includes(w.season)) weight *= 1.8;
@@ -289,8 +356,10 @@ function weightAuthored(d, w) {
     if ((d.tags || []).includes("noble")) weight *= 0.3;
   }
 
-  // "unusual" dishes get dampened by default
-  if ((d.tags || []).includes("unusual")) weight *= 0.5;
+  // "peculiar" dishes get dampened by default
+  if ((d.tags || []).includes("peculiar")) weight *= 0.75;
+  // "exotic" dishes are rare by definition — extra dampening on top of distance.
+  if ((d.tags || []).includes("exotic")) weight *= 0.75;
 
   // Soft penalty for "everywhere" dishes — biomes:["any"] AND seasons:["all-seasons"].
   // Without it, a handful of unconstrained dishes dominate every world's pool.
@@ -306,33 +375,71 @@ function weightAuthored(d, w) {
   return weight;
 }
 
+// Per-distance price multiplier. Native = 1.0, regional adds ~30%, distant adds ~70%.
+// Exotic native dishes (effective filter distance bumped by EXOTIC_DISTANCE) keep
+// their biomeDist-based price — the rare ingredient is already priced into the
+// dish's `cost`, no transport markup applies on top.
+const IMPORT_PRICE_MULT = { 0: 1.0, 1: 1.3, 2: 1.7 };
+
 function priceAuthoredDish(d, w) {
   const base = COST_BASE[d.cost] || 6;
-  const importMult = d._imported ? 1.5 : 1.0;
+  const importMult = IMPORT_PRICE_MULT[d._importDistance] ?? 1.0;
   const price = base * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
   return Math.max(1, Math.round(price));
 }
 
+function importLabel(distance) {
+  if (distance === 1) return " (imported)";
+  if (distance >= 2) return " (rare import)";
+  return "";
+}
+
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
-function filterIngredientPool(ingredients, w) {
+function filterIngredientPool(ingredients, w, data) {
   const BIOMES = ["coastal","heartland","highland","arid","frostlands","forest","river","lake","subterranean","plains"];
   const SEASONS = ["spring","summer","autumn","winter"];
-  const TIER_TAGS = ["peasant","common","refined","noble","foreign","exotic"];
+  // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
+  // now a distance modifier, but in the procedural pipeline we don't have a
+  // single "native biome" for an ingredient — most spices have no biome at
+  // all. We fall back to the inn-tier allowed_tags check: only noble inns
+  // list `exotic`, so exotic ingredients still surface only at noble tier.
+  const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
+
+  // Effective import-distance ceiling for this world: same min(tier, condition)
+  // rule the authored path uses. Ingredients native to a non-matching biome can
+  // pass the gate iff their nearest top-biome is within this distance; the
+  // headline-ingredient logic in fillTemplate then labels the dish accordingly.
+  const eventFloor = w.event.import_distance_floor ?? 0;
+  const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+  const importMax = Math.min(tierMax, w.condition.max_import_distance ?? 2);
+  const relations = (data && data.modifiers && data.modifiers.biome_relations) || {};
 
   return ingredients.filter(ing => {
     const tags = ing.tags || [];
 
-    // Biome: ingredient's biome tags (if any) — we accept if any matches the world biome directly.
-    // Sub-biome tags like 'forest', 'river' don't have their own parent selector now, so they pass
-    // as long as nothing contradicts.
+    // Biome: native match passes outright. Otherwise, if at least one top-biome
+    // tag is within the world's import distance, the ingredient passes as an
+    // import. Sub-biome tags (forest, river, etc.) are biases, not gates, and
+    // pass through ambiently.
     const biomeTags = tags.filter(t => BIOMES.includes(t));
     if (biomeTags.length) {
-      const worldBiomeMatches = biomeTags.includes(w.biome);
-      // Also allow sub-biome tags — they're biases, not gates, so keep them available.
-      const subBiomeTags = biomeTags.filter(t => !["coastal","heartland","highland","arid","frostlands"].includes(t));
-      if (!worldBiomeMatches && subBiomeTags.length === biomeTags.length) {
-        // All tags are sub-biome — treat as ambient, keep.
-      } else if (!worldBiomeMatches) return false;
+      const topBiomeTags = biomeTags.filter(t => TOP_BIOMES.includes(t));
+      const subBiomeTags = biomeTags.filter(t => !TOP_BIOMES.includes(t));
+      const nativeMatch = biomeTags.includes(w.biome);
+      if (!nativeMatch) {
+        if (topBiomeTags.length) {
+          let closest = null;
+          for (const b of topBiomeTags) {
+            const d = biomeDistance(b, w.biome, relations);
+            if (d === null) continue;
+            if (closest === null || d < closest) closest = d;
+          }
+          if (closest === null || closest > importMax) return false;
+        } else if (!subBiomeTags.length) {
+          return false;
+        }
+        // else: only sub-biome tags — ambient, keep.
+      }
     }
 
     // Season
@@ -344,7 +451,7 @@ function filterIngredientPool(ingredients, w) {
     if (ing.cost > w.tier.cost_max) return false;
 
     // Cultural tag gate
-    const cultural = tags.filter(t => TIER_TAGS.includes(t));
+    const cultural = tags.filter(t => ING_TIER_TAGS.includes(t));
     if (cultural.length && !cultural.some(t => w.tier.allowed_tags.includes(t))) return false;
 
     // Weather sensitivity: each weather declares which tags it removes from the
@@ -356,16 +463,18 @@ function filterIngredientPool(ingredients, w) {
     // Economy cap
     if (ing.cost > w.economy.remove_above_cost) return false;
 
-    // Condition excludes
-    if (w.condition.excludes_tags && w.condition.excludes_tags.length) {
-      if (tags.some(t => w.condition.excludes_tags.includes(t))) return false;
-    }
+    // Condition import gate: under restrictive conditions (war, plague, etc.)
+    // exotic ingredients (off-map trade goods) drop out. The `exotic` tag
+    // models effective import distance >= 2, so any condition with
+    // max_import_distance < 2 excludes them.
+    const condMaxDist = w.condition.max_import_distance ?? 2;
+    if (tags.includes("exotic") && condMaxDist < 2) return false;
 
     // Famine protein restriction
     if (w.economy.restrict_role && (ing.roles || []).includes(w.economy.restrict_role) && ing.cost > 2) return false;
 
     // Unusual ingredients get dropped in procedural path — they're reserved for authored dishes
-    if (tags.includes("unusual")) return false;
+    if (tags.includes("peculiar")) return false;
 
     return true;
   });
@@ -377,6 +486,31 @@ function weightIngredient(ing, w) {
   const roles = ing.roles || [];
   if (tags.includes(w.season)) weight *= 1.8;
   if (tags.includes(w.biome)) weight *= 1.6;
+  // Mirror the authored regional/distant penalty so the procedural pool doesn't
+  // silently drown native ingredients in foreign-biome competitors. Without
+  // this, foreign-biome staples collectively outweigh the single native biome
+  // and `headlineIngredient` then stamps the dish as "(imported)".
+  const ingTopBiomes = tags.filter(t => TOP_BIOMES.includes(t));
+  if (ingTopBiomes.length && !ingTopBiomes.includes(w.biome)) {
+    const relations = w.biomeRelations || {};
+    let best = null;
+    for (const b of ingTopBiomes) {
+      const d = biomeDistance(b, w.biome, relations);
+      if (d === null) continue;
+      if (best === null || d < best) best = d;
+    }
+    if (best === 1) weight *= 0.4;
+    else if (best !== null && best >= 2) weight *= 0.2;
+  }
+  // Tier-aware commonness: at low-tier inns, peasant fare wins over equally-
+  // allowed but less-rustic alternatives; at fine/noble, refined leans up.
+  if (w.tierIdx <= 2) {
+    if (tags.includes("peasant")) weight *= 2.0;
+    if (tags.includes("refined") && !tags.includes("common")) weight *= 0.5;
+  }
+  if (w.tierIdx >= 3 && tags.includes("peasant") && !tags.includes("common")) {
+    weight *= 0.7;
+  }
   const tagBoost = 1 + (TUNING.ingredient_event_tag_boost - 1) * TUNING.event_weight_mult;
   const roleBoost = 1 + (TUNING.ingredient_event_role_boost - 1) * TUNING.event_weight_mult;
   for (const t of w.event.boost_tags || []) if (tags.includes(t)) weight *= tagBoost;
@@ -394,7 +528,46 @@ function weightIngredient(ing, w) {
   return weight;
 }
 
-function fillTemplate(template, prep, pool, rng, w, trace) {
+// The "headline" ingredient is the one the dish is named after — protein for
+// mains, otherwise the first non-optional filled slot. Used to decide whether
+// a procedural dish should carry an import label: a stew of native veg with a
+// regional fish in it is a regional import; a native dish that merely contains
+// an exotic spice is not.
+function headlineIngredient(template, picked) {
+  if (template.section === "main") {
+    const protein = template.slots.find(s => s.role === "protein");
+    if (protein && picked[protein.name_key]) return picked[protein.name_key];
+  }
+  for (const slot of template.slots) {
+    if (slot.optional) continue;
+    if (picked[slot.name_key]) return picked[slot.name_key];
+  }
+  return null;
+}
+
+// Effective import distance for a single ingredient against the world biome.
+// Mirrors resolveImportDistance but operates on one ingredient: `exotic` forces
+// EXOTIC_DISTANCE, otherwise we take the min distance across the ingredient's
+// top-biome tags. Ingredients with no biome tag are treated as ambient/native.
+function ingredientImportDistance(ing, w, data) {
+  if (!ing) return 0;
+  const tags = ing.tags || [];
+  let dist = tags.includes("exotic") ? EXOTIC_DISTANCE : 0;
+  const relations = (data.modifiers || {}).biome_relations || {};
+  const biomeTags = tags.filter(t => TOP_BIOMES.includes(t));
+  if (biomeTags.length) {
+    let best = null;
+    for (const b of biomeTags) {
+      const d = biomeDistance(b, w.biome, relations);
+      if (d === null) continue;
+      if (best === null || d < best) best = d;
+    }
+    if (best !== null && best > dist) dist = best;
+  }
+  return dist;
+}
+
+function fillTemplate(template, prep, pool, rng, w, data, trace) {
   if (template.tier_min && w.tierIdx < template.tier_min) return null;
   if (template.tier_max && w.tierIdx > template.tier_max) return null;
 
@@ -431,7 +604,10 @@ function fillTemplate(template, prep, pool, rng, w, trace) {
   const ingredientsUsed = Object.values(picked).filter(Boolean);
   const baseCopper = ingredientsUsed.reduce((sum, ing) => sum + (COST_BASE[ing.cost] || 2), 0);
   const labor = prep.labor_add || 0;
-  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1);
+  const headline = headlineIngredient(template, picked);
+  const importDistance = ingredientImportDistance(headline, w, data);
+  const importMult = IMPORT_PRICE_MULT[importDistance] ?? 1.0;
+  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
 
   // Stamp meat/fish/meatless on mains so the cap loop can classify procedural dishes.
   let mainKind = null;
@@ -452,9 +628,10 @@ function fillTemplate(template, prep, pool, rng, w, trace) {
   return {
     source: "procedural",
     section: template.section,
-    name: capitalize(name),
+    name: capitalize(name) + importLabel(importDistance),
     price_cp: Math.max(1, Math.round(priceCp)),
     price_text: formatPrice(priceCp),
+    importDistance,
     _mainKind: mainKind
   };
 }
@@ -478,7 +655,7 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
     const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
     if (!prep) continue;
-    const dish = fillTemplate(tpl, prep, pool, rng, w, trace);
+    const dish = fillTemplate(tpl, prep, pool, rng, w, data, trace);
     if (dish && !existingNames.has(dish.name)) {
       usedTpl.add(tpl.id);
       if (trace) trace.templates.push(tpl.id);
@@ -500,12 +677,13 @@ function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
   return {
     source: "authored",
     section: choice.section,
-    name: choice.name + (choice._imported ? " (imported)" : ""),
+    name: choice.name + importLabel(choice._importDistance),
     flavor: choice.flavor,
-    imported: !!choice._imported,
+    importDistance: choice._importDistance || 0,
     price_cp: price,
     price_text: formatPrice(price),
-    contains: choice.contains
+    contains: choice.contains,
+    _authoredId: choice.id
   };
 }
 
@@ -542,12 +720,12 @@ function generateMenuInternal(world, data, seed, trace) {
     w.tier = { ...w.tier, allowed_tags: Array.from(tags) };
   }
 
-  // Clone authored list so we can mark _imported without polluting source data
+  // Clone authored list so we can mark _importDistance without polluting source data
   const authoredCopy = data.authored_dishes.dishes.map(d => ({ ...d }));
-  const authoredPool = filterAuthored(authoredCopy, w);
+  const authoredPool = filterAuthored(authoredCopy, w, data);
 
   // Procedural ingredient pool (for fallback)
-  const ingPool = filterIngredientPool(data.ingredients.ingredients, w);
+  const ingPool = filterIngredientPool(data.ingredients.ingredients, w, data);
 
   const menu = {
     world,
@@ -660,7 +838,73 @@ function generateMenuInternal(world, data, seed, trace) {
     menu.sections[sectionId] = { label: spec.label, dishes };
   }
 
+  // Event-driven import floor (Merchant Caravan): if generation didn't place
+  // enough imports for the tier, swap non-import dishes out for unused
+  // authored imports of the same section (and same meat/fish/meatless kind
+  // for mains, so caps stay intact).
+  enforceImportFloor(menu, world, w, authoredPool, rng, trace);
+
   return menu;
+}
+
+function enforceImportFloor(menu, world, w, authoredPool, rng, trace) {
+  const floorByTier = w.event.import_floor_by_tier;
+  if (!floorByTier) return;
+  const target = floorByTier[world.inn_tier] || 0;
+  if (target <= 0) return;
+
+  const usedIds = new Set();
+  let imports = 0;
+  for (const sec of Object.values(menu.sections)) {
+    for (const d of sec.dishes) {
+      if (d._authoredId) usedIds.add(d._authoredId);
+      if ((d.importDistance || 0) > 0) imports++;
+    }
+  }
+  if (imports >= target) return;
+
+  // Try sections in an order that minimizes disruption: dessert/appetizer/drink
+  // first (no caps to juggle), mains last (need to match the slot's kind).
+  const order = ["dessert", "appetizer", "drink", "main"];
+  for (const secId of order) {
+    if (imports >= target) break;
+    const section = menu.sections[secId];
+    if (!section || !section.dishes.length) continue;
+
+    for (let i = 0; i < section.dishes.length && imports < target; i++) {
+      const existing = section.dishes[i];
+      if ((existing.importDistance || 0) > 0) continue;
+
+      let candidates = authoredPool.filter(d =>
+        d.section === secId
+        && (d._importDistance || 0) > 0
+        && !usedIds.has(d.id)
+      );
+      if (secId === "main") {
+        const kind = classifyMain(existing);
+        candidates = candidates.filter(d => classifyMain(d) === kind);
+      }
+      if (!candidates.length) continue;
+
+      const choice = weightedPick(rng, candidates, d => weightAuthored(d, w));
+      if (!choice) continue;
+      usedIds.add(choice.id);
+      if (trace) trace.authored.push(choice.id);
+      const price = priceAuthoredDish(choice, w);
+      section.dishes[i] = {
+        source: "authored",
+        section: choice.section,
+        name: choice.name + importLabel(choice._importDistance),
+        flavor: choice.flavor,
+        importDistance: choice._importDistance || 0,
+        price_cp: price,
+        price_text: formatPrice(price),
+        contains: choice.contains,
+        _authoredId: choice.id
+      };
+      imports++;
+    }
+  }
 }
 
 // When caps zero out the mains section, this guarantees at least one meatless
@@ -680,11 +924,12 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
       return {
         source: "authored",
         section: "main",
-        name: choice.name + (choice._imported ? " (imported)" : ""),
+        name: choice.name + importLabel(choice._importDistance),
         flavor: choice.flavor,
-        imported: !!choice._imported,
+        importDistance: choice._importDistance || 0,
         price_cp: price,
-        price_text: formatPrice(price)
+        price_text: formatPrice(price),
+        _authoredId: choice.id
       };
     }
   }

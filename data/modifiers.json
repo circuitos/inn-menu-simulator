@@ -6,11 +6,19 @@
     "arid":       { "label": "Arid",       "description": "Mediterranean to semi-desert. Olive, legume, goat, warming spices." },
     "frostlands": { "label": "Frostlands", "description": "Arctic subarctic. Seal, reindeer, fermented dairy, preserved fish." }
   },
+  "biome_relations": {
+    "_comment": "Symmetric trade-distance matrix. A dish/ingredient native to biome X served at biome Y has distance: 0 if X==Y, 1 if Y in regional, 2 if Y in distant. Edit to reshape your campaign world's geography.",
+    "coastal":    { "regional": ["heartland","highland","arid","frostlands"], "distant": [] },
+    "heartland":  { "regional": ["coastal","highland","arid","frostlands"],   "distant": [] },
+    "highland":   { "regional": ["coastal","heartland","frostlands"],         "distant": ["arid"] },
+    "arid":       { "regional": ["coastal","heartland"],                      "distant": ["highland","frostlands"] },
+    "frostlands": { "regional": ["coastal","heartland","highland"],           "distant": ["arid"] }
+  },
   "inn_tiers": {
-    "roadside": { "label": "Roadside", "cost_max": 2, "price_mult": 0.8, "allowed_tags": ["peasant","common"] },
-    "common":   { "label": "Common",   "cost_max": 3, "price_mult": 1.0, "allowed_tags": ["peasant","common","refined"] },
-    "fine":     { "label": "Fine",     "cost_max": 4, "price_mult": 1.3, "allowed_tags": ["common","refined","noble","foreign"] },
-    "noble":    { "label": "Noble",    "cost_max": 5, "price_mult": 1.8, "allowed_tags": ["common","refined","noble","foreign","exotic"] }
+    "roadside": { "label": "Roadside", "cost_max": 2, "price_mult": 0.8, "max_import_distance": 0, "allowed_tags": ["peasant","common"] },
+    "common":   { "label": "Common",   "cost_max": 3, "price_mult": 1.0, "max_import_distance": 1, "allowed_tags": ["peasant","common","refined"] },
+    "fine":     { "label": "Fine",     "cost_max": 4, "price_mult": 1.3, "max_import_distance": 1, "allowed_tags": ["common","refined","noble"] },
+    "noble":    { "label": "Noble",    "cost_max": 5, "price_mult": 1.8, "max_import_distance": 2, "allowed_tags": ["common","refined","noble","exotic"] }
   },
   "economy": {
     "plenty":   { "label": "Plenty",   "price_mult": 0.8, "remove_above_cost": 99 },
@@ -19,11 +27,11 @@
     "famine":   { "label": "Famine",   "price_mult": 2.2, "remove_above_cost": 2, "restrict_role": "protein" }
   },
   "conditions": {
-    "peace":     { "label": "Peace",     "price_mult": 1.0, "excludes_tags": [],                       "excludes_imports": false, "note": null },
-    "war":       { "label": "War",       "price_mult": 1.5, "excludes_tags": ["foreign","exotic"],    "excludes_imports": true,  "note": "Trade routes are cut. The inn leans on what it can grow and preserve." },
-    "plague":    { "label": "Plague",    "price_mult": 1.8, "excludes_tags": ["foreign","exotic"],    "excludes_imports": true,  "note": "Doors bar at dusk. The kitchen serves what arrived in sealed barrels." },
-    "isolation": { "label": "Isolation", "price_mult": 1.2, "excludes_tags": ["foreign","exotic"],    "excludes_imports": true,  "note": "Roads are impassable. The larder is whatever the last harvest left." },
-    "siege":     { "label": "Siege",     "price_mult": 2.0, "excludes_tags": ["foreign","exotic"],    "excludes_imports": true,  "note": "Walls stand closed. Every ingredient is rationed." }
+    "peace":     { "label": "Peace",     "price_mult": 1.0, "max_import_distance": 2, "note": null },
+    "war":       { "label": "War",       "price_mult": 1.5, "max_import_distance": 1, "note": "Trade routes are cut. Only the closest goods still arrive." },
+    "plague":    { "label": "Plague",    "price_mult": 1.8, "max_import_distance": 0, "note": "Doors bar at dusk. The kitchen serves what arrived in sealed barrels." },
+    "isolation": { "label": "Isolation", "price_mult": 1.2, "max_import_distance": 0, "note": "Roads are impassable. The larder is whatever the last harvest left." },
+    "siege":     { "label": "Siege",     "price_mult": 2.0, "max_import_distance": 0, "note": "Walls stand closed. Every ingredient is rationed." }
   },
   "weather": {
     "clear":    { "label": "Clear" },

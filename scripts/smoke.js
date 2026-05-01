@@ -207,19 +207,35 @@ const templateSum = summarize("templates", templateRows);
 // re-invoking generateMenu on candidate worlds, but cheaper: replicate the
 // minimal static check here (biome/season/tier/economy/condition).
 function staticallyReachable(dish) {
-  const tierTags = new Set(["peasant","common","refined","noble","foreign","exotic"]);
+  const tierTags = new Set(["peasant","common","refined","noble"]);
   const culturalDishTags = (dish.tags || []).filter(t => tierTags.has(t));
+  const relations = data.modifiers.biome_relations || {};
+  const isExotic = (dish.tags || []).includes("exotic");
   for (const world of worlds) {
     const tier = data.modifiers.inn_tiers[world.inn_tier];
     const tierIdx = { roadside: 1, common: 2, fine: 3, noble: 4 }[world.inn_tier];
     const econ = data.modifiers.economy[world.economy];
     const cond = data.modifiers.conditions[world.condition];
 
-    // Biome (allow imports for fine+ when condition does not exclude imports)
-    const biomeOk = dish.biomes.includes("any")
-      || dish.biomes.includes(world.biome)
-      || (!cond.excludes_imports && tierIdx >= 3);
-    if (!biomeOk) continue;
+    // Compute biome distance (min over the dish's native biomes); exotic bumps to 2.
+    let dist = null;
+    if ((dish.biomes || []).includes("any")) dist = 0;
+    else {
+      for (const b of dish.biomes || []) {
+        if (b === world.biome) { dist = 0; break; }
+        const rel = relations[b];
+        if (!rel) continue;
+        if ((rel.regional || []).includes(world.biome)) {
+          if (dist === null || 1 < dist) dist = 1;
+        } else if ((rel.distant || []).includes(world.biome)) {
+          if (dist === null || 2 < dist) dist = 2;
+        }
+      }
+    }
+    if (dist === null) continue;
+    if (isExotic && dist < 2) dist = 2;
+    const maxDist = Math.min(tier.max_import_distance ?? 2, cond.max_import_distance ?? 2);
+    if (dist > maxDist) continue;
     // Season
     if (!dish.seasons.includes("all-seasons") && !dish.seasons.includes(world.season)) continue;
     // Tier
@@ -227,8 +243,6 @@ function staticallyReachable(dish) {
     if (dish.tier_max && tierIdx > dish.tier_max) continue;
     // Cultural tags vs allowed_tags
     if (culturalDishTags.length && !culturalDishTags.some(t => tier.allowed_tags.includes(t))) continue;
-    // Condition excludes
-    if ((cond.excludes_tags || []).some(t => (dish.tags || []).includes(t))) continue;
     // Economy cost ceiling
     if (dish.cost > econ.remove_above_cost) continue;
     return true;
@@ -338,7 +352,7 @@ function buildReport() {
   );
   checks.push(["all dish.biomes use valid tokens", badBiomes.length === 0]);
   checks.push(["all mains have explicit contains or _comment", missingContains.length === 0]);
-  checks.push(["all non-unusual ingredients are procedurally reachable", trueOrphans.length === 0]);
+  checks.push(["all non-peculiar ingredients are procedurally reachable", trueOrphans.length === 0]);
 
   for (const [label, ok] of checks) {
     lines.push(`- ${ok ? "[x]" : "[ ]"} ${label}`);
@@ -355,7 +369,7 @@ function buildReport() {
   }
   if (trueOrphans.length) {
     lines.push("");
-    lines.push("Non-unusual ingredients no template can pull:");
+    lines.push("Non-peculiar ingredients no template can pull:");
     for (const i of trueOrphans) lines.push(`  - ${i.id}: ${i.name}`);
   }
   lines.push("");

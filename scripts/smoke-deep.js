@@ -157,10 +157,10 @@ for (const ing of data.ingredients.ingredients) {
 
 // 4. Reachability: which ingredients can no template ever pull?
 //    Uses the shared helper in scripts/lib/checks.js. Reachability is computed
-//    on role + affinity alone (the curatorial `unusual` filter is separate);
-//    a non-unusual ingredient that lands here is genuinely orphaned.
+//    on role + affinity alone (the curatorial `peculiar` filter is separate);
+//    a non-peculiar ingredient that lands here is genuinely orphaned.
 const unreachableIngredients = data.ingredients.ingredients.filter(i =>
-  !(i.tags || []).includes("unusual") &&
+  !(i.tags || []).includes("peculiar") &&
   !ingredientReachable(i, data.dishes.templates, data.preparations.preparations)
 );
 
@@ -351,12 +351,12 @@ if (ingredientBadBiomeTags.length) {
 lines.push("");
 
 lines.push(`### C5. Truly orphaned ingredients (${unreachableIngredients.length})`);
-lines.push("Non-unusual ingredients no template+prep combination can pull. The procedural-pool's `unusual` filter is intentional and excluded from this scan.");
+lines.push("Non-peculiar ingredients no template+prep combination can pull. The procedural-pool's `peculiar` filter is intentional and excluded from this scan.");
 lines.push("");
 if (unreachableIngredients.length) {
   for (const ing of unreachableIngredients)
     lines.push(`- ${ing.id} — ${ing.name} — roles: ${(ing.roles||[]).join(",")} — affinities: ${(ing.affinities||[]).join(",")}`);
-} else lines.push("All non-unusual ingredients reachable.");
+} else lines.push("All non-peculiar ingredients reachable.");
 lines.push("");
 
 lines.push(`### C6. Duplicate dish names (${dupNames.length})`);

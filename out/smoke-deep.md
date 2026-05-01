@@ -1,7 +1,7 @@
 # Inn Menu Simulator — Deep Smoke Report
 
 - worlds: **40960**, samples/world: **2**, total menus: **81920**
-- elapsed: **35.2s**
+- elapsed: **23.5s**
 
 ## A. Top/bottom by world axis
 
@@ -10,164 +10,164 @@
 #### coastal (n=17920)
 
 Top 5 ingredients
-- ale-pale — pale ale [liquid,drink] — 17115
-- peated-beer — peated beer [liquid,drink] — 16018
-- honey — honey [sweetener] — 7632
-- salt — salt [spice] — 7226
-- sage — sage [herb] — 6917
+- ale-pale — pale ale [liquid,drink] — 18311
+- peated-beer — peated beer [liquid,drink] — 17181
+- molasses — molasses [sweetener,liquid] — 14243
+- sage — sage [herb] — 5585
+- honey — honey [sweetener] — 5214
 
 Top 5 authored dishes
-- skewered-herring-veg — Skewered herring with vegetables — 10448
-- sauteed-chicken — Sautéed chicken — 6923
-- tripe-garlic-cheese — Tripe with garlic cheese — 5735
-- mackerel-stew — Mackerel stew — 5578
-- anchovies-rye — Salted anchovies with rye bread — 4706
+- skewered-herring-veg — Skewered herring with vegetables — 9750
+- sauteed-chicken — Sautéed chicken — 5994
+- mackerel-stew — Mackerel stew — 5260
+- tripe-garlic-cheese — Tripe with garlic cheese — 5187
+- anchovies-rye — Salted anchovies with rye bread — 4561
 
-Ingredients never appearing in this slice: **224** (of 491)
+Ingredients never appearing in this slice: **221** (of 491)
 
 #### heartland (n=17920)
 
 Top 5 ingredients
-- sage — sage [herb] — 10508
-- ale-pale — pale ale [liquid,drink] — 9035
-- ale — dark ale [liquid,drink] — 7711
-- cider — cider [liquid,drink] — 5746
-- broad-beans — broad beans [vegetable,protein] — 5228
+- ale-pale — pale ale [liquid,drink] — 9845
+- sage — sage [herb] — 9550
+- molasses — molasses [sweetener,liquid] — 9302
+- ale — dark ale [liquid,drink] — 8358
+- cider — cider [liquid,drink] — 6261
 
 Top 5 authored dishes
-- boiled-milk-cream — Boiled milk with sour cream — 4594
-- spinach-pie — Spinach pie — 4556
-- porridge-stew — Porridge stew — 3644
-- salt-cod-roots — Salt cod stew with winter roots — 3564
-- apple-tart — Apple tart — 3415
+- boiled-milk-cream — Boiled milk with sour cream — 4455
+- spinach-pie — Spinach pie — 4373
+- porridge-stew — Porridge stew — 3535
+- salt-cod-roots — Salt cod stew with winter roots — 3361
+- apple-tart — Apple tart — 3322
 
-Ingredients never appearing in this slice: **241** (of 491)
+Ingredients never appearing in this slice: **240** (of 491)
 
 #### highland (n=17920)
 
 Top 5 ingredients
-- gruit-beer — gruit beer [liquid,drink] — 9755
-- peated-beer — peated beer [liquid,drink] — 9687
-- ale — dark ale [liquid,drink] — 8881
-- sage — sage [herb] — 6603
-- wild-rosemary — wild rosemary [herb] — 6257
+- gruit-beer — gruit beer [liquid,drink] — 10420
+- peated-beer — peated beer [liquid,drink] — 10327
+- ale — dark ale [liquid,drink] — 9420
+- molasses — molasses [sweetener,liquid] — 7397
+- sage — sage [herb] — 5874
 
 Top 5 authored dishes
-- birch-sap-warmed — Warmed birch sap — 4695
-- smoked-salmon-rye — Smoked salmon with dark rye and dill — 4368
-- sauteed-chicken — Sautéed chicken — 4279
-- pine-needle-tea — Pine needle tea — 4037
-- onion-parsley-salad — Onion and parsley salad — 4028
+- birch-sap-warmed — Warmed birch sap — 4661
+- pine-needle-tea — Pine needle tea — 3961
+- smoked-salmon-rye — Smoked salmon with dark rye and dill — 3898
+- onion-parsley-salad — Onion and parsley salad — 3839
+- sauteed-chicken — Sautéed chicken — 3766
 
-Ingredients never appearing in this slice: **255** (of 491)
+Ingredients never appearing in this slice: **254** (of 491)
 
 #### arid (n=14080)
 
 Top 5 ingredients
-- wine-resined — resined white wine [liquid,drink] — 12894
-- grape-molasses — grape molasses [sweetener,liquid] — 5678
-- date-syrup — date syrup [sweetener,liquid] — 5570
-- koumiss — koumiss [liquid,drink,dairy] — 4015
-- broad-beans — broad beans [vegetable,protein] — 3402
+- koumiss — koumiss [liquid,drink,dairy] — 21278
+- wine-resined — resined white wine [liquid,drink] — 7076
+- grape-molasses — grape molasses [sweetener,liquid] — 5984
+- date-syrup — date syrup [sweetener,liquid] — 5958
+- molasses — molasses [sweetener,liquid] — 2581
 
 Top 5 authored dishes
-- chickpea-stew — Chickpea stew — 8535
-- spinach-pie — Spinach pie — 5119
-- dried-mullet-chickpea — Dried mullet and chickpea stew — 4214
-- onions-cumin — Onions with cumin sauce — 4212
-- sauteed-chicken — Sautéed chicken — 4203
+- chickpea-stew — Chickpea stew — 7959
+- spinach-pie — Spinach pie — 4887
+- dried-mullet-chickpea — Dried mullet and chickpea stew — 4017
+- onions-cumin — Onions with cumin sauce — 4015
+- sauteed-chicken — Sautéed chicken — 3864
 
-Ingredients never appearing in this slice: **189** (of 491)
+Ingredients never appearing in this slice: **188** (of 491)
 
 #### frostlands (n=14080)
 
 Top 5 ingredients
-- gruit-beer — gruit beer [liquid,drink] — 6704
-- sage — sage [herb] — 6616
-- cloudy-beer — cloudy beer [liquid,drink] — 6193
-- honey — honey [sweetener] — 5121
-- salt — salt [spice] — 4715
+- gruit-beer — gruit beer [liquid,drink] — 7415
+- cloudy-beer — cloudy beer [liquid,drink] — 6679
+- molasses — molasses [sweetener,liquid] — 5937
+- sage — sage [herb] — 5882
+- honey — honey [sweetener] — 3609
 
 Top 5 authored dishes
-- skewered-herring-veg — Skewered herring with vegetables — 7361
-- barbarian-meatballs — Barbarian meatballs — 3810
-- skyr — Skyr with honey — 3711
-- smoked-salmon-rye — Smoked salmon with dark rye and dill — 3679
-- porridge-stew — Porridge stew — 3627
+- skewered-herring-veg — Skewered herring with vegetables — 6884
+- skyr — Skyr with honey — 3592
+- barbarian-meatballs — Barbarian meatballs — 3555
+- porridge-stew — Porridge stew — 3488
+- birch-sap-warmed — Warmed birch sap — 3442
 
-Ingredients never appearing in this slice: **252** (of 491)
+Ingredients never appearing in this slice: **251** (of 491)
 
 ### By season
 
 #### spring (n=23040)
 
 Top 5 ingredients
-- prune — prunes [fruit] — 9832
-- ale-pale — pale ale [liquid,drink] — 8066
-- sage — sage [herb] — 7651
-- peated-beer — peated beer [liquid,drink] — 7027
-- salt — salt [spice] — 5567
+- molasses — molasses [sweetener,liquid] — 11095
+- ale-pale — pale ale [liquid,drink] — 8437
+- peated-beer — peated beer [liquid,drink] — 7473
+- prune — prunes [fruit] — 6863
+- sage — sage [herb] — 6619
 
 Top 5 authored dishes
-- birch-sap-warmed — Warmed birch sap — 9428
-- sauteed-chicken — Sautéed chicken — 7314
-- boiled-milk-cream — Boiled milk with sour cream — 7063
-- onion-parsley-salad — Onion and parsley salad — 6424
-- skewered-herring-veg — Skewered herring with vegetables — 6094
+- birch-sap-warmed — Warmed birch sap — 10126
+- boiled-milk-cream — Boiled milk with sour cream — 7222
+- sauteed-chicken — Sautéed chicken — 6674
+- spinach-pie — Spinach pie — 6361
+- onion-parsley-salad — Onion and parsley salad — 6204
 
-Ingredients never appearing in this slice: **206** (of 491)
+Ingredients never appearing in this slice: **205** (of 491)
 
 #### summer (n=17920)
 
 Top 5 ingredients
-- ale-pale — pale ale [liquid,drink] — 6272
-- peated-beer — peated beer [liquid,drink] — 6120
-- sage — sage [herb] — 5276
-- honey — honey [sweetener] — 5158
-- ale — dark ale [liquid,drink] — 4414
+- molasses — molasses [sweetener,liquid] — 8869
+- ale-pale — pale ale [liquid,drink] — 6822
+- peated-beer — peated beer [liquid,drink] — 6533
+- koumiss — koumiss [liquid,drink,dairy] — 5833
+- lima-beans — lima beans [vegetable,protein] — 5019
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 7034
-- tripe-garlic-cheese — Tripe with garlic cheese — 5245
-- skewered-herring-veg — Skewered herring with vegetables — 3981
-- boiled-milk-cream — Boiled milk with sour cream — 3531
-- pickled-cucumber-salad — Pickled cucumber salad — 3526
+- sauteed-chicken — Sautéed chicken — 6202
+- tripe-garlic-cheese — Tripe with garlic cheese — 4815
+- skewered-herring-veg — Skewered herring with vegetables — 3989
+- boiled-milk-cream — Boiled milk with sour cream — 3637
+- pickled-cucumber-salad — Pickled cucumber salad — 3431
 
-Ingredients never appearing in this slice: **164** (of 491)
+Ingredients never appearing in this slice: **163** (of 491)
 
 #### autumn (n=23040)
 
 Top 5 ingredients
-- sage — sage [herb] — 9250
-- peated-beer — peated beer [liquid,drink] — 7183
-- ale-pale — pale ale [liquid,drink] — 6726
-- honey — honey [sweetener] — 5485
-- sunchoke — sunchoke [vegetable,starch] — 5141
+- molasses — molasses [sweetener,liquid] — 10765
+- sage — sage [herb] — 8411
+- peated-beer — peated beer [liquid,drink] — 7715
+- ale-pale — pale ale [liquid,drink] — 7340
+- koumiss — koumiss [liquid,drink,dairy] — 5769
 
 Top 5 authored dishes
-- hypocras — Spiced wine — 4854
-- skewered-herring-veg — Skewered herring with vegetables — 4271
-- pine-needle-tea — Pine needle tea — 4043
-- spinach-pie — Spinach pie — 3898
-- salt-cod-roots — Salt cod stew with winter roots — 3647
+- hypocras — Spiced wine — 4746
+- pine-needle-tea — Pine needle tea — 3971
+- skewered-herring-veg — Skewered herring with vegetables — 3967
+- spinach-pie — Spinach pie — 3713
+- salt-cod-roots — Salt cod stew with winter roots — 3563
 
-Ingredients never appearing in this slice: **112** (of 491)
+Ingredients never appearing in this slice: **111** (of 491)
 
 #### winter (n=17920)
 
 Top 5 ingredients
-- sage — sage [herb] — 10630
-- prune — prunes [fruit] — 6917
-- sunchoke — sunchoke [vegetable,starch] — 5996
-- peated-beer — peated beer [liquid,drink] — 5375
-- ale-pale — pale ale [liquid,drink] — 5086
+- sage — sage [herb] — 9312
+- molasses — molasses [sweetener,liquid] — 8731
+- peated-beer — peated beer [liquid,drink] — 5787
+- ale-pale — pale ale [liquid,drink] — 5557
+- prune — prunes [fruit] — 4107
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4102
-- skewered-herring-veg — Skewered herring with vegetables — 3948
-- salt-cod-roots — Salt cod stew with winter roots — 3802
-- hypocras — Spiced wine — 3744
-- apple-tart — Apple tart — 3557
+- skewered-herring-veg — Skewered herring with vegetables — 3839
+- salt-cod-roots — Salt cod stew with winter roots — 3758
+- apple-tart — Apple tart — 3702
+- hypocras — Spiced wine — 3674
+- sauteed-chicken — Sautéed chicken — 3546
 
 Ingredients never appearing in this slice: **181** (of 491)
 
@@ -176,80 +176,79 @@ Ingredients never appearing in this slice: **181** (of 491)
 #### roadside (n=20480)
 
 Top 5 ingredients
-- molasses — molasses [sweetener,liquid] — 6018
-- prune — prunes [fruit] — 5682
-- ale-pale — pale ale [liquid,drink] — 4042
-- beans — dried beans [starch,protein] — 3922
-- peated-beer — peated beer [liquid,drink] — 3709
+- molasses — molasses [sweetener,liquid] — 28529
+- ale-pale — pale ale [liquid,drink] — 6438
+- koumiss — koumiss [liquid,drink,dairy] — 6220
+- peated-beer — peated beer [liquid,drink] — 5876
+- plantain — plantains [fruit,starch] — 4377
 
 Top 5 authored dishes
-- porridge-stew — Porridge stew — 6300
-- tripe-garlic-cheese — Tripe with garlic cheese — 6153
-- liver-stew — Liver stew — 5777
-- skewered-herring-veg — Skewered herring with vegetables — 5084
-- sauteed-chicken — Sautéed chicken — 4990
+- porridge-stew — Porridge stew — 6141
+- tripe-garlic-cheese — Tripe with garlic cheese — 5997
+- liver-stew — Liver stew — 5606
+- skewered-herring-veg — Skewered herring with vegetables — 4980
+- sauteed-chicken — Sautéed chicken — 4827
 
 Ingredients never appearing in this slice: **263** (of 491)
 
 #### common (n=20480)
 
 Top 5 ingredients
-- ale-pale — pale ale [liquid,drink] — 8164
-- peated-beer — peated beer [liquid,drink] — 8108
-- sage — sage [herb] — 7907
-- honey — honey [sweetener] — 7690
-- wine-resined — resined white wine [liquid,drink] — 6520
+- molasses — molasses [sweetener,liquid] — 8808
+- ale-pale — pale ale [liquid,drink] — 8725
+- peated-beer — peated beer [liquid,drink] — 8634
+- sage — sage [herb] — 7335
+- koumiss — koumiss [liquid,drink,dairy] — 5950
 
 Top 5 authored dishes
-- porridge-stew — Porridge stew — 4894
-- tripe-garlic-cheese — Tripe with garlic cheese — 4228
-- liver-stew — Liver stew — 4078
-- pine-needle-tea — Pine needle tea — 3778
-- skewered-herring-veg — Skewered herring with vegetables — 3748
+- porridge-stew — Porridge stew — 4619
+- tripe-garlic-cheese — Tripe with garlic cheese — 3988
+- liver-stew — Liver stew — 3868
+- pine-needle-tea — Pine needle tea — 3768
+- skewered-herring-veg — Skewered herring with vegetables — 3590
 
 Ingredients never appearing in this slice: **128** (of 491)
 
 #### fine (n=20480)
 
 Top 5 ingredients
-- sage — sage [herb] — 11040
-- ale-pale — pale ale [liquid,drink] — 7221
-- peated-beer — peated beer [liquid,drink] — 7090
-- salt — salt [spice] — 6769
-- honey — honey [sweetener] — 6188
+- sage — sage [herb] — 9415
+- ale-pale — pale ale [liquid,drink] — 6601
+- peated-beer — peated beer [liquid,drink] — 6531
+- honey — honey [sweetener] — 4725
+- gruit-beer — gruit beer [liquid,drink] — 4585
 
 Top 5 authored dishes
-- tripe-garlic-cheese — Tripe with garlic cheese — 6874
-- sauteed-chicken — Sautéed chicken — 6058
-- skewered-herring-veg — Skewered herring with vegetables — 4626
-- hypocras — Spiced wine — 4302
-- onion-parsley-salad — Onion and parsley salad — 3667
+- tripe-garlic-cheese — Tripe with garlic cheese — 5863
+- sauteed-chicken — Sautéed chicken — 4953
+- skewered-herring-veg — Skewered herring with vegetables — 4498
+- mariners-cup — The Mariner's Cup — 4487
+- hypocras — Spiced wine — 4211
 
-Ingredients never appearing in this slice: **50** (of 491)
+Ingredients never appearing in this slice: **51** (of 491)
 
 #### noble (n=20480)
 
 Top 5 ingredients
-- sage — sage [herb] — 11176
-- salt — salt [spice] — 7027
-- peated-beer — peated beer [liquid,drink] — 6798
-- ale-pale — pale ale [liquid,drink] — 6723
-- honey — honey [sweetener] — 6318
+- sage — sage [herb] — 9416
+- peated-beer — peated beer [liquid,drink] — 6467
+- ale-pale — pale ale [liquid,drink] — 6392
+- honey — honey [sweetener] — 4731
+- koumiss — koumiss [liquid,drink,dairy] — 4580
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 7359
-- skewered-herring-veg — Skewered herring with vegetables — 4836
-- hypocras — Spiced wine — 4296
-- mariners-cup — The Mariner's Cup — 3830
-- smoked-salmon-rye — Smoked salmon with dark rye and dill — 3218
+- sauteed-chicken — Sautéed chicken — 6299
+- skewered-herring-veg — Skewered herring with vegetables — 4805
+- mariners-cup — The Mariner's Cup — 4618
+- hypocras — Spiced wine — 4209
+- birch-sap-warmed — Warmed birch sap — 3170
 
-Ingredients never appearing in this slice: **26** (of 491)
+Ingredients never appearing in this slice: **25** (of 491)
   - albatross — albatross [protein,fowl]
   - aurochs — aurochs [protein,ruminant]
   - rat — rat [protein,game]
   - mole — mole [protein,game]
-  - sorghum — sorghum [starch]
-  - mango — mangoes [fruit]
+  - millet — millet [starch]
   - chia — chia seeds [nut]
   - bear — bear [protein,game]
   - ostrich — ostrich [protein,game]
@@ -276,18 +275,18 @@ Ingredients never appearing in this slice: **26** (of 491)
 #### peace (n=16384)
 
 Top 5 ingredients
-- molasses — molasses [sweetener,liquid] — 10771
-- koumiss — koumiss [liquid,drink,dairy] — 9574
-- sage — sage [herb] — 5212
-- ale-pale — pale ale [liquid,drink] — 4560
-- peated-beer — peated beer [liquid,drink] — 4356
+- molasses — molasses [sweetener,liquid] — 7836
+- ale-pale — pale ale [liquid,drink] — 5703
+- peated-beer — peated beer [liquid,drink] — 5639
+- sage — sage [herb] — 5451
+- koumiss — koumiss [liquid,drink,dairy] — 4378
 
 Top 5 authored dishes
-- skewered-herring-veg — Skewered herring with vegetables — 3695
-- sauteed-chicken — Sautéed chicken — 3620
-- birch-sap-warmed — Warmed birch sap — 2879
-- tripe-garlic-cheese — Tripe with garlic cheese — 2743
-- mariners-cup — The Mariner's Cup — 2657
+- skewered-herring-veg — Skewered herring with vegetables — 3756
+- sauteed-chicken — Sautéed chicken — 3522
+- mariners-cup — The Mariner's Cup — 2746
+- tripe-garlic-cheese — Tripe with garlic cheese — 2730
+- birch-sap-warmed — Warmed birch sap — 2703
 
 Ingredients never appearing in this slice: **27** (of 491)
   - albatross — albatross [protein,fowl]
@@ -321,100 +320,481 @@ Ingredients never appearing in this slice: **27** (of 491)
 #### war (n=16384)
 
 Top 5 ingredients
-- sage — sage [herb] — 6481
-- ale-pale — pale ale [liquid,drink] — 5628
-- peated-beer — peated beer [liquid,drink] — 5609
-- honey — honey [sweetener] — 4603
-- prune — prunes [fruit] — 4336
+- molasses — molasses [sweetener,liquid] — 7719
+- ale-pale — pale ale [liquid,drink] — 5695
+- peated-beer — peated beer [liquid,drink] — 5582
+- sage — sage [herb] — 5474
+- koumiss — koumiss [liquid,drink,dairy] — 4456
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4452
-- tripe-garlic-cheese — Tripe with garlic cheese — 3783
-- skewered-herring-veg — Skewered herring with vegetables — 3530
-- onion-parsley-salad — Onion and parsley salad — 2859
-- porridge-stew — Porridge stew — 2468
+- skewered-herring-veg — Skewered herring with vegetables — 3706
+- sauteed-chicken — Sautéed chicken — 3302
+- tripe-garlic-cheese — Tripe with garlic cheese — 3186
+- mariners-cup — The Mariner's Cup — 2783
+- birch-sap-warmed — Warmed birch sap — 2599
 
-Ingredients never appearing in this slice: **134** (of 491)
+Ingredients never appearing in this slice: **31** (of 491)
 
 #### plague (n=16384)
 
 Top 5 ingredients
-- sage — sage [herb] — 7032
-- ale-pale — pale ale [liquid,drink] — 5288
-- peated-beer — peated beer [liquid,drink] — 5179
-- salt — salt [spice] — 4537
-- honey — honey [sweetener] — 4447
+- molasses — molasses [sweetener,liquid] — 7963
+- sage — sage [herb] — 5891
+- ale-pale — pale ale [liquid,drink] — 5547
+- peated-beer — peated beer [liquid,drink] — 5424
+- koumiss — koumiss [liquid,drink,dairy] — 4139
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4616
-- skewered-herring-veg — Skewered herring with vegetables — 3716
-- tripe-garlic-cheese — Tripe with garlic cheese — 3587
-- onion-parsley-salad — Onion and parsley salad — 2623
-- porridge-stew — Porridge stew — 2149
+- sauteed-chicken — Sautéed chicken — 4141
+- skewered-herring-veg — Skewered herring with vegetables — 3490
+- tripe-garlic-cheese — Tripe with garlic cheese — 3320
+- onion-parsley-salad — Onion and parsley salad — 2626
+- boiled-milk-cream — Boiled milk with sour cream — 2048
 
-Ingredients never appearing in this slice: **133** (of 491)
+Ingredients never appearing in this slice: **29** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - saffron — saffron [spice]
+  - chia — chia seeds [nut]
+  - peacock — peacock [protein,fowl]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - vanilla — vanilla bean [spice]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - cacao — cacao [spice,sweetener]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
 
 #### isolation (n=16384)
 
 Top 5 ingredients
-- sage — sage [herb] — 7042
-- peated-beer — peated beer [liquid,drink] — 5375
-- ale-pale — pale ale [liquid,drink] — 5299
-- salt — salt [spice] — 4577
-- honey — honey [sweetener] — 4552
+- molasses — molasses [sweetener,liquid] — 7997
+- sage — sage [herb] — 6022
+- ale-pale — pale ale [liquid,drink] — 5569
+- peated-beer — peated beer [liquid,drink] — 5403
+- koumiss — koumiss [liquid,drink,dairy] — 4140
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4767
-- skewered-herring-veg — Skewered herring with vegetables — 3685
-- tripe-garlic-cheese — Tripe with garlic cheese — 3604
-- onion-parsley-salad — Onion and parsley salad — 2593
-- porridge-stew — Porridge stew — 2170
+- sauteed-chicken — Sautéed chicken — 4350
+- skewered-herring-veg — Skewered herring with vegetables — 3485
+- tripe-garlic-cheese — Tripe with garlic cheese — 3355
+- onion-parsley-salad — Onion and parsley salad — 2596
+- boiled-milk-cream — Boiled milk with sour cream — 2089
 
-Ingredients never appearing in this slice: **133** (of 491)
+Ingredients never appearing in this slice: **29** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - saffron — saffron [spice]
+  - chia — chia seeds [nut]
+  - peacock — peacock [protein,fowl]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - vanilla — vanilla bean [spice]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - cacao — cacao [spice,sweetener]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
 
 #### siege (n=16384)
 
 Top 5 ingredients
-- sage — sage [herb] — 7040
-- ale-pale — pale ale [liquid,drink] — 5375
-- peated-beer — peated beer [liquid,drink] — 5186
-- salt — salt [spice] — 4504
-- honey — honey [sweetener] — 4472
+- molasses — molasses [sweetener,liquid] — 7945
+- sage — sage [herb] — 5853
+- ale-pale — pale ale [liquid,drink] — 5642
+- peated-beer — peated beer [liquid,drink] — 5460
+- koumiss — koumiss [liquid,drink,dairy] — 4165
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4636
-- skewered-herring-veg — Skewered herring with vegetables — 3668
-- tripe-garlic-cheese — Tripe with garlic cheese — 3538
-- onion-parsley-salad — Onion and parsley salad — 2625
-- porridge-stew — Porridge stew — 2263
+- sauteed-chicken — Sautéed chicken — 4206
+- skewered-herring-veg — Skewered herring with vegetables — 3436
+- tripe-garlic-cheese — Tripe with garlic cheese — 3257
+- onion-parsley-salad — Onion and parsley salad — 2629
+- porridge-stew — Porridge stew — 2135
 
-Ingredients never appearing in this slice: **133** (of 491)
+Ingredients never appearing in this slice: **31** (of 491)
 
 ### By weather
 
 #### clear (n=25600)
 
 Top 5 ingredients
-- peated-beer — peated beer [liquid,drink] — 7512
-- ale-pale — pale ale [liquid,drink] — 7413
-- sage — sage [herb] — 7337
-- honey — honey [sweetener] — 6325
-- salt — salt [spice] — 6042
+- molasses — molasses [sweetener,liquid] — 11998
+- ale-pale — pale ale [liquid,drink] — 7975
+- peated-beer — peated beer [liquid,drink] — 7964
+- koumiss — koumiss [liquid,drink,dairy] — 7705
+- sage — sage [herb] — 6262
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 7007
-- skewered-herring-veg — Skewered herring with vegetables — 5905
-- tripe-garlic-cheese — Tripe with garlic cheese — 5447
-- onion-parsley-salad — Onion and parsley salad — 3833
-- porridge-stew — Porridge stew — 3545
+- sauteed-chicken — Sautéed chicken — 6267
+- skewered-herring-veg — Skewered herring with vegetables — 5807
+- tripe-garlic-cheese — Tripe with garlic cheese — 5064
+- onion-parsley-salad — Onion and parsley salad — 3716
+- porridge-stew — Porridge stew — 3437
+
+Ingredients never appearing in this slice: **24** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - chia — chia seeds [nut]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### rain (n=25600)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 11720
+- ale-pale — pale ale [liquid,drink] — 8130
+- peated-beer — peated beer [liquid,drink] — 7875
+- koumiss — koumiss [liquid,drink,dairy] — 7738
+- sage — sage [herb] — 7683
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 6097
+- skewered-herring-veg — Skewered herring with vegetables — 5681
+- tripe-garlic-cheese — Tripe with garlic cheese — 4976
+- onion-parsley-salad — Onion and parsley salad — 3710
+- porridge-stew — Porridge stew — 3399
+
+Ingredients never appearing in this slice: **25** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - chia — chia seeds [nut]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### snow (n=15360)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 8328
+- sage — sage [herb] — 8309
+- ale-pale — pale ale [liquid,drink] — 5827
+- peated-beer — peated beer [liquid,drink] — 5706
+- prune — prunes [fruit] — 3984
+
+Top 5 authored dishes
+- skewered-herring-veg — Skewered herring with vegetables — 4016
+- sauteed-chicken — Sautéed chicken — 3251
+- birch-sap-warmed — Warmed birch sap — 2775
+- tripe-garlic-cheese — Tripe with garlic cheese — 2628
+- pine-needle-tea — Pine needle tea — 2252
+
+Ingredients never appearing in this slice: **218** (of 491)
+
+#### heatwave (n=15360)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 7414
+- sage — sage [herb] — 6437
+- ale-pale — pale ale [liquid,drink] — 6224
+- peated-beer — peated beer [liquid,drink] — 5963
+- koumiss — koumiss [liquid,drink,dairy] — 5835
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 3906
+- tripe-garlic-cheese — Tripe with garlic cheese — 3180
+- onion-parsley-salad — Onion and parsley salad — 3028
+- spinach-pie — Spinach pie — 2863
+- boiled-milk-cream — Boiled milk with sour cream — 2418
+
+Ingredients never appearing in this slice: **182** (of 491)
+
+### By event
+
+#### none (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 4685
+- sage — sage [herb] — 4140
+- peated-beer — peated beer [liquid,drink] — 2916
+- ale-pale — pale ale [liquid,drink] — 2771
+- koumiss — koumiss [liquid,drink,dairy] — 2136
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 3252
+- skewered-herring-veg — Skewered herring with vegetables — 2573
+- tripe-garlic-cheese — Tripe with garlic cheese — 2398
+- porridge-stew — Porridge stew — 1617
+- boiled-milk-cream — Boiled milk with sour cream — 1358
+
+Ingredients never appearing in this slice: **28** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - saffron — saffron [spice]
+  - mango — mangoes [fruit]
+  - chia — chia seeds [nut]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - lychee — lychee [fruit]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### harvest-festival (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 5196
+- peated-beer — peated beer [liquid,drink] — 3790
+- ale-pale — pale ale [liquid,drink] — 3507
+- sage — sage [herb] — 3279
+- koumiss — koumiss [liquid,drink,dairy] — 2888
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 1952
+- skewered-herring-veg — Skewered herring with vegetables — 1904
+- onion-parsley-salad — Onion and parsley salad — 1760
+- tripe-garlic-cheese — Tripe with garlic cheese — 1686
+- boiled-milk-cream — Boiled milk with sour cream — 1404
+
+Ingredients never appearing in this slice: **27** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - chia — chia seeds [nut]
+  - suet — suet [fat]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - longan — longan [fruit]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### market-day (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 4902
+- ale-pale — pale ale [liquid,drink] — 3996
+- peated-beer — peated beer [liquid,drink] — 3904
+- koumiss — koumiss [liquid,drink,dairy] — 3529
+- sage — sage [herb] — 3222
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 2201
+- skewered-herring-veg — Skewered herring with vegetables — 2048
+- tripe-garlic-cheese — Tripe with garlic cheese — 1940
+- onion-parsley-salad — Onion and parsley salad — 1822
+- boiled-milk-cream — Boiled milk with sour cream — 1481
+
+Ingredients never appearing in this slice: **32** (of 491)
+
+#### merchant-caravan (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 4713
+- sage — sage [herb] — 4175
+- peated-beer — peated beer [liquid,drink] — 2836
+- ale-pale — pale ale [liquid,drink] — 2779
+- koumiss — koumiss [liquid,drink,dairy] — 2159
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 3240
+- skewered-herring-veg — Skewered herring with vegetables — 2595
+- tripe-garlic-cheese — Tripe with garlic cheese — 2410
+- porridge-stew — Porridge stew — 1659
+- liver-stew — Liver stew — 1364
 
 Ingredients never appearing in this slice: **26** (of 491)
   - albatross — albatross [protein,fowl]
   - aurochs — aurochs [protein,ruminant]
   - rat — rat [protein,game]
   - mole — mole [protein,game]
+  - melon — melons [fruit]
+  - chia — chia seeds [nut]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### noble-visit (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 5038
+- ale-pale — pale ale [liquid,drink] — 4604
+- sage — sage [herb] — 3271
+- peated-beer — peated beer [liquid,drink] — 3037
+- koumiss — koumiss [liquid,drink,dairy] — 2595
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 1802
+- skewered-herring-veg — Skewered herring with vegetables — 1704
+- tripe-garlic-cheese — Tripe with garlic cheese — 1692
+- onion-parsley-salad — Onion and parsley salad — 1505
+- spinach-pie — Spinach pie — 1430
+
+Ingredients never appearing in this slice: **27** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
   - mango — mangoes [fruit]
   - chia — chia seeds [nut]
+  - suet — suet [fat]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
+
+#### hunting-return (n=10240)
+
+Top 5 ingredients
+- molasses — molasses [sweetener,liquid] — 5064
+- peated-beer — peated beer [liquid,drink] — 3682
+- ale-pale — pale ale [liquid,drink] — 3535
+- gruit-beer — gruit beer [liquid,drink] — 3469
+- sage — sage [herb] — 3372
+
+Top 5 authored dishes
+- sauteed-chicken — Sautéed chicken — 2263
+- tripe-garlic-cheese — Tripe with garlic cheese — 2022
+- onion-parsley-salad — Onion and parsley salad — 1712
+- skewered-herring-veg — Skewered herring with vegetables — 1548
+- boiled-milk-cream — Boiled milk with sour cream — 1362
+
+Ingredients never appearing in this slice: **28** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - cantaloupe — cantaloupes [fruit]
+  - pistachio — pistachios [nut]
+  - chia — chia seeds [nut]
+  - suet — suet [fat]
   - bear — bear [protein,game]
   - ostrich — ostrich [protein,game]
   - asafoetida — asafoetida [spice]
@@ -436,39 +816,39 @@ Ingredients never appearing in this slice: **26** (of 491)
   - fern-ash — fern ash [spice,starch]
   - cave-honey — cave honey [sweetener]
 
-#### rain (n=25600)
+#### fishing-good (n=10240)
 
 Top 5 ingredients
-- sage — sage [herb] — 8843
-- ale-pale — pale ale [liquid,drink] — 7496
-- peated-beer — peated beer [liquid,drink] — 7405
-- honey — honey [sweetener] — 6339
-- salt — salt [spice] — 5706
+- molasses — molasses [sweetener,liquid] — 5177
+- peated-beer — peated beer [liquid,drink] — 4442
+- ale-pale — pale ale [liquid,drink] — 4222
+- sage — sage [herb] — 3317
+- koumiss — koumiss [liquid,drink,dairy] — 2897
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 6980
-- skewered-herring-veg — Skewered herring with vegetables — 5837
-- tripe-garlic-cheese — Tripe with garlic cheese — 5429
-- onion-parsley-salad — Onion and parsley salad — 3812
-- porridge-stew — Porridge stew — 3560
+- skewered-herring-veg — Skewered herring with vegetables — 2655
+- sauteed-chicken — Sautéed chicken — 1645
+- onion-parsley-salad — Onion and parsley salad — 1614
+- tripe-garlic-cheese — Tripe with garlic cheese — 1396
+- boiled-milk-cream — Boiled milk with sour cream — 1340
 
 Ingredients never appearing in this slice: **28** (of 491)
   - albatross — albatross [protein,fowl]
   - aurochs — aurochs [protein,ruminant]
   - rat — rat [protein,game]
   - mole — mole [protein,game]
-  - mango — mangoes [fruit]
+  - saffron — saffron [spice]
+  - grapefruit — grapefruits [fruit]
   - chia — chia seeds [nut]
+  - suet — suet [fat]
   - bear — bear [protein,game]
   - ostrich — ostrich [protein,game]
   - caviar — sturgeon caviar [protein,fish]
-  - mahi-mahi — mahi-mahi [protein,fish]
   - asafoetida — asafoetida [spice]
   - kola-nut — kola nut [nut]
   - hedgehog — hedgehog [protein,game]
   - dormouse — dormouse [protein,game]
   - starfruit — starfruit [fruit]
-  - passion-fruit — passion fruit [fruit]
   - chamois — chamois [protein,game,ruminant]
   - seawater-brine — seawater brine [liquid,spice]
   - pine-resin — pine resin [spice]
@@ -482,212 +862,75 @@ Ingredients never appearing in this slice: **28** (of 491)
   - fern-ash — fern ash [spice,starch]
   - cave-honey — cave honey [sweetener]
 
-#### snow (n=15360)
-
-Top 5 ingredients
-- sage — sage [herb] — 9220
-- prune — prunes [fruit] — 5528
-- ale-pale — pale ale [liquid,drink] — 5438
-- peated-beer — peated beer [liquid,drink] — 5268
-- salt — salt [spice] — 4206
-
-Top 5 authored dishes
-- skewered-herring-veg — Skewered herring with vegetables — 4190
-- sauteed-chicken — Sautéed chicken — 3714
-- tripe-garlic-cheese — Tripe with garlic cheese — 2891
-- birch-sap-warmed — Warmed birch sap — 2542
-- porridge-stew — Porridge stew — 2296
-
-Ingredients never appearing in this slice: **217** (of 491)
-
-#### heatwave (n=15360)
-
-Top 5 ingredients
-- sage — sage [herb] — 7407
-- ale-pale — pale ale [liquid,drink] — 5803
-- peated-beer — peated beer [liquid,drink] — 5520
-- prune — prunes [fruit] — 4221
-- ale — dark ale [liquid,drink] — 3763
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 4390
-- tripe-garlic-cheese — Tripe with garlic cheese — 3488
-- onion-parsley-salad — Onion and parsley salad — 3143
-- spinach-pie — Spinach pie — 2948
-- chickpea-stew — Chickpea stew — 2432
-
-Ingredients never appearing in this slice: **182** (of 491)
-
-### By event
-
-#### none (n=10240)
-
-Top 5 ingredients
-- sage — sage [herb] — 5219
-- salt — salt [spice] — 3161
-- peated-beer — peated beer [liquid,drink] — 2959
-- ale-pale — pale ale [liquid,drink] — 2788
-- honey — honey [sweetener] — 2430
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 3864
-- skewered-herring-veg — Skewered herring with vegetables — 2778
-- tripe-garlic-cheese — Tripe with garlic cheese — 2758
-- porridge-stew — Porridge stew — 1751
-- liver-stew — Liver stew — 1455
-
-Ingredients never appearing in this slice: **37** (of 491)
-
-#### harvest-festival (n=10240)
-
-Top 5 ingredients
-- sage — sage [herb] — 3463
-- peated-beer — peated beer [liquid,drink] — 3443
-- ale-pale — pale ale [liquid,drink] — 3119
-- honey — honey [sweetener] — 2565
-- prune — prunes [fruit] — 2294
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 2066
-- skewered-herring-veg — Skewered herring with vegetables — 1907
-- onion-parsley-salad — Onion and parsley salad — 1797
-- tripe-garlic-cheese — Tripe with garlic cheese — 1748
-- boiled-milk-cream — Boiled milk with sour cream — 1382
-
-Ingredients never appearing in this slice: **32** (of 491)
-
-#### market-day (n=10240)
-
-Top 5 ingredients
-- ale-pale — pale ale [liquid,drink] — 3487
-- peated-beer — peated beer [liquid,drink] — 3487
-- sage — sage [herb] — 3368
-- honey — honey [sweetener] — 2656
-- ale — dark ale [liquid,drink] — 2632
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 2337
-- skewered-herring-veg — Skewered herring with vegetables — 2033
-- tripe-garlic-cheese — Tripe with garlic cheese — 1996
-- onion-parsley-salad — Onion and parsley salad — 1870
-- boiled-milk-cream — Boiled milk with sour cream — 1424
-
-Ingredients never appearing in this slice: **33** (of 491)
-
-#### merchant-caravan (n=10240)
-
-Top 5 ingredients
-- sage — sage [herb] — 5249
-- salt — salt [spice] — 3240
-- peated-beer — peated beer [liquid,drink] — 2714
-- ale-pale — pale ale [liquid,drink] — 2699
-- prune — prunes [fruit] — 2305
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 3877
-- skewered-herring-veg — Skewered herring with vegetables — 2768
-- tripe-garlic-cheese — Tripe with garlic cheese — 2760
-- porridge-stew — Porridge stew — 1774
-- liver-stew — Liver stew — 1483
-
-Ingredients never appearing in this slice: **33** (of 491)
-
-#### noble-visit (n=10240)
-
-Top 5 ingredients
-- ale-pale — pale ale [liquid,drink] — 4190
-- sage — sage [herb] — 3478
-- honey — honey [sweetener] — 3071
-- prune — prunes [fruit] — 2942
-- peated-beer — peated beer [liquid,drink] — 2827
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 1939
-- tripe-garlic-cheese — Tripe with garlic cheese — 1738
-- skewered-herring-veg — Skewered herring with vegetables — 1684
-- onion-parsley-salad — Onion and parsley salad — 1550
-- spinach-pie — Spinach pie — 1392
-
-Ingredients never appearing in this slice: **31** (of 491)
-
-#### hunting-return (n=10240)
-
-Top 5 ingredients
-- sage — sage [herb] — 3528
-- peated-beer — peated beer [liquid,drink] — 3298
-- ale-pale — pale ale [liquid,drink] — 3216
-- gruit-beer — gruit beer [liquid,drink] — 3163
-- honey — honey [sweetener] — 2322
-
-Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 2367
-- tripe-garlic-cheese — Tripe with garlic cheese — 2064
-- onion-parsley-salad — Onion and parsley salad — 1754
-- skewered-herring-veg — Skewered herring with vegetables — 1551
-- liver-stew — Liver stew — 1345
-
-Ingredients never appearing in this slice: **37** (of 491)
-
-#### fishing-good (n=10240)
-
-Top 5 ingredients
-- peated-beer — peated beer [liquid,drink] — 4109
-- ale-pale — pale ale [liquid,drink] — 3909
-- sage — sage [herb] — 3484
-- honey — honey [sweetener] — 2565
-- prune — prunes [fruit] — 2486
-
-Top 5 authored dishes
-- skewered-herring-veg — Skewered herring with vegetables — 2573
-- sauteed-chicken — Sautéed chicken — 1805
-- onion-parsley-salad — Onion and parsley salad — 1671
-- tripe-garlic-cheese — Tripe with garlic cheese — 1477
-- boiled-milk-cream — Boiled milk with sour cream — 1331
-
-Ingredients never appearing in this slice: **39** (of 491)
-
 #### religious-fast (n=10240)
 
 Top 5 ingredients
-- sage — sage [herb] — 5018
-- salt — salt [spice] — 3239
-- peated-beer — peated beer [liquid,drink] — 2868
+- molasses — molasses [sweetener,liquid] — 4685
+- sage — sage [herb] — 3915
+- peated-beer — peated beer [liquid,drink] — 2901
 - ale-pale — pale ale [liquid,drink] — 2742
-- prune — prunes [fruit] — 2369
+- koumiss — koumiss [liquid,drink,dairy] — 2163
 
 Top 5 authored dishes
-- sauteed-chicken — Sautéed chicken — 3836
-- skewered-herring-veg — Skewered herring with vegetables — 3000
-- tripe-garlic-cheese — Tripe with garlic cheese — 2714
-- porridge-stew — Porridge stew — 1778
-- fish-meatballs-wine — Fish meatballs in wine — 1548
+- sauteed-chicken — Sautéed chicken — 3166
+- skewered-herring-veg — Skewered herring with vegetables — 2846
+- tripe-garlic-cheese — Tripe with garlic cheese — 2304
+- porridge-stew — Porridge stew — 1605
+- fish-meatballs-wine — Fish meatballs in wine — 1421
 
-Ingredients never appearing in this slice: **35** (of 491)
+Ingredients never appearing in this slice: **27** (of 491)
+  - albatross — albatross [protein,fowl]
+  - aurochs — aurochs [protein,ruminant]
+  - rat — rat [protein,game]
+  - mole — mole [protein,game]
+  - truffle-white — white truffle [vegetable]
+  - mango — mangoes [fruit]
+  - chia — chia seeds [nut]
+  - bear — bear [protein,game]
+  - ostrich — ostrich [protein,game]
+  - caviar — sturgeon caviar [protein,fish]
+  - asafoetida — asafoetida [spice]
+  - kola-nut — kola nut [nut]
+  - hedgehog — hedgehog [protein,game]
+  - dormouse — dormouse [protein,game]
+  - starfruit — starfruit [fruit]
+  - chamois — chamois [protein,game,ruminant]
+  - seawater-brine — seawater brine [liquid,spice]
+  - pine-resin — pine resin [spice]
+  - giant-deer — giant deer [protein,game,ruminant]
+  - megaceront — megaceront [protein,game,ruminant]
+  - cave-bear — cave bear [protein,game]
+  - whale — whale meat [protein,game]
+  - aurochs-blood — aurochs blood [protein,liquid]
+  - fermented-milk — fermented aurochs milk [dairy,liquid]
+  - lichen — lichen [vegetable]
+  - fern-ash — fern ash [spice,starch]
+  - cave-honey — cave honey [sweetener]
 
 ## B. Top ingredient by biome × tier
 
 | biome | tier | top ingredient | count |
 |---|---|---|---:|
-| coastal | roadside | ale-pale (pale ale [liquid,drink]) | 2552 |
-| coastal | common | ale-pale (pale ale [liquid,drink]) | 5663 |
-| coastal | fine | ale-pale (pale ale [liquid,drink]) | 4688 |
-| coastal | noble | ale-pale (pale ale [liquid,drink]) | 4212 |
-| heartland | roadside | ale-pale (pale ale [liquid,drink]) | 1490 |
-| heartland | common | sage (sage [herb]) | 2692 |
-| heartland | fine | sage (sage [herb]) | 3367 |
-| heartland | noble | sage (sage [herb]) | 3493 |
-| highland | roadside | peated-beer (peated beer [liquid,drink]) | 1421 |
-| highland | common | peated-beer (peated beer [liquid,drink]) | 2829 |
-| highland | fine | gruit-beer (gruit beer [liquid,drink]) | 2767 |
-| highland | noble | gruit-beer (gruit beer [liquid,drink]) | 2782 |
-| arid | roadside | grape-molasses (grape molasses [sweetener,liquid]) | 2703 |
-| arid | common | wine-resined (resined white wine [liquid,drink]) | 6520 |
-| arid | fine | wine-resined (resined white wine [liquid,drink]) | 3225 |
-| arid | noble | wine-resined (resined white wine [liquid,drink]) | 3149 |
-| frostlands | roadside | gruit-beer (gruit beer [liquid,drink]) | 1389 |
-| frostlands | common | honey (honey [sweetener]) | 1891 |
-| frostlands | fine | sage (sage [herb]) | 2485 |
-| frostlands | noble | sage (sage [herb]) | 2388 |
+| coastal | roadside | molasses (molasses [sweetener,liquid]) | 10303 |
+| coastal | common | ale-pale (pale ale [liquid,drink]) | 6093 |
+| coastal | fine | ale-pale (pale ale [liquid,drink]) | 4214 |
+| coastal | noble | ale-pale (pale ale [liquid,drink]) | 3950 |
+| heartland | roadside | molasses (molasses [sweetener,liquid]) | 6917 |
+| heartland | common | ale-pale (pale ale [liquid,drink]) | 2632 |
+| heartland | fine | sage (sage [herb]) | 2928 |
+| heartland | noble | sage (sage [herb]) | 3046 |
+| highland | roadside | molasses (molasses [sweetener,liquid]) | 5443 |
+| highland | common | gruit-beer (gruit beer [liquid,drink]) | 2970 |
+| highland | fine | gruit-beer (gruit beer [liquid,drink]) | 2639 |
+| highland | noble | gruit-beer (gruit beer [liquid,drink]) | 2645 |
+| arid | roadside | koumiss (koumiss [liquid,drink,dairy]) | 6220 |
+| arid | common | koumiss (koumiss [liquid,drink,dairy]) | 5950 |
+| arid | fine | koumiss (koumiss [liquid,drink,dairy]) | 4528 |
+| arid | noble | koumiss (koumiss [liquid,drink,dairy]) | 4580 |
+| frostlands | roadside | molasses (molasses [sweetener,liquid]) | 3975 |
+| frostlands | common | molasses (molasses [sweetener,liquid]) | 1635 |
+| frostlands | fine | sage (sage [herb]) | 2136 |
+| frostlands | noble | sage (sage [herb]) | 2026 |
 
 ## C. Inconsistencies & scope flags
 
@@ -719,9 +962,9 @@ These tags don't gate the ingredient (treated as ambient) but suggest a misspell
 None worth flagging.
 
 ### C5. Truly orphaned ingredients (0)
-Non-unusual ingredients no template+prep combination can pull. The procedural-pool's `unusual` filter is intentional and excluded from this scan.
+Non-peculiar ingredients no template+prep combination can pull. The procedural-pool's `peculiar` filter is intentional and excluded from this scan.
 
-All non-unusual ingredients reachable.
+All non-peculiar ingredients reachable.
 
 ### C6. Duplicate dish names (0)
 
