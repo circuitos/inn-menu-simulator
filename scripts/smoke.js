@@ -19,15 +19,13 @@
 
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
 const {
   dishesWithBadBiomes,
   mainsMissingContains,
   unreachableNonUnusualIngredients,
 } = require("./lib/checks");
+const { ROOT, loadData, loadGenerator } = require("./lib/loader");
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
 const OUT_DIR = path.join(ROOT, "out");
 const HISTORY_DIR = path.join(OUT_DIR, "history");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-report.md");
@@ -41,30 +39,8 @@ const WORLDS_CAP = process.env.WORLDS ? parseInt(process.env.WORLDS, 10) : null;
 const RARE_FACTOR = parseFloat(process.env.RARE_FACTOR || "0.2");
 const OVER_FACTOR = parseFloat(process.env.OVER_FACTOR || "5");
 
-// ---------- load data ----------
-function loadJson(name) {
-  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name + ".json"), "utf8"));
-}
-const data = {
-  authored_dishes: loadJson("authored_dishes"),
-  ingredients: loadJson("ingredients"),
-  preparations: loadJson("preparations"),
-  dishes: loadJson("dishes"),
-  events: loadJson("events"),
-  modifiers: loadJson("modifiers")
-};
-
-// ---------- load generator into Node ----------
-// generator.js targets the browser; it ends with `window.InnMenu = {...}`.
-// Stub a window object, then evaluate the source in this context.
-globalThis.window = {};
-const generatorSrc = fs.readFileSync(path.join(ROOT, "src", "generator.js"), "utf8");
-vm.runInThisContext(generatorSrc, { filename: "src/generator.js" });
-const { generateMenuTraced } = globalThis.window.InnMenu;
-if (typeof generateMenuTraced !== "function") {
-  console.error("generateMenuTraced not found on window.InnMenu");
-  process.exit(1);
-}
+const data = loadData();
+const { generateMenuTraced, filterAuthored, resolveWorld } = loadGenerator();
 
 // ---------- world sweep ----------
 const biomes = Object.keys(data.modifiers.biomes);
@@ -203,49 +179,13 @@ const templateSum = summarize("templates", templateRows);
 // ---------- anomaly check: authored dishes that *could* match some world ----------
 // If a never-appeared authored dish has at least one world in our sweep where
 // the static filters would let it through, that's a coverage anomaly worth
-// flagging. We run filterAuthored via the loaded generator's own logic by
-// re-invoking generateMenu on candidate worlds, but cheaper: replicate the
-// minimal static check here (biome/season/tier/economy/condition).
+// flagging. Delegates to the generator's own filterAuthored so the gate logic
+// (biome distance, exotic bump, season, tier, cultural tags, economy ceiling)
+// stays in one place and can't drift.
 function staticallyReachable(dish) {
-  const tierTags = new Set(["peasant","common","refined","noble"]);
-  const culturalDishTags = (dish.tags || []).filter(t => tierTags.has(t));
-  const relations = data.modifiers.biome_relations || {};
-  const isExotic = (dish.tags || []).includes("exotic");
   for (const world of worlds) {
-    const tier = data.modifiers.inn_tiers[world.inn_tier];
-    const tierIdx = { roadside: 1, common: 2, fine: 3, noble: 4 }[world.inn_tier];
-    const econ = data.modifiers.economy[world.economy];
-    const cond = data.modifiers.conditions[world.condition];
-
-    // Compute biome distance (min over the dish's native biomes); exotic bumps to 2.
-    let dist = null;
-    if ((dish.biomes || []).includes("any")) dist = 0;
-    else {
-      for (const b of dish.biomes || []) {
-        if (b === world.biome) { dist = 0; break; }
-        const rel = relations[b];
-        if (!rel) continue;
-        if ((rel.regional || []).includes(world.biome)) {
-          if (dist === null || 1 < dist) dist = 1;
-        } else if ((rel.distant || []).includes(world.biome)) {
-          if (dist === null || 2 < dist) dist = 2;
-        }
-      }
-    }
-    if (dist === null) continue;
-    if (isExotic && dist < 2) dist = 2;
-    const maxDist = Math.min(tier.max_import_distance ?? 2, cond.max_import_distance ?? 2);
-    if (dist > maxDist) continue;
-    // Season
-    if (!dish.seasons.includes("all-seasons") && !dish.seasons.includes(world.season)) continue;
-    // Tier
-    if (dish.tier_min && tierIdx < dish.tier_min) continue;
-    if (dish.tier_max && tierIdx > dish.tier_max) continue;
-    // Cultural tags vs allowed_tags
-    if (culturalDishTags.length && !culturalDishTags.some(t => tier.allowed_tags.includes(t))) continue;
-    // Economy cost ceiling
-    if (dish.cost > econ.remove_above_cost) continue;
-    return true;
+    const w = resolveWorld(world, data);
+    if (filterAuthored([{ ...dish }], w, data).length) return true;
   }
   return false;
 }
