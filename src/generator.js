@@ -221,7 +221,8 @@ function resolveWorld(world, data) {
     tierIdx: TIER_INDEX[world.inn_tier],
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
-    event: data.events.events.find(e => e.id === world.event) || data.events.events[0]
+    event: data.events.events.find(e => e.id === world.event) || data.events.events[0],
+    biomeRelations: (data.modifiers || {}).biome_relations || {}
   };
 }
 
@@ -485,6 +486,31 @@ function weightIngredient(ing, w) {
   const roles = ing.roles || [];
   if (tags.includes(w.season)) weight *= 1.8;
   if (tags.includes(w.biome)) weight *= 1.6;
+  // Mirror the authored regional/distant penalty so the procedural pool doesn't
+  // silently drown native ingredients in foreign-biome competitors. Without
+  // this, foreign-biome staples collectively outweigh the single native biome
+  // and `headlineIngredient` then stamps the dish as "(imported)".
+  const ingTopBiomes = tags.filter(t => TOP_BIOMES.includes(t));
+  if (ingTopBiomes.length && !ingTopBiomes.includes(w.biome)) {
+    const relations = w.biomeRelations || {};
+    let best = null;
+    for (const b of ingTopBiomes) {
+      const d = biomeDistance(b, w.biome, relations);
+      if (d === null) continue;
+      if (best === null || d < best) best = d;
+    }
+    if (best === 1) weight *= 0.4;
+    else if (best !== null && best >= 2) weight *= 0.2;
+  }
+  // Tier-aware commonness: at low-tier inns, peasant fare wins over equally-
+  // allowed but less-rustic alternatives; at fine/noble, refined leans up.
+  if (w.tierIdx <= 2) {
+    if (tags.includes("peasant")) weight *= 2.0;
+    if (tags.includes("refined") && !tags.includes("common")) weight *= 0.5;
+  }
+  if (w.tierIdx >= 3 && tags.includes("peasant") && !tags.includes("common")) {
+    weight *= 0.7;
+  }
   const tagBoost = 1 + (TUNING.ingredient_event_tag_boost - 1) * TUNING.event_weight_mult;
   const roleBoost = 1 + (TUNING.ingredient_event_role_boost - 1) * TUNING.event_weight_mult;
   for (const t of w.event.boost_tags || []) if (tags.includes(t)) weight *= tagBoost;
