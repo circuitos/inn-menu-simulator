@@ -275,7 +275,17 @@ function renderMenu(menu) {
       li.className = "dish";
       const name = document.createElement("span");
       name.className = "dish-name";
-      name.textContent = d.name;
+      if (d.importDistance > 0) {
+        const parenIdx = d.name.lastIndexOf(" (");
+        const base = document.createTextNode(d.name.slice(0, parenIdx));
+        const label = document.createElement("span");
+        label.className = "dish-import-label";
+        label.textContent = d.name.slice(parenIdx);
+        name.appendChild(base);
+        name.appendChild(label);
+      } else {
+        name.textContent = d.name;
+      }
       const price = document.createElement("span");
       price.className = "dish-price";
       price.textContent = d.price_text;
