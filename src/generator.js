@@ -225,6 +225,10 @@ function resolveWorld(world, data) {
   };
 }
 
+// Top-level biomes used to identify which ingredient tags are biome-of-origin
+// signals (vs. sub-biome / season / cultural tags).
+const TOP_BIOMES = ["coastal", "heartland", "highland", "arid", "frostlands"];
+
 // ---------- biome-distance helpers ----------
 // Returns 0 (native), 1 (regional), 2 (distant), or null (no relation table /
 // unrecognized biome — caller should treat as "off the map" / not importable).
@@ -390,7 +394,7 @@ function importLabel(distance) {
 }
 
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
-function filterIngredientPool(ingredients, w) {
+function filterIngredientPool(ingredients, w, data) {
   const BIOMES = ["coastal","heartland","highland","arid","frostlands","forest","river","lake","subterranean","plains"];
   const SEASONS = ["spring","summer","autumn","winter"];
   // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
@@ -400,20 +404,41 @@ function filterIngredientPool(ingredients, w) {
   // list `exotic`, so exotic ingredients still surface only at noble tier.
   const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
 
+  // Effective import-distance ceiling for this world: same min(tier, condition)
+  // rule the authored path uses. Ingredients native to a non-matching biome can
+  // pass the gate iff their nearest top-biome is within this distance; the
+  // headline-ingredient logic in fillTemplate then labels the dish accordingly.
+  const eventFloor = w.event.import_distance_floor ?? 0;
+  const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+  const importMax = Math.min(tierMax, w.condition.max_import_distance ?? 2);
+  const relations = (data && data.modifiers && data.modifiers.biome_relations) || {};
+
   return ingredients.filter(ing => {
     const tags = ing.tags || [];
 
-    // Biome: ingredient's biome tags (if any) — we accept if any matches the world biome directly.
-    // Sub-biome tags like 'forest', 'river' don't have their own parent selector now, so they pass
-    // as long as nothing contradicts.
+    // Biome: native match passes outright. Otherwise, if at least one top-biome
+    // tag is within the world's import distance, the ingredient passes as an
+    // import. Sub-biome tags (forest, river, etc.) are biases, not gates, and
+    // pass through ambiently.
     const biomeTags = tags.filter(t => BIOMES.includes(t));
     if (biomeTags.length) {
-      const worldBiomeMatches = biomeTags.includes(w.biome);
-      // Also allow sub-biome tags — they're biases, not gates, so keep them available.
-      const subBiomeTags = biomeTags.filter(t => !["coastal","heartland","highland","arid","frostlands"].includes(t));
-      if (!worldBiomeMatches && subBiomeTags.length === biomeTags.length) {
-        // All tags are sub-biome — treat as ambient, keep.
-      } else if (!worldBiomeMatches) return false;
+      const topBiomeTags = biomeTags.filter(t => TOP_BIOMES.includes(t));
+      const subBiomeTags = biomeTags.filter(t => !TOP_BIOMES.includes(t));
+      const nativeMatch = biomeTags.includes(w.biome);
+      if (!nativeMatch) {
+        if (topBiomeTags.length) {
+          let closest = null;
+          for (const b of topBiomeTags) {
+            const d = biomeDistance(b, w.biome, relations);
+            if (d === null) continue;
+            if (closest === null || d < closest) closest = d;
+          }
+          if (closest === null || closest > importMax) return false;
+        } else if (!subBiomeTags.length) {
+          return false;
+        }
+        // else: only sub-biome tags — ambient, keep.
+      }
     }
 
     // Season
@@ -477,7 +502,46 @@ function weightIngredient(ing, w) {
   return weight;
 }
 
-function fillTemplate(template, prep, pool, rng, w, trace) {
+// The "headline" ingredient is the one the dish is named after — protein for
+// mains, otherwise the first non-optional filled slot. Used to decide whether
+// a procedural dish should carry an import label: a stew of native veg with a
+// regional fish in it is a regional import; a native dish that merely contains
+// an exotic spice is not.
+function headlineIngredient(template, picked) {
+  if (template.section === "main") {
+    const protein = template.slots.find(s => s.role === "protein");
+    if (protein && picked[protein.name_key]) return picked[protein.name_key];
+  }
+  for (const slot of template.slots) {
+    if (slot.optional) continue;
+    if (picked[slot.name_key]) return picked[slot.name_key];
+  }
+  return null;
+}
+
+// Effective import distance for a single ingredient against the world biome.
+// Mirrors resolveImportDistance but operates on one ingredient: `exotic` forces
+// EXOTIC_DISTANCE, otherwise we take the min distance across the ingredient's
+// top-biome tags. Ingredients with no biome tag are treated as ambient/native.
+function ingredientImportDistance(ing, w, data) {
+  if (!ing) return 0;
+  const tags = ing.tags || [];
+  let dist = tags.includes("exotic") ? EXOTIC_DISTANCE : 0;
+  const relations = (data.modifiers || {}).biome_relations || {};
+  const biomeTags = tags.filter(t => TOP_BIOMES.includes(t));
+  if (biomeTags.length) {
+    let best = null;
+    for (const b of biomeTags) {
+      const d = biomeDistance(b, w.biome, relations);
+      if (d === null) continue;
+      if (best === null || d < best) best = d;
+    }
+    if (best !== null && best > dist) dist = best;
+  }
+  return dist;
+}
+
+function fillTemplate(template, prep, pool, rng, w, data, trace) {
   if (template.tier_min && w.tierIdx < template.tier_min) return null;
   if (template.tier_max && w.tierIdx > template.tier_max) return null;
 
@@ -514,7 +578,10 @@ function fillTemplate(template, prep, pool, rng, w, trace) {
   const ingredientsUsed = Object.values(picked).filter(Boolean);
   const baseCopper = ingredientsUsed.reduce((sum, ing) => sum + (COST_BASE[ing.cost] || 2), 0);
   const labor = prep.labor_add || 0;
-  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1);
+  const headline = headlineIngredient(template, picked);
+  const importDistance = ingredientImportDistance(headline, w, data);
+  const importMult = IMPORT_PRICE_MULT[importDistance] ?? 1.0;
+  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
 
   // Stamp meat/fish/meatless on mains so the cap loop can classify procedural dishes.
   let mainKind = null;
@@ -535,9 +602,10 @@ function fillTemplate(template, prep, pool, rng, w, trace) {
   return {
     source: "procedural",
     section: template.section,
-    name: capitalize(name),
+    name: capitalize(name) + importLabel(importDistance),
     price_cp: Math.max(1, Math.round(priceCp)),
     price_text: formatPrice(priceCp),
+    importDistance,
     _mainKind: mainKind
   };
 }
@@ -561,7 +629,7 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
     const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
     if (!prep) continue;
-    const dish = fillTemplate(tpl, prep, pool, rng, w, trace);
+    const dish = fillTemplate(tpl, prep, pool, rng, w, data, trace);
     if (dish && !existingNames.has(dish.name)) {
       usedTpl.add(tpl.id);
       if (trace) trace.templates.push(tpl.id);
@@ -631,7 +699,7 @@ function generateMenuInternal(world, data, seed, trace) {
   const authoredPool = filterAuthored(authoredCopy, w, data);
 
   // Procedural ingredient pool (for fallback)
-  const ingPool = filterIngredientPool(data.ingredients.ingredients, w);
+  const ingPool = filterIngredientPool(data.ingredients.ingredients, w, data);
 
   const menu = {
     world,
