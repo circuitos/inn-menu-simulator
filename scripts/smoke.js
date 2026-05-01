@@ -19,15 +19,13 @@
 
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
 const {
   dishesWithBadBiomes,
   mainsMissingContains,
   unreachableNonUnusualIngredients,
 } = require("./lib/checks");
+const { ROOT, loadData, loadGenerator } = require("./lib/loader");
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
 const OUT_DIR = path.join(ROOT, "out");
 const HISTORY_DIR = path.join(OUT_DIR, "history");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-report.md");
@@ -41,30 +39,8 @@ const WORLDS_CAP = process.env.WORLDS ? parseInt(process.env.WORLDS, 10) : null;
 const RARE_FACTOR = parseFloat(process.env.RARE_FACTOR || "0.2");
 const OVER_FACTOR = parseFloat(process.env.OVER_FACTOR || "5");
 
-// ---------- load data ----------
-function loadJson(name) {
-  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name + ".json"), "utf8"));
-}
-const data = {
-  authored_dishes: loadJson("authored_dishes"),
-  ingredients: loadJson("ingredients"),
-  preparations: loadJson("preparations"),
-  dishes: loadJson("dishes"),
-  events: loadJson("events"),
-  modifiers: loadJson("modifiers")
-};
-
-// ---------- load generator into Node ----------
-// generator.js targets the browser; it ends with `window.InnMenu = {...}`.
-// Stub a window object, then evaluate the source in this context.
-globalThis.window = {};
-const generatorSrc = fs.readFileSync(path.join(ROOT, "src", "generator.js"), "utf8");
-vm.runInThisContext(generatorSrc, { filename: "src/generator.js" });
-const { generateMenuTraced } = globalThis.window.InnMenu;
-if (typeof generateMenuTraced !== "function") {
-  console.error("generateMenuTraced not found on window.InnMenu");
-  process.exit(1);
-}
+const data = loadData();
+const { generateMenuTraced } = loadGenerator();
 
 // ---------- world sweep ----------
 const biomes = Object.keys(data.modifiers.biomes);

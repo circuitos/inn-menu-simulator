@@ -6,30 +6,16 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
 const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
+const { ROOT, loadData, loadGenerator } = require("./lib/loader");
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
 const OUT_DIR = path.join(ROOT, "out");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-deep.md");
 
 const SAMPLES = parseInt(process.env.SAMPLES || "3", 10);
 
-function loadJson(name) { return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name + ".json"), "utf8")); }
-const data = {
-  authored_dishes: loadJson("authored_dishes"),
-  ingredients: loadJson("ingredients"),
-  preparations: loadJson("preparations"),
-  dishes: loadJson("dishes"),
-  events: loadJson("events"),
-  modifiers: loadJson("modifiers")
-};
-
-globalThis.window = {};
-const generatorSrc = fs.readFileSync(path.join(ROOT, "src", "generator.js"), "utf8");
-vm.runInThisContext(generatorSrc, { filename: "src/generator.js" });
-const { generateMenuTraced } = globalThis.window.InnMenu;
+const data = loadData();
+const { generateMenuTraced } = loadGenerator();
 
 const VALID_BIOMES = ["coastal","heartland","highland","arid","frostlands"];
 const SUB_BIOMES = ["forest","river","lake","subterranean","plains"];

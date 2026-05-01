@@ -38,6 +38,10 @@ const PLENTIFUL_EVENTS = new Set([
 // listed — it disrupts trade but doesn't necessarily empty the larder.
 const EXTREME_SCARCITY_CONDITIONS = new Set(["plague", "isolation", "siege"]);
 
+// Hardship conditions that bias dish weighting toward peasant/common fare.
+// Compared case-insensitively against `condition.label`.
+const HARDSHIP_CONDITION_LABELS = new Set(["war", "plague", "siege", "isolation"]);
+
 // Per-tier base caps. Roadside uses a single combined meat-or-fish cap;
 // the others split meat and fish. Fine and Noble are sized so their default
 // (0 scarcity) behavior matches the existing count_max for each section —
@@ -229,6 +233,10 @@ function resolveWorld(world, data) {
 // Top-level biomes used to identify which ingredient tags are biome-of-origin
 // signals (vs. sub-biome / season / cultural tags).
 const TOP_BIOMES = ["coastal", "heartland", "highland", "arid", "frostlands"];
+// Sub-biome tags that act as biases inside a top biome (forest in heartland,
+// river in coastal, etc.) rather than gates of their own.
+const SUB_BIOMES = ["forest", "river", "lake", "subterranean", "plains"];
+const ALL_BIOME_TAGS = [...TOP_BIOMES, ...SUB_BIOMES];
 
 // ---------- biome-distance helpers ----------
 // Returns 0 (native), 1 (regional), 2 (distant), or null (no relation table /
@@ -242,6 +250,27 @@ function biomeDistance(fromBiome, toBiome, relations) {
   return null;
 }
 
+// Min biome-distance from any biome in `biomes` to `target`. Returns null if
+// no biome in the list resolves against the relation table.
+function closestBiomeDistance(biomes, target, relations) {
+  let best = null;
+  for (const b of biomes) {
+    const d = biomeDistance(b, target, relations);
+    if (d === null) continue;
+    if (best === null || d < best) best = d;
+  }
+  return best;
+}
+
+// Effective import-distance ceiling for a world: the lower of (tier ceiling,
+// condition ceiling), with the tier ceiling lifted by any event floor. Used
+// by both authored and procedural filters.
+function effectiveImportMax(w) {
+  const eventFloor = w.event.import_distance_floor ?? 0;
+  const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+  return Math.min(tierMax, w.condition.max_import_distance ?? 2);
+}
+
 // Resolves a dish's effective import distance for the world's biome.
 // - "any"-biome dishes are native (0) everywhere.
 // - Multi-biome dishes use the closest biome (min distance).
@@ -253,16 +282,7 @@ function resolveImportDistance(dish, w, data) {
   const relations = (data.modifiers || {}).biome_relations || {};
   const biomes = dish.biomes || [];
   const isExotic = (dish.tags || []).includes("exotic");
-  let dist = null;
-  if (biomes.includes("any")) {
-    dist = 0;
-  } else {
-    for (const b of biomes) {
-      const d = biomeDistance(b, w.biome, relations);
-      if (d === null) continue;
-      if (dist === null || d < dist) dist = d;
-    }
-  }
+  let dist = biomes.includes("any") ? 0 : closestBiomeDistance(biomes, w.biome, relations);
   if (dist === null) return null;
   if (isExotic && dist < EXOTIC_DISTANCE) dist = EXOTIC_DISTANCE;
   return dist;
@@ -270,30 +290,20 @@ function resolveImportDistance(dish, w, data) {
 
 // ---------- authored dish filter ----------
 function filterAuthored(dishes, w, data) {
+  const relations = (data.modifiers || {}).biome_relations || {};
   return dishes.filter(d => {
     // Distance gate: combines biome-relation distance with the `exotic` modifier.
-    const dist = resolveImportDistance(d, w, data);
-    if (dist === null) return false;
     // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
     // goods to a common inn that normally allows none). Condition still caps —
     // siege/plague block trade regardless of caravans.
-    const eventFloor = w.event.import_distance_floor ?? 0;
-    const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
-    const maxDist = Math.min(tierMax, w.condition.max_import_distance ?? 2);
-    if (dist > maxDist) return false;
+    const dist = resolveImportDistance(d, w, data);
+    if (dist === null) return false;
+    if (dist > effectiveImportMax(w)) return false;
     // Biome-only distance for pricing/labeling — exotic native items shouldn't
     // pay transport markup, so we keep this separate from the filtering distance.
-    let biomeDist = 0;
-    if (!d.biomes.includes("any")) {
-      let bd = null;
-      for (const b of d.biomes || []) {
-        const dd = biomeDistance(b, w.biome, (data.modifiers || {}).biome_relations || {});
-        if (dd === null) continue;
-        if (bd === null || dd < bd) bd = dd;
-      }
-      biomeDist = bd ?? 0;
-    }
-    d._importDistance = biomeDist;
+    d._importDistance = d.biomes.includes("any")
+      ? 0
+      : (closestBiomeDistance(d.biomes || [], w.biome, relations) ?? 0);
 
     // Season
     if (!d.seasons.includes("all-seasons") && !d.seasons.includes(w.season)) return false;
@@ -350,8 +360,8 @@ function weightAuthored(d, w) {
     if (contains && d.contains === contains) weight *= eventBoost;
   }
 
-  // Condition tone: under war/plague/siege, favor peasant/common fare
-  if (["war","plague","siege","isolation"].includes(w.condition.label ? w.condition.label.toLowerCase() : "")) {
+  // Condition tone: under war/plague/siege/isolation, favor peasant/common fare.
+  if (HARDSHIP_CONDITION_LABELS.has((w.condition.label || "").toLowerCase())) {
     if ((d.tags || []).includes("peasant")) weight *= 1.5;
     if ((d.tags || []).includes("noble")) weight *= 0.3;
   }
@@ -396,7 +406,6 @@ function importLabel(distance) {
 
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
 function filterIngredientPool(ingredients, w, data) {
-  const BIOMES = ["coastal","heartland","highland","arid","frostlands","forest","river","lake","subterranean","plains"];
   const SEASONS = ["spring","summer","autumn","winter"];
   // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
   // now a distance modifier, but in the procedural pipeline we don't have a
@@ -409,9 +418,7 @@ function filterIngredientPool(ingredients, w, data) {
   // rule the authored path uses. Ingredients native to a non-matching biome can
   // pass the gate iff their nearest top-biome is within this distance; the
   // headline-ingredient logic in fillTemplate then labels the dish accordingly.
-  const eventFloor = w.event.import_distance_floor ?? 0;
-  const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
-  const importMax = Math.min(tierMax, w.condition.max_import_distance ?? 2);
+  const importMax = effectiveImportMax(w);
   const relations = (data && data.modifiers && data.modifiers.biome_relations) || {};
 
   return ingredients.filter(ing => {
@@ -421,19 +428,14 @@ function filterIngredientPool(ingredients, w, data) {
     // tag is within the world's import distance, the ingredient passes as an
     // import. Sub-biome tags (forest, river, etc.) are biases, not gates, and
     // pass through ambiently.
-    const biomeTags = tags.filter(t => BIOMES.includes(t));
+    const biomeTags = tags.filter(t => ALL_BIOME_TAGS.includes(t));
     if (biomeTags.length) {
       const topBiomeTags = biomeTags.filter(t => TOP_BIOMES.includes(t));
       const subBiomeTags = biomeTags.filter(t => !TOP_BIOMES.includes(t));
       const nativeMatch = biomeTags.includes(w.biome);
       if (!nativeMatch) {
         if (topBiomeTags.length) {
-          let closest = null;
-          for (const b of topBiomeTags) {
-            const d = biomeDistance(b, w.biome, relations);
-            if (d === null) continue;
-            if (closest === null || d < closest) closest = d;
-          }
+          const closest = closestBiomeDistance(topBiomeTags, w.biome, relations);
           if (closest === null || closest > importMax) return false;
         } else if (!subBiomeTags.length) {
           return false;
@@ -492,13 +494,7 @@ function weightIngredient(ing, w) {
   // and `headlineIngredient` then stamps the dish as "(imported)".
   const ingTopBiomes = tags.filter(t => TOP_BIOMES.includes(t));
   if (ingTopBiomes.length && !ingTopBiomes.includes(w.biome)) {
-    const relations = w.biomeRelations || {};
-    let best = null;
-    for (const b of ingTopBiomes) {
-      const d = biomeDistance(b, w.biome, relations);
-      if (d === null) continue;
-      if (best === null || d < best) best = d;
-    }
+    const best = closestBiomeDistance(ingTopBiomes, w.biome, w.biomeRelations || {});
     if (best === 1) weight *= 0.4;
     else if (best !== null && best >= 2) weight *= 0.2;
   }
@@ -553,15 +549,9 @@ function ingredientImportDistance(ing, w, data) {
   if (!ing) return 0;
   const tags = ing.tags || [];
   let dist = tags.includes("exotic") ? EXOTIC_DISTANCE : 0;
-  const relations = (data.modifiers || {}).biome_relations || {};
   const biomeTags = tags.filter(t => TOP_BIOMES.includes(t));
   if (biomeTags.length) {
-    let best = null;
-    for (const b of biomeTags) {
-      const d = biomeDistance(b, w.biome, relations);
-      if (d === null) continue;
-      if (best === null || d < best) best = d;
-    }
+    const best = closestBiomeDistance(biomeTags, w.biome, (data.modifiers || {}).biome_relations || {});
     if (best !== null && best > dist) dist = best;
   }
   return dist;
@@ -665,14 +655,10 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
   return null;
 }
 
-// Pick a single authored dish, avoiding already-used ids. Returns null if pool exhausted.
-function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
-  const remaining = sectionAuthored.filter(d => !usedIds.has(d.id));
-  if (!remaining.length) return null;
-  const choice = weightedPick(rng, remaining, d => weightAuthored(d, w));
-  if (!choice) return null;
-  usedIds.add(choice.id);
-  if (trace) trace.authored.push(choice.id);
+// Build a menu-dish payload from an authored choice. Single source of truth so
+// the three places that emit authored dishes (normal pick, import-floor swap,
+// meatless-floor) stay in lockstep.
+function buildAuthoredMenuDish(choice, w) {
   const price = priceAuthoredDish(choice, w);
   return {
     source: "authored",
@@ -685,6 +671,49 @@ function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
     contains: choice.contains,
     _authoredId: choice.id
   };
+}
+
+// Pick a single authored dish, avoiding already-used ids. Returns null if pool exhausted.
+function pickAuthoredDish(sectionAuthored, usedIds, rng, w, trace) {
+  const remaining = sectionAuthored.filter(d => !usedIds.has(d.id));
+  if (!remaining.length) return null;
+  const choice = weightedPick(rng, remaining, d => weightAuthored(d, w));
+  if (!choice) return null;
+  usedIds.add(choice.id);
+  if (trace) trace.authored.push(choice.id);
+  return buildAuthoredMenuDish(choice, w);
+}
+
+// Drives one section's fill loop with the prefer-authored / fallback-procedural
+// pattern. `accept(dish)` is an optional gate that lets the main-with-caps
+// branch reject candidates whose kind is already full; if it returns true it
+// can also commit side-effects (e.g. bump the cap counter). Returns
+// { dishes, state } so the main floor can reuse the loop's used-id sets.
+function fillSection({ sectionId, target, authoredPool, ingPool, rng, w, data, trace, safetyMax, accept }) {
+  const state = { usedAuthored: new Set(), usedTpl: new Set(), names: new Set() };
+  const dishes = [];
+  if (target <= 0) return { dishes, state };
+  const sectionAuthored = authoredPool.filter(d => d.section === sectionId);
+  const cap = safetyMax ?? (target * 8 + 4);
+  let safety = 0;
+  while (dishes.length < target && safety < cap) {
+    safety++;
+    const preferAuthored = rng() < TUNING.authored_ratio;
+    let dish = null;
+    if (preferAuthored) {
+      dish = pickAuthoredDish(sectionAuthored, state.usedAuthored, rng, w, trace);
+      if (!dish) dish = pickProceduralDish(sectionId, state.usedTpl, state.names, ingPool, rng, w, data, trace);
+    } else {
+      dish = pickProceduralDish(sectionId, state.usedTpl, state.names, ingPool, rng, w, data, trace);
+      if (!dish) dish = pickAuthoredDish(sectionAuthored, state.usedAuthored, rng, w, trace);
+    }
+    if (!dish) break;
+    if (state.names.has(dish.name)) continue;
+    if (accept && !accept(dish)) continue;
+    state.names.add(dish.name);
+    dishes.push(dish);
+  }
+  return { dishes, state };
 }
 
 // ---------- main generator ----------
@@ -739,100 +768,40 @@ function generateMenuInternal(world, data, seed, trace) {
   for (const sectionId of Object.keys(sections)) {
     const spec = sections[sectionId];
     const rolledCount = spec.count_min + Math.floor(rng() * (spec.count_max - spec.count_min + 1));
-    const dishes = [];
 
-    if (sectionId === "drink") {
-      // Drinks route through the same template pipeline as other sections.
-      // drink-simple (single ingredient) covers the simple "Pale ale" form;
-      // mulled/infused/sweetened templates layer spices/herbs/sweeteners onto
-      // a base drink so this section also surfaces those role pools.
-      let target = rolledCount;
-      if (caps) target = Math.max(1, Math.min(target, caps.drink));
-      const sectionAuthored = authoredPool.filter(d => d.section === "drink");
-      const usedAuthored = new Set();
-      const usedTpl = new Set();
-      const names = new Set();
-      let safety = 0;
-      while (dishes.length < target && safety < target * 8 + 4) {
-        safety++;
-        const preferAuthored = rng() < TUNING.authored_ratio;
-        let dish = null;
-        if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-          if (!dish) dish = pickProceduralDish("drink", usedTpl, names, ingPool, rng, w, data, trace);
-        } else {
-          dish = pickProceduralDish("drink", usedTpl, names, ingPool, rng, w, data, trace);
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-        }
-        if (!dish) break;
-        if (names.has(dish.name)) continue;
-        names.add(dish.name);
-        dishes.push(dish);
-      }
-    } else if (sectionId === "main" && caps) {
+    let dishes;
+    if (sectionId === "main" && caps) {
       // Cap-enforced main loop: classify each candidate and only accept it
       // if its kind (meat/fish/meatless) still has room. Total is also
       // clamped to the section's rolled count so that generous tier caps
       // don't blow past the existing count_max for the section.
-      const sectionAuthored = authoredPool.filter(d => d.section === "main");
-      const usedAuthored = new Set();
-      const usedTpl = new Set();
-      const names = new Set();
       const used = makeMainUsed(caps);
       const target = Math.min(rolledCount, mainTotalTarget(caps));
-      let safety = 0;
-      while (dishes.length < target && safety < target * 12 + 20) {
-        safety++;
-        const preferAuthored = rng() < TUNING.authored_ratio;
-        let dish = null;
-        if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-          if (!dish) dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data, trace);
-        } else {
-          dish = pickProceduralDish("main", usedTpl, names, ingPool, rng, w, data, trace);
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
+      const result = fillSection({
+        sectionId: "main", target, authoredPool, ingPool, rng, w, data, trace,
+        safetyMax: target * 12 + 20,
+        accept: (dish) => {
+          const kind = classifyMain(dish);
+          if (!mainCapHasRoom(caps, kind, used)) return false;
+          bumpMainCounter(caps, kind, used);
+          return true;
         }
-        if (!dish) break;
-        if (names.has(dish.name)) continue;
-        const kind = classifyMain(dish);
-        if (!mainCapHasRoom(caps, kind, used)) continue;
-        names.add(dish.name);
-        bumpMainCounter(caps, kind, used);
-        dishes.push(dish);
-      }
-      // Floor: every section must render at least 1 dish, and mains must have
-      // at least 1 meatless if no meat/fish slot was filled.
+      });
+      dishes = result.dishes;
+      // Floor: mains must have at least 1 dish; force a meatless if the cap
+      // loop produced nothing.
       if (dishes.length === 0) {
-        const meatless = forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, names, trace);
+        const meatless = forceMeatlessMain(authoredPool, result.state.usedAuthored, ingPool, rng, w, data, result.state.names, trace);
         if (meatless) dishes.push(meatless);
       }
     } else {
-      // Per-slot mix for appetizer / dessert (and main when caps are off).
+      // Per-slot mix for drink / appetizer / dessert (and main when caps are off).
       let target = rolledCount;
       if (caps) {
-        if (sectionId === "appetizer") target = Math.max(1, Math.min(target, caps.appetizer));
+        if (sectionId === "drink") target = Math.max(1, Math.min(target, caps.drink));
+        else if (sectionId === "appetizer") target = Math.max(1, Math.min(target, caps.appetizer));
       }
-      const sectionAuthored = authoredPool.filter(d => d.section === sectionId);
-      const usedAuthored = new Set();
-      const usedTpl = new Set();
-      const names = new Set();
-      let safety = 0;
-      while (dishes.length < target && safety < target * 8 + 4) {
-        safety++;
-        const preferAuthored = rng() < TUNING.authored_ratio;
-        let dish = null;
-        if (preferAuthored) {
-          dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-          if (!dish) dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data, trace);
-        } else {
-          dish = pickProceduralDish(sectionId, usedTpl, names, ingPool, rng, w, data, trace);
-          if (!dish) dish = pickAuthoredDish(sectionAuthored, usedAuthored, rng, w, trace);
-        }
-        if (!dish) break;
-        if (names.has(dish.name)) continue;
-        names.add(dish.name);
-        dishes.push(dish);
-      }
+      ({ dishes } = fillSection({ sectionId, target, authoredPool, ingPool, rng, w, data, trace }));
     }
 
     menu.sections[sectionId] = { label: spec.label, dishes };
@@ -890,18 +859,7 @@ function enforceImportFloor(menu, world, w, authoredPool, rng, trace) {
       if (!choice) continue;
       usedIds.add(choice.id);
       if (trace) trace.authored.push(choice.id);
-      const price = priceAuthoredDish(choice, w);
-      section.dishes[i] = {
-        source: "authored",
-        section: choice.section,
-        name: choice.name + importLabel(choice._importDistance),
-        flavor: choice.flavor,
-        importDistance: choice._importDistance || 0,
-        price_cp: price,
-        price_text: formatPrice(price),
-        contains: choice.contains,
-        _authoredId: choice.id
-      };
+      section.dishes[i] = buildAuthoredMenuDish(choice, w);
       imports++;
     }
   }
@@ -920,17 +878,7 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
     if (choice && !names.has(choice.name)) {
       usedAuthored.add(choice.id);
       if (trace) trace.authored.push(choice.id);
-      const price = priceAuthoredDish(choice, w);
-      return {
-        source: "authored",
-        section: "main",
-        name: choice.name + importLabel(choice._importDistance),
-        flavor: choice.flavor,
-        importDistance: choice._importDistance || 0,
-        price_cp: price,
-        price_text: formatPrice(price),
-        _authoredId: choice.id
-      };
+      return buildAuthoredMenuDish(choice, w);
     }
   }
   // 2. Procedural: try repeatedly; accept only meatless results.
