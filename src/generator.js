@@ -394,7 +394,7 @@ function importLabel(distance) {
 }
 
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
-function filterIngredientPool(ingredients, w) {
+function filterIngredientPool(ingredients, w, data) {
   const BIOMES = ["coastal","heartland","highland","arid","frostlands","forest","river","lake","subterranean","plains"];
   const SEASONS = ["spring","summer","autumn","winter"];
   // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
@@ -404,20 +404,41 @@ function filterIngredientPool(ingredients, w) {
   // list `exotic`, so exotic ingredients still surface only at noble tier.
   const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
 
+  // Effective import-distance ceiling for this world: same min(tier, condition)
+  // rule the authored path uses. Ingredients native to a non-matching biome can
+  // pass the gate iff their nearest top-biome is within this distance; the
+  // headline-ingredient logic in fillTemplate then labels the dish accordingly.
+  const eventFloor = w.event.import_distance_floor ?? 0;
+  const tierMax = Math.max(w.tier.max_import_distance ?? 2, eventFloor);
+  const importMax = Math.min(tierMax, w.condition.max_import_distance ?? 2);
+  const relations = (data && data.modifiers && data.modifiers.biome_relations) || {};
+
   return ingredients.filter(ing => {
     const tags = ing.tags || [];
 
-    // Biome: ingredient's biome tags (if any) — we accept if any matches the world biome directly.
-    // Sub-biome tags like 'forest', 'river' don't have their own parent selector now, so they pass
-    // as long as nothing contradicts.
+    // Biome: native match passes outright. Otherwise, if at least one top-biome
+    // tag is within the world's import distance, the ingredient passes as an
+    // import. Sub-biome tags (forest, river, etc.) are biases, not gates, and
+    // pass through ambiently.
     const biomeTags = tags.filter(t => BIOMES.includes(t));
     if (biomeTags.length) {
-      const worldBiomeMatches = biomeTags.includes(w.biome);
-      // Also allow sub-biome tags — they're biases, not gates, so keep them available.
-      const subBiomeTags = biomeTags.filter(t => !["coastal","heartland","highland","arid","frostlands"].includes(t));
-      if (!worldBiomeMatches && subBiomeTags.length === biomeTags.length) {
-        // All tags are sub-biome — treat as ambient, keep.
-      } else if (!worldBiomeMatches) return false;
+      const topBiomeTags = biomeTags.filter(t => TOP_BIOMES.includes(t));
+      const subBiomeTags = biomeTags.filter(t => !TOP_BIOMES.includes(t));
+      const nativeMatch = biomeTags.includes(w.biome);
+      if (!nativeMatch) {
+        if (topBiomeTags.length) {
+          let closest = null;
+          for (const b of topBiomeTags) {
+            const d = biomeDistance(b, w.biome, relations);
+            if (d === null) continue;
+            if (closest === null || d < closest) closest = d;
+          }
+          if (closest === null || closest > importMax) return false;
+        } else if (!subBiomeTags.length) {
+          return false;
+        }
+        // else: only sub-biome tags — ambient, keep.
+      }
     }
 
     // Season
@@ -678,7 +699,7 @@ function generateMenuInternal(world, data, seed, trace) {
   const authoredPool = filterAuthored(authoredCopy, w, data);
 
   // Procedural ingredient pool (for fallback)
-  const ingPool = filterIngredientPool(data.ingredients.ingredients, w);
+  const ingPool = filterIngredientPool(data.ingredients.ingredients, w, data);
 
   const menu = {
     world,
