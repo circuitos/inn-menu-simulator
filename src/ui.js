@@ -124,53 +124,35 @@ const SEASON_ORDER = [
 ];
 const WEATHER_ORDER = ["clear","rain","snow","heatwave"];
 
+function populateSelect(selectId, entries, defaultValue) {
+  const sel = qs(selectId);
+  sel.innerHTML = "";
+  for (const { value, label } of entries) {
+    const o = document.createElement("option");
+    o.value = value;
+    o.textContent = label;
+    if (value === defaultValue) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
 function populateSelects(data) {
-  // Biome
-  const bsel = qs("biome");
-  bsel.innerHTML = "";
-  for (const [id, b] of Object.entries(data.modifiers.biomes)) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = b.label;
-    if (id === "heartland") o.selected = true;
-    bsel.appendChild(o);
-  }
-  // Season
-  const ssel = qs("season");
-  ssel.innerHTML = "";
-  for (const [id, label] of SEASON_ORDER) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = label;
-    if (id === "autumn") o.selected = true;
-    ssel.appendChild(o);
-  }
-  // Weather
-  const wsel = qs("weather");
-  wsel.innerHTML = "";
-  for (const id of WEATHER_ORDER) {
-    const def = data.modifiers.weather[id];
-    if (!def) continue;
-    const o = document.createElement("option");
-    o.value = id; o.textContent = def.label;
-    if (id === "clear") o.selected = true;
-    wsel.appendChild(o);
-  }
-  // Condition
-  const csel = qs("condition");
-  csel.innerHTML = "";
-  for (const [id, c] of Object.entries(data.modifiers.conditions)) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = c.label;
-    if (id === "peace") o.selected = true;
-    csel.appendChild(o);
-  }
-  // Event
-  const esel = qs("event");
-  esel.innerHTML = "";
-  for (const e of data.events.events) {
-    const o = document.createElement("option");
-    o.value = e.id; o.textContent = e.label;
-    esel.appendChild(o);
-  }
+  populateSelect("biome",
+    Object.entries(data.modifiers.biomes).map(([id, b]) => ({ value: id, label: b.label })),
+    "heartland");
+  populateSelect("season",
+    SEASON_ORDER.map(([id, label]) => ({ value: id, label })),
+    "autumn");
+  populateSelect("weather",
+    WEATHER_ORDER
+      .filter(id => data.modifiers.weather[id])
+      .map(id => ({ value: id, label: data.modifiers.weather[id].label })),
+    "clear");
+  populateSelect("condition",
+    Object.entries(data.modifiers.conditions).map(([id, c]) => ({ value: id, label: c.label })),
+    "peace");
+  populateSelect("event",
+    data.events.events.map(e => ({ value: e.id, label: e.label })));
 }
 
 // Some weathers don't make sense in some biomes/seasons — e.g. snow in arid or

@@ -893,4 +893,4 @@ function forceMeatlessMain(authoredPool, usedAuthored, ingPool, rng, w, data, na
   return fallback;
 }
 
-window.InnMenu = { generateMenu, generateMenuTraced, formatPrice };
+window.InnMenu = { generateMenu, generateMenuTraced, formatPrice, filterAuthored, resolveWorld };
