@@ -352,9 +352,9 @@ function weightAuthored(d, w) {
   }
 
   // "peculiar" dishes get dampened by default
-  if ((d.tags || []).includes("peculiar")) weight *= 0.5;
+  if ((d.tags || []).includes("peculiar")) weight *= 0.75;
   // "exotic" dishes are rare by definition — extra dampening on top of distance.
-  if ((d.tags || []).includes("exotic")) weight *= 0.5;
+  if ((d.tags || []).includes("exotic")) weight *= 0.75;
 
   // Soft penalty for "everywhere" dishes — biomes:["any"] AND seasons:["all-seasons"].
   // Without it, a handful of unconstrained dishes dominate every world's pool.
