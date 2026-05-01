@@ -233,7 +233,7 @@ The distance matrix lives in `modifiers.json → biome_relations`. It's symmetri
 | frostlands ↔ arid | distant |
 
 A dish or ingredient passes the import gate when its effective distance is ≤ both:
-- the inn-tier's `max_import_distance` (roadside/common: 0; fine: 1; noble: 2), and
+- the inn-tier's `max_import_distance` (roadside: 0; common: 1; fine: 1; noble: 2), and
 - the condition's `max_import_distance` (peace: 2; war: 1; plague/isolation/siege: 0).
 
 So fine inns serve regional imports but not rare ones; noble inns serve everything. War cuts off rare imports but caravans still bring regional goods. Plague/siege/isolation seal the gates entirely — only native items remain.
