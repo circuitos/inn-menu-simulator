@@ -194,19 +194,70 @@ function setSelect(id, value) {
   if (option) el.value = value;
 }
 
+// Per-field lock state. Locked fields are skipped by Randomize / New seed.
+const LOCK_IDS = ["biome","season","weather","inn_tier","economy","condition","event","seed"];
+const locks = Object.fromEntries(LOCK_IDS.map(id => [id, false]));
+
+const LOCK_SVGS = `
+  <svg class="icon-unlocked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="1.5" />
+    <path d="M8 11V7a4 4 0 0 1 7.5-2" />
+  </svg>
+  <svg class="icon-locked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="1.5" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+`;
+
+function installLockButtons() {
+  for (const id of LOCK_IDS) {
+    const el = qs(id);
+    if (!el || el.parentElement.classList.contains("field-row")) continue;
+    const row = document.createElement("div");
+    row.className = "field-row";
+    el.parentNode.insertBefore(row, el);
+    row.appendChild(el);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lock-btn";
+    btn.dataset.lockFor = id;
+    btn.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-label", `Lock ${id.replace("_", " ")}`);
+    btn.innerHTML = LOCK_SVGS;
+    btn.addEventListener("click", () => setLock(id, !locks[id]));
+    row.appendChild(btn);
+  }
+}
+
+function setLock(id, value) {
+  locks[id] = value;
+  const btn = document.querySelector(`.lock-btn[data-lock-for="${id}"]`);
+  if (btn) {
+    btn.setAttribute("aria-pressed", String(value));
+    btn.setAttribute("aria-label", `${value ? "Unlock" : "Lock"} ${id.replace("_", " ")}`);
+  }
+}
+
+function resetLocks() {
+  for (const id of LOCK_IDS) setLock(id, false);
+}
+
 function randomizeSelects() {
   // Biome and season first — weather's available set depends on them.
   for (const id of ["biome","season","inn_tier","economy","condition","event"]) {
+    if (locks[id]) continue;
     const el = qs(id);
     if (!el || !el.options.length) continue;
     el.value = el.options[Math.floor(Math.random() * el.options.length)].value;
   }
   applyWeatherCompatibility();
-  const wsel = qs("weather");
-  if (wsel && wsel.options.length) {
-    const allowed = Array.from(wsel.options).filter(o => !o.disabled);
-    const pool = allowed.length ? allowed : Array.from(wsel.options);
-    wsel.value = pool[Math.floor(Math.random() * pool.length)].value;
+  if (!locks.weather) {
+    const wsel = qs("weather");
+    if (wsel && wsel.options.length) {
+      const allowed = Array.from(wsel.options).filter(o => !o.disabled);
+      const pool = allowed.length ? allowed : Array.from(wsel.options);
+      wsel.value = pool[Math.floor(Math.random() * pool.length)].value;
+    }
   }
 }
 
@@ -313,13 +364,26 @@ async function init() {
   populateSelects(DATA);
   populateFlavorPacks(DATA);
   applyWeatherCompatibility();
+  installLockButtons();
   qs("biome").addEventListener("change", applyWeatherCompatibility);
   qs("season").addEventListener("change", applyWeatherCompatibility);
   qs("seed").value = randomSeed();
   qs("generate").addEventListener("click", generate);
-  qs("reroll").addEventListener("click", () => { qs("seed").value = randomSeed(); generate(); });
-  qs("randomize").addEventListener("click", () => { randomizeSelects(); qs("seed").value = randomSeed(); generate(); });
-  qs("reset").addEventListener("click", () => { resetSelects(); qs("seed").value = randomSeed(); generate(); });
+  qs("reroll").addEventListener("click", () => {
+    if (!locks.seed) qs("seed").value = randomSeed();
+    generate();
+  });
+  qs("randomize").addEventListener("click", () => {
+    randomizeSelects();
+    if (!locks.seed) qs("seed").value = randomSeed();
+    generate();
+  });
+  qs("reset").addEventListener("click", () => {
+    resetSelects();
+    resetLocks();
+    qs("seed").value = randomSeed();
+    generate();
+  });
   qs("polish").addEventListener("click", polish);
   generate();
 }
