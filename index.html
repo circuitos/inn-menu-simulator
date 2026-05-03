@@ -93,6 +93,23 @@ body::before {
 .controls select:focus, .controls input[type="text"]:focus {
   outline: none; border-color: var(--accent);
 }
+.field-row { display: flex; align-items: center; gap: 0.5rem; }
+.field-row > select, .field-row > input[type="text"] { flex: 1; min-width: 0; }
+.lock-btn {
+  flex: 0 0 auto; width: 22px; height: 28px;
+  background: transparent; border: none; padding: 0; cursor: pointer;
+  color: var(--ink-faint);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: color 0.15s ease;
+}
+.lock-btn:hover { color: var(--ink-soft); }
+.lock-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lock-btn svg { width: 16px; height: 16px; display: block; }
+.lock-btn .icon-locked { display: none; }
+.lock-btn .icon-unlocked { display: block; }
+.lock-btn[aria-pressed="true"] { color: var(--ink); }
+.lock-btn[aria-pressed="true"] .icon-locked { display: block; }
+.lock-btn[aria-pressed="true"] .icon-unlocked { display: none; }
 .flavor-packs { display: flex; flex-direction: column; gap: 0.4rem; }
 .flavor-pack-row {
   display: flex; align-items: center; gap: 0.5rem;
