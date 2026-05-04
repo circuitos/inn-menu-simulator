@@ -18,7 +18,7 @@
       "id": "roast-plate",
       "section": "main",
       "tier_min": 2,
-      "prep_pool": ["roasted","pan-fried","braised"],
+      "prep_pool": ["roasted","pan-fried","braised","smoked"],
       "slots": [
         { "role": "protein", "name_key": "protein" },
         { "role": "vegetable", "name_key": "side" },
@@ -64,7 +64,7 @@
       "id": "herb-crusted",
       "section": "main",
       "tier_min": 2,
-      "prep_pool": ["roasted","pan-fried"],
+      "prep_pool": ["roasted","pan-fried","smoked"],
       "slots": [
         { "role": "protein", "name_key": "protein" },
         { "role": "herb", "name_key": "herb", "optional": true }

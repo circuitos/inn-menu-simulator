@@ -6,30 +6,16 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
 const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
+const { ROOT, loadData, loadGenerator } = require("./lib/loader");
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
 const OUT_DIR = path.join(ROOT, "out");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-deep.md");
 
 const SAMPLES = parseInt(process.env.SAMPLES || "3", 10);
 
-function loadJson(name) { return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name + ".json"), "utf8")); }
-const data = {
-  authored_dishes: loadJson("authored_dishes"),
-  ingredients: loadJson("ingredients"),
-  preparations: loadJson("preparations"),
-  dishes: loadJson("dishes"),
-  events: loadJson("events"),
-  modifiers: loadJson("modifiers")
-};
-
-globalThis.window = {};
-const generatorSrc = fs.readFileSync(path.join(ROOT, "src", "generator.js"), "utf8");
-vm.runInThisContext(generatorSrc, { filename: "src/generator.js" });
-const { generateMenuTraced } = globalThis.window.InnMenu;
+const data = loadData();
+const { generateMenuTraced } = loadGenerator();
 
 const VALID_BIOMES = ["coastal","heartland","highland","arid","frostlands"];
 const SUB_BIOMES = ["forest","river","lake","subterranean","plains"];
@@ -78,6 +64,10 @@ const byTier = emptyAxis(tiers);
 const byCondition = emptyAxis(conditions);
 const byWeather = emptyAxis(weathers);
 const byEvent = emptyAxis(events);
+// Per-biome × tier ingredient counters (used by §12). Populated in the main
+// sweep below so we don't pay for a second full pass.
+const biomeTier = {};
+for (const b of biomes) for (const t of tiers) biomeTier[`${b}|${t}`] = { ingredients: new Map() };
 
 function bump(map, k) { map.set(k, (map.get(k) || 0) + 1); }
 function record(axis, key, trace) {
@@ -102,6 +92,8 @@ for (let i = 0; i < worlds.length; i++) {
     record(byCondition, w.condition, trace);
     record(byWeather, w.weather, trace);
     record(byEvent, w.event, trace);
+    const btSlot = biomeTier[`${w.biome}|${w.inn_tier}`];
+    for (const id of trace.ingredients) bump(btSlot.ingredients, id);
     menus++;
   }
 }
@@ -238,20 +230,7 @@ for (const d of data.authored_dishes.dishes) {
 }
 
 // 12. Per-biome top-3 ingredients on roadside vs noble inns — useful for tier/scope checks.
-//     Use byBiome (already aggregated across all tiers); also gather a separate by-biome × tier slice.
-const biomeTier = {};
-for (const b of biomes) for (const t of tiers) biomeTier[`${b}|${t}`] = { ingredients: new Map() };
-// Quick re-sweep: only ingredient counts, no full trace storage cost.
-for (let i = 0; i < worlds.length; i++) {
-  const w = worlds[i];
-  // We've already run SAMPLES menus per world above; reuse the same seeds for determinism.
-  for (let s = 0; s < SAMPLES; s++) {
-    const seed = `d${i}:${s}`;
-    const { trace } = generateMenuTraced(w, data, seed);
-    const slot = biomeTier[`${w.biome}|${w.inn_tier}`];
-    for (const id of trace.ingredients) bump(slot.ingredients, id);
-  }
-}
+//     `biomeTier` was populated alongside the per-axis tallies in the main sweep above.
 
 // ---------- write report ----------
 function ingLabel(id) { const x = ingById.get(id); return x ? `${x.name} [${(x.roles||[]).join(",")}]` : id; }

@@ -2,388 +2,232 @@
 
 ## Run config
 
-- worlds swept: **80** (after weather/biome/season pruning, capped to 80)
-- samples per world: **2**
-- total menus generated: **160**
-- total dishes emitted: **1202** (authored: 620, procedural: 582)
-- total ingredient slots filled: **2021**
-- total preparations applied: **753**
+- worlds swept: **40960** (after weather/biome/season pruning)
+- samples per world: **5**
+- total menus generated: **204800**
+- total dishes emitted: **1935950** (authored: 1186078, procedural: 749872)
+- total ingredient slots filled: **1780543**
+- total preparations applied: **684354**
 - thresholds: rare < 0.2× expected uniform rate, overused > 5× expected uniform rate
-- elapsed: **0.1s**
+- elapsed: **86.7s**
 
 ## authored dishes
 
-Universe: **131**. Never appeared: **16**, rare: **0**, overused: **9**.
+Universe: **180**. Never appeared: **0**, rare: **18**, overused: **1**.
 
-### Never appeared
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| roasted-quail | Roasted quail | 0 | 0.00% | never |
-| aurochs-ribs | Aurochs ribs | 0 | 0.00% | never |
-| candied-horseradish | Candied horseradish | 0 | 0.00% | never |
-| lemon-pear-tart | Lemon pear tart | 0 | 0.00% | never |
-| pumpkin-snapper-soup | Red snapper and cream of pumpkin soup | 0 | 0.00% | never |
-| reindeer-pomegranate | Reindeer quarters with pomegranate | 0 | 0.00% | never |
-| sea-urchin-soup | Spicy sea urchin soup | 0 | 0.00% | never |
-| apple-onion-salad | Apple and onion salad | 0 | 0.00% | never |
-| eggs-prawns | Eggs stuffed with prawns | 0 | 0.00% | never |
-| goose-gingerbread | Marinated goose and gingerbread | 0 | 0.00% | never |
-| goose-roll-veg | Goose roll stuffed with vegetables | 0 | 0.00% | never |
-| pears-confit | Pears in confit | 0 | 0.00% | never |
-| fermented-reindeer-soup | Fermented reindeer soup | 0 | 0.00% | never |
-| megaceront-ribs | Megaceront ribs in pine and thyme | 0 | 0.00% | never |
-| whale-raw | Raw whale, salt and dill | 0 | 0.00% | never |
-| cured-reindeer-heart | Cured reindeer heart | 0 | 0.00% | never |
-
-### Overused (9)
+### Rare (18)
 
 | id | label | count | share | bucket |
 |---|---|---:|---:|---|
-| fish-meatballs-wine | Fish meatballs in wine | 25 | 4.03% | overused |
-| mariners-cup | The Mariner's Cup | 27 | 4.35% | overused |
-| onion-parsley-salad | Onion and parsley salad | 27 | 4.35% | overused |
-| hypocras | Spiced wine | 30 | 4.84% | overused |
-| liver-stew | Liver stew | 31 | 5.00% | overused |
-| porridge-stew | Porridge stew | 35 | 5.65% | overused |
-| skewered-herring-veg | Skewered herring with vegetables | 42 | 6.77% | overused |
-| tripe-garlic-cheese | Tripe with garlic cheese | 47 | 7.58% | overused |
-| sauteed-chicken | Sautéed chicken | 59 | 9.52% | overused |
-
-### Top 20 by count
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| cured-reindeer-heart | Cured reindeer heart | 0 | 0.00% | never |
-| whale-raw | Raw whale, salt and dill | 0 | 0.00% | never |
-| megaceront-ribs | Megaceront ribs in pine and thyme | 0 | 0.00% | never |
-| fermented-reindeer-soup | Fermented reindeer soup | 0 | 0.00% | never |
-| pears-confit | Pears in confit | 0 | 0.00% | never |
-| goose-roll-veg | Goose roll stuffed with vegetables | 0 | 0.00% | never |
-| goose-gingerbread | Marinated goose and gingerbread | 0 | 0.00% | never |
-| eggs-prawns | Eggs stuffed with prawns | 0 | 0.00% | never |
-| apple-onion-salad | Apple and onion salad | 0 | 0.00% | never |
-| sea-urchin-soup | Spicy sea urchin soup | 0 | 0.00% | never |
-| reindeer-pomegranate | Reindeer quarters with pomegranate | 0 | 0.00% | never |
-| pumpkin-snapper-soup | Red snapper and cream of pumpkin soup | 0 | 0.00% | never |
-| lemon-pear-tart | Lemon pear tart | 0 | 0.00% | never |
-| candied-horseradish | Candied horseradish | 0 | 0.00% | never |
-| aurochs-ribs | Aurochs ribs | 0 | 0.00% | never |
-| roasted-quail | Roasted quail | 0 | 0.00% | never |
-| reindeer-tartare | Reindeer tartare with fern ash and mint | 1 | 0.16% | normal |
-| fermented-trout-bark | Fermented trout in birch bark | 1 | 0.16% | normal |
-| whale-skin-crisps | Whale skin crisps with cloudberries | 1 | 0.16% | normal |
-| chicken-orange-glaze | Roast chicken with orange juice glaze | 1 | 0.16% | normal |
-
-## ingredients
-
-Universe: **491**. Never appeared: **167**, rare: **0**, overused: **17**.
-
-### Never appeared
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| courgette | courgette [vegetable] | 0 | 0.00% | never |
-| mushroom | wild mushrooms [vegetable] | 0 | 0.00% | never |
-| olive-oil | olive oil [fat,liquid] | 0 | 0.00% | never |
-| berries | forest berries [fruit] | 0 | 0.00% | never |
-| grape | grapes [fruit] | 0 | 0.00% | never |
-| pomegranate | pomegranate [fruit] | 0 | 0.00% | never |
-| orange | oranges [fruit] | 0 | 0.00% | never |
-| bitter-orange | bitter orange [fruit] | 0 | 0.00% | never |
-| lemon | lemons [fruit] | 0 | 0.00% | never |
-| mandarin | mandarin [fruit] | 0 | 0.00% | never |
-| albatross | albatross [protein,fowl] | 0 | 0.00% | never |
-| aurochs | aurochs [protein,ruminant] | 0 | 0.00% | never |
-| rabbit | rabbit [protein,game] | 0 | 0.00% | never |
-| squirrel | squirrel [protein,game] | 0 | 0.00% | never |
-| rat | rat [protein,game] | 0 | 0.00% | never |
-| mole | mole [protein,game] | 0 | 0.00% | never |
-| trout | river trout [protein,fish] | 0 | 0.00% | never |
-| salmon | salmon [protein,fish] | 0 | 0.00% | never |
-| red-snapper | red snapper [protein,fish] | 0 | 0.00% | never |
-| sole | sole [protein,fish] | 0 | 0.00% | never |
-| lamprey | lamprey [protein,fish] | 0 | 0.00% | never |
-| oyster | oysters [protein,shellfish] | 0 | 0.00% | never |
-| scallop | scallops [protein,shellfish] | 0 | 0.00% | never |
-| mint | mint [herb] | 0 | 0.00% | never |
-| ginger | ginger [spice] | 0 | 0.00% | never |
-| saffron | saffron [spice] | 0 | 0.00% | never |
-| cinnamon | cinnamon [spice] | 0 | 0.00% | never |
-| nutmeg | nutmeg [spice] | 0 | 0.00% | never |
-| liquorice | liquorice root [spice] | 0 | 0.00% | never |
-| sorghum | sorghum [starch] | 0 | 0.00% | never |
-| cassava | cassava [starch,vegetable] | 0 | 0.00% | never |
-| amaranth | amaranth [starch] | 0 | 0.00% | never |
-| couscous | couscous [starch] | 0 | 0.00% | never |
-| semolina | semolina [starch] | 0 | 0.00% | never |
-| wild-rice | wild rice [starch] | 0 | 0.00% | never |
-| water-chestnut | water chestnut [vegetable,starch] | 0 | 0.00% | never |
-| parsnip | parsnip [vegetable,starch] | 0 | 0.00% | never |
-| dandelion | dandelion greens [vegetable] | 0 | 0.00% | never |
-| watercress | watercress [vegetable] | 0 | 0.00% | never |
-| endive | endive [vegetable] | 0 | 0.00% | never |
-| radicchio | leafy chicory [vegetable] | 0 | 0.00% | never |
-| bok-choy | leafy cabbage [vegetable] | 0 | 0.00% | never |
-| bamboo-shoot | bamboo shoots [vegetable] | 0 | 0.00% | never |
-| hot-pepper | hot pepper [vegetable,spice] | 0 | 0.00% | never |
-| eggplant | eggplant [vegetable] | 0 | 0.00% | never |
-| tomato | tomato [vegetable,fruit] | 0 | 0.00% | never |
-| wild-garlic | wild garlic [herb,vegetable] | 0 | 0.00% | never |
-| truffle-black | black truffle [vegetable] | 0 | 0.00% | never |
-| truffle-white | white truffle [vegetable] | 0 | 0.00% | never |
-| chanterelle | chanterelles [vegetable] | 0 | 0.00% | never |
-| porcini | porcini [vegetable] | 0 | 0.00% | never |
-| morel | morel [vegetable] | 0 | 0.00% | never |
-| enoki | needle fungi [vegetable] | 0 | 0.00% | never |
-| peach | peaches [fruit] | 0 | 0.00% | never |
-| apricot | apricots [fruit] | 0 | 0.00% | never |
-| cherry | sweet cherries [fruit] | 0 | 0.00% | never |
-| raspberry | raspberries [fruit] | 0 | 0.00% | never |
-| cloudberry | cloudberries [fruit] | 0 | 0.00% | never |
-| medlar | medlar [fruit] | 0 | 0.00% | never |
-| persimmon | persimmons [fruit] | 0 | 0.00% | never |
-| mulberry | mulberries [fruit] | 0 | 0.00% | never |
-| date | dates [fruit] | 0 | 0.00% | never |
-| melon | melons [fruit] | 0 | 0.00% | never |
-| watermelon | watermelons [fruit] | 0 | 0.00% | never |
-| cantaloupe | cantaloupes [fruit] | 0 | 0.00% | never |
-| grapefruit | grapefruits [fruit] | 0 | 0.00% | never |
-| pomelo | pomelos [fruit] | 0 | 0.00% | never |
-| papaya | papayas [fruit] | 0 | 0.00% | never |
-| mango | mangoes [fruit] | 0 | 0.00% | never |
-| hazelnut | hazelnuts [nut] | 0 | 0.00% | never |
-| pecan | pecans [nut] | 0 | 0.00% | never |
-| pistachio | pistachios [nut] | 0 | 0.00% | never |
-| macadamia | macadamia nuts [nut] | 0 | 0.00% | never |
-| pine-nut | pine nuts [nut] | 0 | 0.00% | never |
-| sunflower-seed | sunflower seeds [nut] | 0 | 0.00% | never |
-| pumpkin-seed | pumpkin seeds [nut] | 0 | 0.00% | never |
-| sesame | sesame seeds [nut] | 0 | 0.00% | never |
-| poppy-seed | poppy seeds [nut] | 0 | 0.00% | never |
-| chia | chia seeds [nut] | 0 | 0.00% | never |
-| tallow | beef tallow [fat] | 0 | 0.00% | never |
-| suet | suet [fat] | 0 | 0.00% | never |
-| birch-syrup | birch syrup [sweetener,liquid] | 0 | 0.00% | never |
-| snipe | snipe [protein,fowl] | 0 | 0.00% | never |
-| woodcock | woodcock [protein,fowl] | 0 | 0.00% | never |
-| peacock | peacock [protein,fowl] | 0 | 0.00% | never |
-| bison | bison [protein,ruminant] | 0 | 0.00% | never |
-| hare | hare [protein,game] | 0 | 0.00% | never |
-| bear | bear [protein,game] | 0 | 0.00% | never |
-| ostrich | ostrich [protein,game] | 0 | 0.00% | never |
-| catfish | catfish [protein,fish] | 0 | 0.00% | never |
-| zander | zander [protein,fish] | 0 | 0.00% | never |
-| caviar | sturgeon caviar [protein,fish] | 0 | 0.00% | never |
-| basil | basil [herb] | 0 | 0.00% | never |
-| marjoram | marjoram [herb] | 0 | 0.00% | never |
-| coriander | coriander leaf [herb] | 0 | 0.00% | never |
-| bay-leaf | bay leaf [herb] | 0 | 0.00% | never |
-| lemongrass | lemongrass [herb] | 0 | 0.00% | never |
-| turmeric | turmeric [spice] | 0 | 0.00% | never |
-| cardamom | cardamom [spice] | 0 | 0.00% | never |
-| clove | cloves [spice] | 0 | 0.00% | never |
-| star-anise | star anise [spice] | 0 | 0.00% | never |
-| vanilla | vanilla bean [spice] | 0 | 0.00% | never |
-| caraway | caraway seed [spice] | 0 | 0.00% | never |
-| sumac | sumac [spice] | 0 | 0.00% | never |
-| tofu | bean curd [protein] | 0 | 0.00% | never |
-| ghee | bog butter [fat,dairy] | 0 | 0.00% | never |
-| coconut-milk | coconut milk [liquid,fat,dairy] | 0 | 0.00% | never |
-| curry-leaf | curry leaves [herb] | 0 | 0.00% | never |
-| asafoetida | asafoetida [spice] | 0 | 0.00% | never |
-| mustard-oil | mustard oil [fat,liquid] | 0 | 0.00% | never |
-| black-cardamom | black cardamom [spice] | 0 | 0.00% | never |
-| mirin | sweet rice wine [liquid,sweetener] | 0 | 0.00% | never |
-| yuzu | yuzu [fruit] | 0 | 0.00% | never |
-| lychee | lychee [fruit] | 0 | 0.00% | never |
-| longan | longan [fruit] | 0 | 0.00% | never |
-| azuki | red beans [starch,protein] | 0 | 0.00% | never |
-| black-vinegar | black vinegar [liquid,spice] | 0 | 0.00% | never |
-| rose-water | rose water [liquid,spice] | 0 | 0.00% | never |
-| orange-blossom | orange blossom water [liquid,spice] | 0 | 0.00% | never |
-| labneh | strained yoghurt [dairy] | 0 | 0.00% | never |
-| mahleb | mahleb [spice] | 0 | 0.00% | never |
-| egusi | egusi seeds [nut,protein] | 0 | 0.00% | never |
-| palm-oil | red palm oil [fat,liquid] | 0 | 0.00% | never |
-| grains-paradise | grains of paradise [spice] | 0 | 0.00% | never |
-| kola-nut | kola nut [nut] | 0 | 0.00% | never |
-| tigernut | tigernuts [nut] | 0 | 0.00% | never |
-| cacao | cacao [spice,sweetener] | 0 | 0.00% | never |
-| chipotle | smoked chile [spice] | 0 | 0.00% | never |
-| avocado | avocado [fruit,fat] | 0 | 0.00% | never |
-| mare-milk | mare's milk [dairy,liquid] | 0 | 0.00% | never |
-| birch-sap | fresh birch sap [liquid,sweetener] | 0 | 0.00% | never |
-| hawthorn | hawthorn berries [fruit] | 0 | 0.00% | never |
-| sloe | sloes [fruit] | 0 | 0.00% | never |
-| lark | lark [protein,fowl] | 0 | 0.00% | never |
-| hedgehog | hedgehog [protein,game] | 0 | 0.00% | never |
-| dormouse | dormouse [protein,game] | 0 | 0.00% | never |
-| frog-legs | frog legs [protein] | 0 | 0.00% | never |
-| purslane | purslane [vegetable,herb] | 0 | 0.00% | never |
-| lamb-lettuce | lamb's lettuce [vegetable] | 0 | 0.00% | never |
-| starfruit | starfruit [fruit] | 0 | 0.00% | never |
-| passion-fruit | passion fruit [fruit] | 0 | 0.00% | never |
-| chamois | chamois [protein,game,ruminant] | 0 | 0.00% | never |
-| coriander-seed | coriander seed [spice] | 0 | 0.00% | never |
-| anise | anise [spice] | 0 | 0.00% | never |
-| cured-ham | cured ham [protein,fat] | 0 | 0.00% | never |
-| conger-eel | conger eel [protein,fish] | 0 | 0.00% | never |
-| seawater-brine | seawater brine [liquid,spice] | 0 | 0.00% | never |
-| lettuce | lettuce [vegetable] | 0 | 0.00% | never |
-| sheep-cheese | aged sheep's cheese [dairy,cheese] | 0 | 0.00% | never |
-| durum-wheat | durum wheat [starch] | 0 | 0.00% | never |
-| sour-yoghurt | sour yoghurt [dairy] | 0 | 0.00% | never |
-| sesame-paste | sesame paste [spice,fat] | 0 | 0.00% | never |
-| citron | citron [fruit] | 0 | 0.00% | never |
-| pine-resin | pine resin [spice] | 0 | 0.00% | never |
-| black-sesame | black sesame [nut] | 0 | 0.00% | never |
-| date-brandy | date brandy [liquid,drink] | 0 | 0.00% | never |
-| giant-deer | giant deer [protein,game,ruminant] | 0 | 0.00% | never |
-| megaceront | megaceront [protein,game,ruminant] | 0 | 0.00% | never |
-| cave-bear | cave bear [protein,game] | 0 | 0.00% | never |
-| whale | whale meat [protein,game] | 0 | 0.00% | never |
-| aurochs-blood | aurochs blood [protein,liquid] | 0 | 0.00% | never |
-| fermented-milk | fermented aurochs milk [dairy,liquid] | 0 | 0.00% | never |
-| red-butter | red butter [fat,dairy] | 0 | 0.00% | never |
-| lichen | lichen [vegetable] | 0 | 0.00% | never |
-| fern-ash | fern ash [spice,starch] | 0 | 0.00% | never |
-| conifer-seed | pine cone seeds [nut] | 0 | 0.00% | never |
-| cave-honey | cave honey [sweetener] | 0 | 0.00% | never |
-
-### Overused (17)
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| gruit-beer | gruit beer [liquid,drink] | 21 | 1.04% | overused |
-| chicken | chicken [protein,fowl] | 22 | 1.09% | overused |
-| beans | dried beans [starch,protein] | 23 | 1.14% | overused |
-| green-beans | green beans [vegetable] | 24 | 1.19% | overused |
-| onion | onion [vegetable] | 25 | 1.24% | overused |
-| taro | taro root [starch,vegetable] | 26 | 1.29% | overused |
-| ale-pale | pale ale [liquid,drink] | 27 | 1.34% | overused |
-| koumiss | koumiss [liquid,drink,dairy] | 28 | 1.39% | overused |
-| honey | honey [sweetener] | 28 | 1.39% | overused |
-| ale | dark ale [liquid,drink] | 29 | 1.43% | overused |
-| egg | eggs [protein] | 29 | 1.43% | overused |
-| peated-beer | peated beer [liquid,drink] | 34 | 1.68% | overused |
-| beetroot | beetroot [vegetable] | 34 | 1.68% | overused |
-| prune | prunes [fruit] | 39 | 1.93% | overused |
-| salt | salt [spice] | 43 | 2.13% | overused |
-| sage | sage [herb] | 69 | 3.41% | overused |
-| potato | potato [starch,vegetable] | 77 | 3.81% | overused |
-
-### Top 20 by count
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| cave-honey | cave honey [sweetener] | 0 | 0.00% | never |
-| conifer-seed | pine cone seeds [nut] | 0 | 0.00% | never |
-| fern-ash | fern ash [spice,starch] | 0 | 0.00% | never |
-| lichen | lichen [vegetable] | 0 | 0.00% | never |
-| red-butter | red butter [fat,dairy] | 0 | 0.00% | never |
-| fermented-milk | fermented aurochs milk [dairy,liquid] | 0 | 0.00% | never |
-| aurochs-blood | aurochs blood [protein,liquid] | 0 | 0.00% | never |
-| whale | whale meat [protein,game] | 0 | 0.00% | never |
-| cave-bear | cave bear [protein,game] | 0 | 0.00% | never |
-| megaceront | megaceront [protein,game,ruminant] | 0 | 0.00% | never |
-| giant-deer | giant deer [protein,game,ruminant] | 0 | 0.00% | never |
-| date-brandy | date brandy [liquid,drink] | 0 | 0.00% | never |
-| black-sesame | black sesame [nut] | 0 | 0.00% | never |
-| pine-resin | pine resin [spice] | 0 | 0.00% | never |
-| citron | citron [fruit] | 0 | 0.00% | never |
-| sesame-paste | sesame paste [spice,fat] | 0 | 0.00% | never |
-| sour-yoghurt | sour yoghurt [dairy] | 0 | 0.00% | never |
-| durum-wheat | durum wheat [starch] | 0 | 0.00% | never |
-| sheep-cheese | aged sheep's cheese [dairy,cheese] | 0 | 0.00% | never |
-| lettuce | lettuce [vegetable] | 0 | 0.00% | never |
-
-## preparations
-
-Universe: **9**. Never appeared: **0**, rare: **2**, overused: **0**.
-
-### Rare (2)
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| pickled | pickled | 13 | 1.73% | rare |
-| smoked | smoked | 8 | 1.06% | rare |
-
-### Top 20 by count
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| smoked | smoked | 8 | 1.06% | rare |
-| pickled | pickled | 13 | 1.73% | rare |
-| raw | raw | 40 | 5.31% | normal |
-| roasted | roasted | 49 | 6.51% | normal |
-| pan-fried | pan-fried | 85 | 11.29% | normal |
-| grilled | grilled | 96 | 12.75% | normal |
-| baked | baked | 122 | 16.20% | normal |
-| braised | braised | 152 | 20.19% | normal |
-| stewed | stewed | 188 | 24.97% | normal |
-
-## templates
-
-Universe: **34**. Never appeared: **0**, rare: **3**, overused: **1**.
-
-### Rare (3)
-
-| id | label | count | share | bucket |
-|---|---|---:|---:|---|
-| nut-cake | nut-cake (dessert) | 3 | 0.52% | rare |
-| cheese-tart | cheese-tart (dessert) | 3 | 0.52% | rare |
-| raw-bar | raw-bar (appetizer) | 3 | 0.52% | rare |
+| goose-roll-veg | Goose roll stuffed with vegetables | 1081 | 0.09% | rare |
+| fig-sherbet-ice | Fig sherbet over shaved ice | 1069 | 0.09% | rare |
+| scallops-pickled-figs | Scallops with pickled figs | 1054 | 0.09% | rare |
+| venison-jelly | Venison jelly | 1026 | 0.09% | rare |
+| goose-gingerbread | Marinated goose and gingerbread | 1026 | 0.09% | rare |
+| eggs-prawns | Eggs stuffed with prawns | 1017 | 0.09% | rare |
+| goose-almond-sauce | Goose in almond sauce | 994 | 0.08% | rare |
+| sole-bitter-orange | Sole with bitter orange sauce | 914 | 0.08% | rare |
+| partridge-pie | Partridge pie | 901 | 0.08% | rare |
+| sole-mandarin | Grilled sole with mandarin sauce | 886 | 0.07% | rare |
+| roasted-quail | Roasted quail | 820 | 0.07% | rare |
+| cured-reindeer-heart | Cured reindeer heart | 426 | 0.04% | rare |
+| pears-confit | Pears in confit | 391 | 0.03% | rare |
+| pumpkin-snapper-soup | Red snapper and cream of pumpkin soup | 370 | 0.03% | rare |
+| aurochs-ribs | Aurochs ribs | 232 | 0.02% | rare |
+| sea-urchin-soup | Spicy sea urchin soup | 156 | 0.01% | rare |
+| reindeer-pomegranate | Reindeer quarters with pomegranate | 133 | 0.01% | rare |
+| megaceront-ribs | Megaceront ribs in pine and thyme | 120 | 0.01% | rare |
 
 ### Overused (1)
 
 | id | label | count | share | bucket |
 |---|---|---:|---:|---|
-| drink-simple | drink-simple (drink) | 95 | 16.32% | overused |
+| samphire-liquor | Samphire liquor | 34998 | 2.95% | overused |
 
 ### Top 20 by count
 
 | id | label | count | share | bucket |
 |---|---|---:|---:|---|
-| raw-bar | raw-bar (appetizer) | 3 | 0.52% | rare |
-| cheese-tart | cheese-tart (dessert) | 3 | 0.52% | rare |
-| nut-cake | nut-cake (dessert) | 3 | 0.52% | rare |
-| curd-plate | curd-plate (appetizer) | 5 | 0.86% | normal |
-| gratin | gratin (main) | 6 | 1.03% | normal |
-| smoked-plate | smoked-plate (appetizer) | 8 | 1.37% | normal |
-| broth | broth (appetizer) | 8 | 1.37% | normal |
-| cheese-board | cheese-board (appetizer) | 8 | 1.37% | normal |
-| tartine | tartine (appetizer) | 11 | 1.89% | normal |
-| spiced-fruit | spiced-fruit (dessert) | 11 | 1.89% | normal |
-| fruit-tart | fruit-tart (dessert) | 11 | 1.89% | normal |
-| vegetable-soup | vegetable-soup (appetizer) | 11 | 1.89% | normal |
-| fritter-plate | fritter-plate (appetizer) | 11 | 1.89% | normal |
-| fruit-sauce-main | fruit-sauce-main (main) | 12 | 2.06% | normal |
-| fresh-salad | fresh-salad (appetizer) | 13 | 2.23% | normal |
-| pickle-plate | pickle-plate (appetizer) | 13 | 2.23% | normal |
-| creamed-vegetable | creamed-vegetable (appetizer) | 15 | 2.58% | normal |
-| honeyed-fruit | honeyed-fruit (dessert) | 16 | 2.75% | normal |
-| grain-stew | grain-stew (main) | 34 | 5.84% | normal |
-| confit | confit (main) | 35 | 6.01% | normal |
+| megaceront-ribs | Megaceront ribs in pine and thyme | 120 | 0.01% | rare |
+| reindeer-pomegranate | Reindeer quarters with pomegranate | 133 | 0.01% | rare |
+| sea-urchin-soup | Spicy sea urchin soup | 156 | 0.01% | rare |
+| aurochs-ribs | Aurochs ribs | 232 | 0.02% | rare |
+| pumpkin-snapper-soup | Red snapper and cream of pumpkin soup | 370 | 0.03% | rare |
+| pears-confit | Pears in confit | 391 | 0.03% | rare |
+| cured-reindeer-heart | Cured reindeer heart | 426 | 0.04% | rare |
+| roasted-quail | Roasted quail | 820 | 0.07% | rare |
+| sole-mandarin | Grilled sole with mandarin sauce | 886 | 0.07% | rare |
+| partridge-pie | Partridge pie | 901 | 0.08% | rare |
+| sole-bitter-orange | Sole with bitter orange sauce | 914 | 0.08% | rare |
+| goose-almond-sauce | Goose in almond sauce | 994 | 0.08% | rare |
+| eggs-prawns | Eggs stuffed with prawns | 1017 | 0.09% | rare |
+| goose-gingerbread | Marinated goose and gingerbread | 1026 | 0.09% | rare |
+| venison-jelly | Venison jelly | 1026 | 0.09% | rare |
+| scallops-pickled-figs | Scallops with pickled figs | 1054 | 0.09% | rare |
+| fig-sherbet-ice | Fig sherbet over shaved ice | 1069 | 0.09% | rare |
+| goose-roll-veg | Goose roll stuffed with vegetables | 1081 | 0.09% | rare |
+| barley-cake-birch | Barley cake with birch syrup | 1388 | 0.12% | normal |
+| spiced-crab-head | Spiced crab head | 1425 | 0.12% | normal |
+
+## ingredients
+
+Universe: **491**. Never appeared: **3**, rare: **154**, overused: **12**.
+
+### Never appeared
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| chia | chia seeds [nut] | 0 | 0.00% | never |
+| kola-nut | kola nut [nut] | 0 | 0.00% | never |
+| seawater-brine | seawater brine [liquid,spice] | 0 | 0.00% | never |
+
+### Rare (154)
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| pepper | black pepper [spice] | 716 | 0.04% | rare |
+| cumin | cumin [spice] | 707 | 0.04% | rare |
+| artichoke | artichoke [vegetable] | 704 | 0.04% | rare |
+| cured-ham | cured ham [protein,fat] | 697 | 0.04% | rare |
+| conger-eel | conger eel [protein,fish] | 695 | 0.04% | rare |
+| partridge | partridge [protein,fowl] | 688 | 0.04% | rare |
+| maize | maize [starch] | 678 | 0.04% | rare |
+| goose | goose [protein,fowl] | 673 | 0.04% | rare |
+| allspice | allspice [spice] | 665 | 0.04% | rare |
+| liquorice | liquorice root [spice] | 658 | 0.04% | rare |
+| cave-honey | cave honey [sweetener] | 658 | 0.04% | rare |
+| jackfruit | jackfruit [fruit,vegetable] | 655 | 0.04% | rare |
+| bell-pepper | bell pepper [vegetable] | 638 | 0.04% | rare |
+| almond | almonds [nut] | 632 | 0.04% | rare |
+| enoki | needle fungi [vegetable] | 622 | 0.03% | rare |
+| apricot | apricots [fruit] | 615 | 0.03% | rare |
+| mullet | red mullet [protein,fish] | 611 | 0.03% | rare |
+| courgette | courgette [vegetable] | 603 | 0.03% | rare |
+| lamprey | lamprey [protein,fish] | 593 | 0.03% | rare |
+| cuttlefish | cuttlefish [protein,shellfish] | 593 | 0.03% | rare |
+| mushroom | wild mushrooms [vegetable] | 589 | 0.03% | rare |
+| grape | grapes [fruit] | 585 | 0.03% | rare |
+| rice | rice [starch] | 540 | 0.03% | rare |
+| arugula | arugula [vegetable,herb] | 533 | 0.03% | rare |
+| berries | forest berries [fruit] | 528 | 0.03% | rare |
+| semolina | semolina [starch] | 523 | 0.03% | rare |
+| monkfish | monkfish [protein,fish] | 512 | 0.03% | rare |
+| fenugreek | fenugreek [spice] | 512 | 0.03% | rare |
+| durum-wheat | durum wheat [starch] | 512 | 0.03% | rare |
+| amaranth | amaranth [starch] | 498 | 0.03% | rare |
+| cacao | cacao [spice,sweetener] | 494 | 0.03% | rare |
+| halibut | halibut [protein,fish] | 486 | 0.03% | rare |
+| tuna | tuna [protein,fish] | 486 | 0.03% | rare |
+| raspberry | raspberries [fruit] | 469 | 0.03% | rare |
+| soy-sauce | soy sauce [liquid,spice] | 469 | 0.03% | rare |
+| bamboo-shoot | bamboo shoots [vegetable] | 466 | 0.03% | rare |
+| aurochs-blood | aurochs blood [protein,liquid] | 452 | 0.03% | rare |
+| sorghum | sorghum [starch] | 445 | 0.02% | rare |
+| turbot | turbot [protein,fish] | 428 | 0.02% | rare |
+| suet | suet [fat] | 422 | 0.02% | rare |
+| palm-oil | red palm oil [fat,liquid] | 419 | 0.02% | rare |
+| swan | swan [protein,fowl] | 404 | 0.02% | rare |
+| sole | sole [protein,fish] | 397 | 0.02% | rare |
+| fig | figs [fruit] | 395 | 0.02% | rare |
+| snow-peas | snow peas [vegetable] | 393 | 0.02% | rare |
+| citron | citron [fruit] | 391 | 0.02% | rare |
+| cucumber | cucumber [vegetable] | 390 | 0.02% | rare |
+| bass | sea bass [protein,fish] | 387 | 0.02% | rare |
+| prawn | prawns [protein,shellfish] | 386 | 0.02% | rare |
+| flax | flax seeds [nut] | 377 | 0.02% | rare |
+
+### Overused (12)
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| cheese-farm | farmer's cheese [dairy,cheese] | 18836 | 1.06% | overused |
+| beetroot | beetroot [vegetable] | 19957 | 1.12% | overused |
+| gruit-beer | gruit beer [liquid,drink] | 23879 | 1.34% | overused |
+| ale | dark ale [liquid,drink] | 24390 | 1.37% | overused |
+| koumiss | koumiss [liquid,drink,dairy] | 26778 | 1.50% | overused |
+| honey | honey [sweetener] | 28682 | 1.61% | overused |
+| ale-pale | pale ale [liquid,drink] | 32125 | 1.80% | overused |
+| peated-beer | peated beer [liquid,drink] | 32469 | 1.82% | overused |
+| salt | salt [spice] | 33983 | 1.91% | overused |
+| prune | prunes [fruit] | 45255 | 2.54% | overused |
+| sage | sage [herb] | 51717 | 2.90% | overused |
+| potato | potato [starch,vegetable] | 55113 | 3.10% | overused |
+
+### Top 20 by count
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| seawater-brine | seawater brine [liquid,spice] | 0 | 0.00% | never |
+| kola-nut | kola nut [nut] | 0 | 0.00% | never |
+| chia | chia seeds [nut] | 0 | 0.00% | never |
+| lychee | lychee [fruit] | 4 | 0.00% | rare |
+| starfruit | starfruit [fruit] | 6 | 0.00% | rare |
+| mango | mangoes [fruit] | 8 | 0.00% | rare |
+| megaceront | megaceront [protein,game,ruminant] | 11 | 0.00% | rare |
+| aurochs | aurochs [protein,ruminant] | 12 | 0.00% | rare |
+| caviar | sturgeon caviar [protein,fish] | 13 | 0.00% | rare |
+| longan | longan [fruit] | 15 | 0.00% | rare |
+| truffle-white | white truffle [vegetable] | 16 | 0.00% | rare |
+| passion-fruit | passion fruit [fruit] | 18 | 0.00% | rare |
+| melon | melons [fruit] | 18 | 0.00% | rare |
+| truffle-black | black truffle [vegetable] | 25 | 0.00% | rare |
+| cantaloupe | cantaloupes [fruit] | 30 | 0.00% | rare |
+| albatross | albatross [protein,fowl] | 34 | 0.00% | rare |
+| pomelo | pomelos [fruit] | 42 | 0.00% | rare |
+| yuzu | yuzu [fruit] | 45 | 0.00% | rare |
+| pistachio | pistachios [nut] | 46 | 0.00% | rare |
+| saffron | saffron [spice] | 46 | 0.00% | rare |
+
+## preparations
+
+Universe: **9**. Never appeared: **0**, rare: **0**, overused: **0**.
+
+### Top 20 by count
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| pickled | pickled | 17073 | 2.49% | normal |
+| roasted | roasted | 29114 | 4.25% | normal |
+| smoked | smoked | 33205 | 4.85% | normal |
+| pan-fried | pan-fried | 59579 | 8.71% | normal |
+| grilled | grilled | 66992 | 9.79% | normal |
+| raw | raw | 70086 | 10.24% | normal |
+| braised | braised | 110313 | 16.12% | normal |
+| baked | baked | 136151 | 19.89% | normal |
+| stewed | stewed | 161841 | 23.65% | normal |
+
+## templates
+
+Universe: **34**. Never appeared: **0**, rare: **0**, overused: **0**.
+
+### Top 20 by count
+
+| id | label | count | share | bucket |
+|---|---|---:|---:|---|
+| cheese-tart | cheese-tart (dessert) | 6516 | 0.87% | normal |
+| raw-bar | raw-bar (appetizer) | 6531 | 0.87% | normal |
+| gratin | gratin (main) | 9103 | 1.21% | normal |
+| nut-cake | nut-cake (dessert) | 10805 | 1.44% | normal |
+| fruit-sauce-main | fruit-sauce-main (main) | 10929 | 1.46% | normal |
+| smoked-plate | smoked-plate (appetizer) | 12469 | 1.66% | normal |
+| cheese-board | cheese-board (appetizer) | 12600 | 1.68% | normal |
+| honeyed-fruit | honeyed-fruit (dessert) | 14695 | 1.96% | normal |
+| creamed-vegetable | creamed-vegetable (appetizer) | 16609 | 2.21% | normal |
+| spiced-fruit | spiced-fruit (dessert) | 16716 | 2.23% | normal |
+| broth | broth (appetizer) | 16750 | 2.23% | normal |
+| tartine | tartine (appetizer) | 16880 | 2.25% | normal |
+| fresh-salad | fresh-salad (appetizer) | 16958 | 2.26% | normal |
+| fritter-plate | fritter-plate (appetizer) | 16964 | 2.26% | normal |
+| pickle-plate | pickle-plate (appetizer) | 17073 | 2.28% | normal |
+| curd-plate | curd-plate (appetizer) | 17117 | 2.28% | normal |
+| vegetable-soup | vegetable-soup (appetizer) | 17209 | 2.29% | normal |
+| grain-stew | grain-stew (main) | 20785 | 2.77% | normal |
+| fruit-tart | fruit-tart (dessert) | 23314 | 3.11% | normal |
+| pottage | pottage (main) | 23465 | 3.13% | normal |
 
 ## Anomalies
 
-**12** authored dishes never appeared even though at least one swept world's static filters would admit them. Likely causes: weighting suppression, scarcity tag stripping, or section-cap eviction.
-
-| id | name | section | biomes | seasons | tags |
-|---|---|---|---|---|---|
-| roasted-quail | Roasted quail | main | heartland,highland | autumn | refined,noble |
-| candied-horseradish | Candied horseradish | appetizer | heartland,frostlands | winter | refined,nordic |
-| lemon-pear-tart | Lemon pear tart | dessert | heartland | autumn | refined,mediterranean |
-| pumpkin-snapper-soup | Red snapper and cream of pumpkin soup | appetizer | coastal | autumn | refined,noble,mediterranean |
-| apple-onion-salad | Apple and onion salad | appetizer | heartland | autumn | peasant,common |
-| eggs-prawns | Eggs stuffed with prawns | appetizer | coastal | spring,summer | refined,noble,mediterranean |
-| goose-gingerbread | Marinated goose and gingerbread | main | heartland | autumn,winter | noble |
-| goose-roll-veg | Goose roll stuffed with vegetables | main | heartland | autumn,winter | noble |
-| pears-confit | Pears in confit | dessert | heartland | autumn | refined,noble |
-| fermented-reindeer-soup | Fermented reindeer soup | appetizer | frostlands | autumn,winter | peasant,nordic,peculiar |
-| whale-raw | Raw whale, salt and dill | appetizer | frostlands,coastal | all-seasons | noble,nordic,peculiar |
-| cured-reindeer-heart | Cured reindeer heart | appetizer | frostlands | winter | noble,nordic,peculiar |
+No authored dish that should have been reachable was missed.
 
 ## Sanity checks
 

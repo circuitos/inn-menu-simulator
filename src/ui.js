@@ -124,53 +124,35 @@ const SEASON_ORDER = [
 ];
 const WEATHER_ORDER = ["clear","rain","snow","heatwave"];
 
+function populateSelect(selectId, entries, defaultValue) {
+  const sel = qs(selectId);
+  sel.innerHTML = "";
+  for (const { value, label } of entries) {
+    const o = document.createElement("option");
+    o.value = value;
+    o.textContent = label;
+    if (value === defaultValue) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
 function populateSelects(data) {
-  // Biome
-  const bsel = qs("biome");
-  bsel.innerHTML = "";
-  for (const [id, b] of Object.entries(data.modifiers.biomes)) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = b.label;
-    if (id === "heartland") o.selected = true;
-    bsel.appendChild(o);
-  }
-  // Season
-  const ssel = qs("season");
-  ssel.innerHTML = "";
-  for (const [id, label] of SEASON_ORDER) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = label;
-    if (id === "autumn") o.selected = true;
-    ssel.appendChild(o);
-  }
-  // Weather
-  const wsel = qs("weather");
-  wsel.innerHTML = "";
-  for (const id of WEATHER_ORDER) {
-    const def = data.modifiers.weather[id];
-    if (!def) continue;
-    const o = document.createElement("option");
-    o.value = id; o.textContent = def.label;
-    if (id === "clear") o.selected = true;
-    wsel.appendChild(o);
-  }
-  // Condition
-  const csel = qs("condition");
-  csel.innerHTML = "";
-  for (const [id, c] of Object.entries(data.modifiers.conditions)) {
-    const o = document.createElement("option");
-    o.value = id; o.textContent = c.label;
-    if (id === "peace") o.selected = true;
-    csel.appendChild(o);
-  }
-  // Event
-  const esel = qs("event");
-  esel.innerHTML = "";
-  for (const e of data.events.events) {
-    const o = document.createElement("option");
-    o.value = e.id; o.textContent = e.label;
-    esel.appendChild(o);
-  }
+  populateSelect("biome",
+    Object.entries(data.modifiers.biomes).map(([id, b]) => ({ value: id, label: b.label })),
+    "heartland");
+  populateSelect("season",
+    SEASON_ORDER.map(([id, label]) => ({ value: id, label })),
+    "autumn");
+  populateSelect("weather",
+    WEATHER_ORDER
+      .filter(id => data.modifiers.weather[id])
+      .map(id => ({ value: id, label: data.modifiers.weather[id].label })),
+    "clear");
+  populateSelect("condition",
+    Object.entries(data.modifiers.conditions).map(([id, c]) => ({ value: id, label: c.label })),
+    "peace");
+  populateSelect("event",
+    data.events.events.map(e => ({ value: e.id, label: e.label })));
 }
 
 // Some weathers don't make sense in some biomes/seasons — e.g. snow in arid or
@@ -212,19 +194,70 @@ function setSelect(id, value) {
   if (option) el.value = value;
 }
 
+// Per-field lock state. Locked fields are skipped by Randomize / New seed.
+const LOCK_IDS = ["biome","season","weather","inn_tier","economy","condition","event","seed"];
+const locks = Object.fromEntries(LOCK_IDS.map(id => [id, false]));
+
+const LOCK_SVGS = `
+  <svg class="icon-unlocked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="1.5" />
+    <path d="M8 11V7a4 4 0 0 1 7.5-2" />
+  </svg>
+  <svg class="icon-locked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="1.5" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+`;
+
+function installLockButtons() {
+  for (const id of LOCK_IDS) {
+    const el = qs(id);
+    if (!el || el.parentElement.classList.contains("field-row")) continue;
+    const row = document.createElement("div");
+    row.className = "field-row";
+    el.parentNode.insertBefore(row, el);
+    row.appendChild(el);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lock-btn";
+    btn.dataset.lockFor = id;
+    btn.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-label", `Lock ${id.replace("_", " ")}`);
+    btn.innerHTML = LOCK_SVGS;
+    btn.addEventListener("click", () => setLock(id, !locks[id]));
+    row.appendChild(btn);
+  }
+}
+
+function setLock(id, value) {
+  locks[id] = value;
+  const btn = document.querySelector(`.lock-btn[data-lock-for="${id}"]`);
+  if (btn) {
+    btn.setAttribute("aria-pressed", String(value));
+    btn.setAttribute("aria-label", `${value ? "Unlock" : "Lock"} ${id.replace("_", " ")}`);
+  }
+}
+
+function resetLocks() {
+  for (const id of LOCK_IDS) setLock(id, false);
+}
+
 function randomizeSelects() {
   // Biome and season first — weather's available set depends on them.
   for (const id of ["biome","season","inn_tier","economy","condition","event"]) {
+    if (locks[id]) continue;
     const el = qs(id);
     if (!el || !el.options.length) continue;
     el.value = el.options[Math.floor(Math.random() * el.options.length)].value;
   }
   applyWeatherCompatibility();
-  const wsel = qs("weather");
-  if (wsel && wsel.options.length) {
-    const allowed = Array.from(wsel.options).filter(o => !o.disabled);
-    const pool = allowed.length ? allowed : Array.from(wsel.options);
-    wsel.value = pool[Math.floor(Math.random() * pool.length)].value;
+  if (!locks.weather) {
+    const wsel = qs("weather");
+    if (wsel && wsel.options.length) {
+      const allowed = Array.from(wsel.options).filter(o => !o.disabled);
+      const pool = allowed.length ? allowed : Array.from(wsel.options);
+      wsel.value = pool[Math.floor(Math.random() * pool.length)].value;
+    }
   }
 }
 
@@ -331,13 +364,26 @@ async function init() {
   populateSelects(DATA);
   populateFlavorPacks(DATA);
   applyWeatherCompatibility();
+  installLockButtons();
   qs("biome").addEventListener("change", applyWeatherCompatibility);
   qs("season").addEventListener("change", applyWeatherCompatibility);
   qs("seed").value = randomSeed();
   qs("generate").addEventListener("click", generate);
-  qs("reroll").addEventListener("click", () => { qs("seed").value = randomSeed(); generate(); });
-  qs("randomize").addEventListener("click", () => { randomizeSelects(); qs("seed").value = randomSeed(); generate(); });
-  qs("reset").addEventListener("click", () => { resetSelects(); qs("seed").value = randomSeed(); generate(); });
+  qs("reroll").addEventListener("click", () => {
+    if (!locks.seed) qs("seed").value = randomSeed();
+    generate();
+  });
+  qs("randomize").addEventListener("click", () => {
+    randomizeSelects();
+    if (!locks.seed) qs("seed").value = randomSeed();
+    generate();
+  });
+  qs("reset").addEventListener("click", () => {
+    resetSelects();
+    resetLocks();
+    qs("seed").value = randomSeed();
+    generate();
+  });
   qs("polish").addEventListener("click", polish);
   generate();
 }

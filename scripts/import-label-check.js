@@ -9,29 +9,10 @@
 // Usage: node scripts/import-label-check.js
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
-const vm = require("vm");
+const { loadData, loadGenerator } = require("./lib/loader");
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
-
-function loadJson(name) {
-  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name + ".json"), "utf8"));
-}
-const data = {
-  authored_dishes: loadJson("authored_dishes"),
-  ingredients: loadJson("ingredients"),
-  preparations: loadJson("preparations"),
-  dishes: loadJson("dishes"),
-  events: loadJson("events"),
-  modifiers: loadJson("modifiers")
-};
-
-globalThis.window = {};
-const generatorSrc = fs.readFileSync(path.join(ROOT, "src", "generator.js"), "utf8");
-vm.runInThisContext(generatorSrc, { filename: "src/generator.js" });
-const { generateMenu } = globalThis.window.InnMenu;
+const data = loadData();
+const { generateMenu } = loadGenerator();
 
 const SCENARIOS = [
   { label: "noble / heartland / merchant_caravan",
