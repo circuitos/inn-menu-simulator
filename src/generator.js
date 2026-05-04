@@ -42,7 +42,7 @@ const TUNING = {
   // weights because authored dishes are pre-curated (a higher floor makes
   // sense) while procedural peculiar should stay quite rare.
   peculiar_authored_base: 0.75,
-  peculiar_ingredient_base: 0.05,
+  peculiar_ingredient_base: 0.1,
   peculiar_hardship_mult: 2,
   peculiar_pity_mult: 2,
 
