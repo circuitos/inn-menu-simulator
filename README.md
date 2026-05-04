@@ -44,9 +44,22 @@ inn-menu-simulator/
 │   └── flavor_packs/           # optional setting-specific overlays
 │       ├── index.json          # manifest of available packs
 │       └── mog.json            # the Mog setting pack (off by default)
+├── scripts/
+│   ├── smoke.js                # regression frequency sweep (npm run smoke)
+│   ├── smoke-deep.js           # editorial per-axis audit
+│   ├── balance-probe.js        # focused import-frequency probe
+│   ├── import-label-check.js   # before/after probe for procedural import labels
+│   ├── tag-origins.js          # one-shot data sweep: tag ingredient origins
+│   └── lib/
+│       ├── loader.js           # shared Node bootstrap for the browser modules
+│       └── checks.js           # shared structural-check helpers
+├── out/
+│   ├── smoke-report.md         # latest regression report (regenerated)
+│   └── smoke-deep.md           # latest editorial audit (regenerated)
 ├── docs/
 │   ├── DESIGN.md               # architecture, tag taxonomy, decision log
 │   └── SETUP.md                # GitHub + Pages walkthrough
+├── package.json
 ├── LICENSE
 └── README.md
 ```
