@@ -703,7 +703,8 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
 
   const parts = { prep: prep.verb };
   for (const [k, v] of Object.entries(picked)) parts[k] = v ? v.name : "";
-  const name = nameTpl.replace(/\{(\w+)\}/g, (_, k) => parts[k] || "").replace(/\s+/g, " ").trim();
+  const name = nameTpl.replace(/\{(\w+)\}/g, (_, k) => parts[k] || "").replace(/\s+/g, " ").trim()
+    .replace(/\b(\w+)(\s+\1)+\b/gi, "$1");
 
   const ingredientsUsed = Object.values(picked).filter(Boolean);
   const baseCopper = ingredientsUsed.reduce((sum, ing) => sum + (COST_BASE[ing.cost] || 2), 0);
