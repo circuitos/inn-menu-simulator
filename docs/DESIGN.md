@@ -14,19 +14,92 @@ The consequence: **to change the stable, named dishes, edit `authored_dishes.jso
 
 ## Tuning knobs
 
-At the top of `src/generator.js`:
+The `TUNING` block at the top of `src/generator.js` is the single place to bias generation behavior. Edit-in-place; no UI exposure. Reload to see the effect.
 
 ```js
 const TUNING = {
-  authored_ratio: 0.75,           // 1.0 authored-only, 0.0 procedural-only
-  event_weight_mult: 1.0,         // 0.0 events affect only prices/notes, 1.0 default
-  authored_event_tag_boost: 1.7,  // base boost per event tag match on authored dishes
+  authored_ratio: 0.65,
+  event_weight_mult: 1.0,
+  authored_event_tag_boost: 1.7,
   ingredient_event_tag_boost: 1.8,
-  ingredient_event_role_boost: 1.6
+  ingredient_event_role_boost: 1.6,
+
+  specificity_step: 0.88,
+  novelty_step: 0.92,
+  ingredient_repeat_step: 0.5,
+
+  peculiar_authored_base: 0.75,
+  peculiar_ingredient_base: 0.05,
+  peculiar_hardship_mult: 2,
+  peculiar_pity_mult: 2,
+
+  peasant_low_tier_boost: 1.5,
+  refined_low_tier_dampener: 0.5,
+  peasant_high_tier_dampener: 0.7
 };
 ```
 
-These are edit-in-place. No UI exposure — change the file, reload, see the effect. `authored_ratio` is the main lever for variety: lower it to lean on the 400+ ingredient pool; raise it to pin the menu to curated dishes. `event_weight_mult` lets a campaign where events are narrative centerpieces (Harvest Festival actually changes the menu) coexist with a gritty world where events are incidental.
+### Mix and event knobs
+
+| Knob | Default | What it does |
+|------|--------:|--------------|
+| `authored_ratio` | 0.65 | Probability per slot of preferring authored over procedural. 1.0 pins the menu to curated dishes; 0.0 leans on the 400+ ingredient pool. Falls through to the other source when the preferred one is empty. |
+| `event_weight_mult` | 1.0 | Scales how aggressively the active event biases dish/ingredient weighting. 0.0 = events only affect prices and notes; >1.0 = events visibly steer the menu (Harvest Festival actually changes what shows up). |
+| `authored_event_tag_boost` | 1.7 | Base multiplier applied to an authored dish per matching event boost tag (before `event_weight_mult` scaling). |
+| `ingredient_event_tag_boost` | 1.8 | Same idea, for procedural ingredient tag matches. |
+| `ingredient_event_role_boost` | 1.6 | Procedural ingredient boost per matching event role (e.g. fish on a Good Catch). |
+
+### Variety knobs
+
+These three together replace what would otherwise be per-dish "workhorse" flags. They derive their effect from the data shape (`biomes`/`seasons`/`tags` arrays, ingredient ids), so a contributor doesn't need to know which dishes are dominating — the engine notices breadth and repetition automatically.
+
+| Knob | Default | What it does |
+|------|--------:|--------------|
+| `specificity_step` | 0.88 | Per "extra" biome or season on an authored dish, weight is multiplied by this factor. `["any"]` counts as 5 biomes; `["all-seasons"]` counts as 4 seasons. A 1-biome 1-season dish keeps full weight; a `["any"]` + `["all-seasons"]` dish takes ~0.32×. Lower this to push focused dishes harder; raise it (toward 1.0) to flatten the gradient. Replaces the old hard-coded `any+all-seasons → 0.7` rule. |
+| `novelty_step` | 0.92 | Each tag the candidate carries that's already represented in the in-progress menu dampens weight by this factor (per overlap). State lives only inside one menu generation — does not leak across menus, so determinism is preserved. Reads as "the kitchen varies its offerings"; no per-dish flag involved. |
+| `ingredient_repeat_step` | 0.5 | Each prior pick of the same ingredient in the current menu shrinks the weight of the next pick by this factor. Stops one herb or root from headlining four dishes back-to-back. Set to 1.0 to disable. |
+
+### Peculiar knobs
+
+The procedural pool **no longer hard-filters** peculiar ingredients (rat, lichen, megaceront, fern ash, etc.). They pass the filter and ride a heavy weight dampener instead. Authored peculiar dishes are dampened on the same curve. Two reasons to do it this way: (1) the corpus has no other surface for these ingredients except authored dishes, which means even a dozen authored peculiar entries leave most of them invisible; (2) hardship conditions and a per-menu pity boost can lift them organically when the world calls for grim food.
+
+| Knob | Default | What it does |
+|------|--------:|--------------|
+| `peculiar_authored_base` | 0.75 | Base multiplier on authored dishes tagged `peculiar`. Higher than the ingredient base because authored entries are pre-curated and intentional. |
+| `peculiar_ingredient_base` | 0.05 | Base multiplier on procedural ingredients tagged `peculiar`. Very low — these surface rarely under normal play. |
+| `peculiar_hardship_mult` | 2 | Multiplier applied on top of `peculiar_*_base` when the world is in war / plague / siege / isolation / famine. Lifts peculiar items toward plausibility because that's exactly the kitchen pulling rats and lichen out when the larder is bare. |
+| `peculiar_pity_mult` | 2 | Multiplier applied while the in-progress menu has not yet committed any peculiar item (authored or ingredient). Once the first peculiar lands, this multiplier turns off for the rest of the menu, so peculiar surfaces somewhere but doesn't take over. |
+
+Effective base weights, for reference:
+
+| State | Authored peculiar | Procedural peculiar |
+|-------|------------------:|--------------------:|
+| Default, menu has peculiar already | 0.75 | 0.05 |
+| Default, menu has none yet (pity) | 1.50 | 0.10 |
+| Hardship, menu has peculiar already | 1.50 | 0.10 |
+| Hardship, menu has none yet | 3.00 | 0.20 |
+
+### Tier-fit knobs
+
+These shape the procedural ingredient pool so low-tier inns lean rustic and high-tier inns lean refined.
+
+| Knob | Default | What it does |
+|------|--------:|--------------|
+| `peasant_low_tier_boost` | 1.5 | At roadside / common (`tierIdx ≤ 2`), ingredients tagged `peasant` get this multiplier. Was 2.0; relaxed to 1.5 so roadside menus draw from a wider eligible pool instead of collapsing onto the same handful of peasant staples. |
+| `refined_low_tier_dampener` | 0.5 | At roadside / common, ingredients tagged `refined` (and not `common`) get this multiplier. Keeps a roadside inn from accidentally serving artichokes and saffron just because they passed the cultural-tag gate. |
+| `peasant_high_tier_dampener` | 0.7 | At fine / noble (`tierIdx ≥ 3`), ingredients tagged `peasant` (and not `common`) get this multiplier. Pure-peasant items don't fit a noble inn's table even if technically allowed. |
+
+### Per-menu state
+
+`specificity_step`, `novelty_step`, `ingredient_repeat_step`, and the peculiar pity boost all consult a `menuState` object that lives only inside one `generateMenu` call. After each authored dish is committed, its tags accumulate in `menuState.authoredFamiliarity`; after each procedural slot is filled, the picked ingredient accumulates in `menuState.ingredientUsage`; whenever a peculiar item lands, `menuState.hasPeculiar` flips. The state is discarded at the end of generation, so determinism on the same `(world, seed)` pair is preserved — re-running yields the same menu.
+
+### When to retune
+
+- Smoke run shows an authored dish at >5× uniform expected rate: lower `specificity_step` (more aggressive per-extra-biome dampening) or write more native dishes for the biomes / seasons it's invading.
+- Smoke run shows the same ingredient as top-1 across many axis slices: lower `ingredient_repeat_step` and (if it's an herb or staple) re-check its biome and season tags.
+- Peculiar ingredients still never appear: raise `peculiar_ingredient_base` toward 0.1, or write authored dishes that name them.
+- Roadside menus feel narrow: raise `peasant_low_tier_boost` and `refined_low_tier_dampener` toward 1.0.
+- Events feel weak: raise `event_weight_mult` toward 1.5–2.0, or raise the per-tag/per-role boosts.
 
 ## World state
 
@@ -296,9 +369,16 @@ Generic dishes and pack dishes can share themes ("cod in buttermilk" generic vs.
 
 Packs are pure data — no JS changes needed for new packs.
 
-### Peculiar dishes
+### Peculiar dishes and ingredients
 
-Dishes like rat skewer, seal tail, albatross pie, basking shark, mole, lamprey carry the `peculiar` tag. They're weighted ×0.5 in selection, so they appear sparingly but not invisibly — in the biome where they're native, they'll show in roughly 1 in 2–3 menus; elsewhere, much less. (`peculiar` is the local-weird signal; for off-map rare-trade goods like saffron or megaceront ribs, see `exotic` in the Imports section.)
+Dishes and ingredients like rat skewer, seal tail, albatross pie, basking shark, lichen, fern ash, mole, lamprey carry the `peculiar` tag. They surface on a curve rather than as a fixed dampener — see the **Peculiar knobs** subsection under Tuning knobs. Briefly:
+
+- Both authored peculiar dishes and procedural peculiar ingredients pass the world filters (no hard exclusion).
+- They're heavily dampened by default (`peculiar_authored_base = 0.75`, `peculiar_ingredient_base = 0.05`).
+- A per-menu **pity boost** (`peculiar_pity_mult = 2`) doubles the weight while the menu has no peculiar item yet, so one peculiar entry usually lands per menu when one's available; once it does, subsequent peculiar candidates revert to the base dampener.
+- **Hardship** (`condition` ∈ war/plague/siege/isolation, or `economy === "famine"`) doubles the base again (`peculiar_hardship_mult = 2`) — the desperate-larder scenario where rats, lichen, and fermented blood are exactly what the kitchen serves.
+
+(`peculiar` is the local-weird signal; for off-map rare-trade goods like saffron or megaceront ribs, see `exotic` in the Imports section. Note that megaceront ribs are tagged both — they're a peculiar local meat that also reads as exotic from any non-Frostlands inn.)
 
 ## Generation pipeline
 
@@ -319,8 +399,10 @@ Dishes like rat skewer, seal tail, albatross pie, basking shark, mole, lamprey c
          authored weights: native biome ×3.0, season match ×1.8, event boost ×1.7
                            (scaled by event_weight_mult), 'any' biome ×1.2,
                            regional import ×0.4, distant/exotic-effective import ×0.2,
-                           peculiar ×0.5, exotic-tag ×0.5, peasant-under-war ×1.5,
-                           noble-at-roadside ×0.4, etc.
+                           peculiar (per Peculiar knobs), exotic-tag ×0.75,
+                           peasant-under-war ×1.5, noble-at-roadside ×0.4,
+                           specificity ×0.88^(extra biomes + extra seasons),
+                           novelty ×0.92^(tag overlap with already-picked dishes).
          procedural: pick a template for the section, roll a prep from its pool
                      (weighted by current weather's prep_bias if any), fill slots
                      by role + affinity with ingredient weights.
