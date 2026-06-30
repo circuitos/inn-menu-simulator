@@ -165,7 +165,7 @@ for (const d of data.authored_dishes.dishes) {
 }
 const dupNames = [...nameSeen.entries()].filter(([_, ids]) => ids.length > 1);
 
-// 6. Section coverage per biome × season — any (biome, season) with very few authored dishes?
+// 6. Section coverage per biome × season: any (biome, season) with very few authored dishes?
 function authoredFor(biome, season) {
   return data.authored_dishes.dishes.filter(d => {
     if (!(d.biomes || []).includes("any") && !(d.biomes || []).includes(biome)) return false;
@@ -229,7 +229,7 @@ for (const d of data.authored_dishes.dishes) {
   }
 }
 
-// 12. Per-biome top-3 ingredients on roadside vs noble inns — useful for tier/scope checks.
+// 12. Per-biome top-3 ingredients on roadside vs noble inns; useful for tier/scope checks.
 //     `biomeTier` was populated alongside the per-axis tallies in the main sweep above.
 
 // ---------- write report ----------
@@ -237,7 +237,7 @@ function ingLabel(id) { const x = ingById.get(id); return x ? `${x.name} [${(x.r
 function dishLabel(id) { const x = dishById.get(id); return x ? x.name : id; }
 
 const lines = [];
-lines.push("# Inn Menu Simulator — Deep Smoke Report");
+lines.push("# Inn Menu Simulator: Deep Smoke Report");
 lines.push("");
 lines.push(`- worlds: **${worlds.length}**, samples/world: **${SAMPLES}**, total menus: **${menus}**`);
 lines.push(`- elapsed: **${(elapsedMs/1000).toFixed(1)}s**`);
@@ -256,16 +256,16 @@ function axisBlock(title, axis, universeIngs, universeDishes, axisKeys) {
     lines.push("");
     lines.push(`Top 5 ingredients`);
     for (const r of topN(slot.ingredients, 5, ingLabel))
-      lines.push(`- ${r.id} — ${r.label} — ${r.count}`);
+      lines.push(`- ${r.id}: ${r.label} (${r.count})`);
     lines.push("");
     lines.push(`Top 5 authored dishes`);
     for (const r of topN(slot.authored, 5, dishLabel))
-      lines.push(`- ${r.id} — ${r.label} — ${r.count}`);
+      lines.push(`- ${r.id}: ${r.label} (${r.count})`);
     lines.push("");
     const zero = universeIngs.filter(id => !slot.ingredients.has(id));
     lines.push(`Ingredients never appearing in this slice: **${zero.length}** (of ${universeIngs.length})`);
     if (zero.length && zero.length <= 30) {
-      for (const id of zero) lines.push(`  - ${id} — ${ingLabel(id)}`);
+      for (const id of zero) lines.push(`  - ${id}: ${ingLabel(id)}`);
     }
     lines.push("");
   }
@@ -307,10 +307,10 @@ if (invalidBiomesInDishes.length) {
 lines.push("");
 
 lines.push(`### C2. Authored dishes whose only biomes are orphan tokens (${dishesOnlyOrphanBiome.length})`);
-lines.push("These dishes have no chance of native match — they only appear as imports at fine+ inns.");
+lines.push("These dishes have no chance of native match; they only appear as imports at fine+ inns.");
 lines.push("");
 if (dishesOnlyOrphanBiome.length) {
-  for (const d of dishesOnlyOrphanBiome) lines.push(`- ${d.id} — ${d.name} — biomes: ${(d.biomes||[]).join(", ")}`);
+  for (const d of dishesOnlyOrphanBiome) lines.push(`- ${d.id}: ${d.name} (biomes: ${(d.biomes||[]).join(", ")})`);
 } else lines.push("None.");
 lines.push("");
 
@@ -325,7 +325,7 @@ lines.push(`### C4. Ingredients with non-biome biome-like tags only (${ingredien
 lines.push("These tags don't gate the ingredient (treated as ambient) but suggest a misspelling or scope drift (e.g. 'mediterranean' is a cuisine tag here, not a biome).");
 lines.push("");
 if (ingredientBadBiomeTags.length) {
-  for (const x of ingredientBadBiomeTags) lines.push(`- ${x.id} — ${x.name} — tags: ${x.tags.join(", ")}`);
+  for (const x of ingredientBadBiomeTags) lines.push(`- ${x.id}: ${x.name} (tags: ${x.tags.join(", ")})`);
 } else lines.push("None worth flagging.");
 lines.push("");
 
@@ -334,14 +334,14 @@ lines.push("Non-peculiar ingredients no template+prep combination can pull. The 
 lines.push("");
 if (unreachableIngredients.length) {
   for (const ing of unreachableIngredients)
-    lines.push(`- ${ing.id} — ${ing.name} — roles: ${(ing.roles||[]).join(",")} — affinities: ${(ing.affinities||[]).join(",")}`);
+    lines.push(`- ${ing.id}: ${ing.name} (roles: ${(ing.roles||[]).join(",")}; affinities: ${(ing.affinities||[]).join(",")})`);
 } else lines.push("All non-peculiar ingredients reachable.");
 lines.push("");
 
 lines.push(`### C6. Duplicate dish names (${dupNames.length})`);
 lines.push("");
 if (dupNames.length) {
-  for (const [name, ids] of dupNames) lines.push(`- "${name}" — ${ids.join(", ")}`);
+  for (const [name, ids] of dupNames) lines.push(`- "${name}": ${ids.join(", ")}`);
 } else lines.push("None.");
 lines.push("");
 
@@ -365,7 +365,7 @@ lines.push("");
 lines.push(`### C8. Authored mains missing 'contains' field (${mainsMissingContains.length})`);
 lines.push("Without `contains`, the cap system treats them as meatless. May or may not be intentional.");
 lines.push("");
-if (mainsMissingContains.length) for (const d of mainsMissingContains) lines.push(`- ${d.id} — ${d.name} — biomes: ${(d.biomes||[]).join(",")}`);
+if (mainsMissingContains.length) for (const d of mainsMissingContains) lines.push(`- ${d.id}: ${d.name} (biomes: ${(d.biomes||[]).join(",")})`);
 else lines.push("None.");
 lines.push("");
 

@@ -37,7 +37,7 @@ const TUNING = {
   // longer hard-filters them; instead the engine keeps them rare via weight.
   // Pity: the first peculiar candidate per menu gets a boost so peculiar
   // content surfaces somewhere; subsequent ones revert to base. Hardship
-  // (war/plague/siege/isolation/famine) raises base — desperate kitchens reach
+  // (war/plague/siege/isolation/famine) raises base; desperate kitchens reach
   // for what's nearby and weird. Authored and procedural use separate base
   // weights because authored dishes are pre-curated (a higher floor makes
   // sense) while procedural peculiar should stay quite rare.
@@ -67,7 +67,7 @@ const PLENTIFUL_EVENTS = new Set([
 
 // Extreme scarcity is counted independently from `economy === "famine"`. Each
 // condition met removes 1 from every numeric cap. War is intentionally NOT
-// listed — it disrupts trade but doesn't necessarily empty the larder.
+// listed; it disrupts trade but doesn't necessarily empty the larder.
 const EXTREME_SCARCITY_CONDITIONS = new Set(["plague", "isolation", "siege"]);
 
 // Hardship conditions that bias dish weighting toward peasant/common fare.
@@ -76,7 +76,7 @@ const HARDSHIP_CONDITION_LABELS = new Set(["war", "plague", "siege", "isolation"
 
 // Per-tier base caps. Roadside uses a single combined meat-or-fish cap;
 // the others split meat and fish. Fine and Noble are sized so their default
-// (0 scarcity) behavior matches the existing count_max for each section —
+// (0 scarcity) behavior matches the existing count_max for each section:
 // the caps only bite once scarcity reductions kick in.
 const TIER_CAPS = {
   roadside: { appetizer: 2, main_meatfish: 1, main_meatless: 2, drink: 2 },
@@ -93,12 +93,12 @@ const TAGS_STRIPPED_AT_SEVERE_SCARCITY = new Set(["noble", "exotic"]);
 const TAGS_ADDED_AT_SEVERE_SCARCITY = new Set(["peasant", "common"]);
 
 // Cultural-tier tags that gate dishes/ingredients via inn_tier.allowed_tags.
-// `exotic` is intentionally NOT here — it's a distance modifier, not a tier
+// `exotic` is intentionally NOT here: it's a distance modifier, not a tier
 // gate (see resolveImportDistance). Noble inns still list `exotic` in their
 // allowed_tags as a coarse signal, but actual gating is via distance.
 const TIER_TAGS = ["peasant", "common", "refined", "noble"];
 
-// Effective import distance contributed by the `exotic` tag — items off the
+// Effective import distance contributed by the `exotic` tag: items off the
 // world map (saffron, sugar, true rare spices) act as if they came from two
 // regions away, regardless of their nominal biome. Stacks with biome distance
 // via max(): a heartland-native noble dish tagged `exotic` is still distance 2.
@@ -272,7 +272,7 @@ const ALL_BIOME_TAGS = [...TOP_BIOMES, ...SUB_BIOMES];
 
 // ---------- biome-distance helpers ----------
 // Returns 0 (native), 1 (regional), 2 (distant), or null (no relation table /
-// unrecognized biome — caller should treat as "off the map" / not importable).
+// unrecognized biome; caller should treat as "off the map" / not importable).
 function biomeDistance(fromBiome, toBiome, relations) {
   if (fromBiome === toBiome) return 0;
   const rel = relations && relations[fromBiome];
@@ -326,12 +326,12 @@ function filterAuthored(dishes, w, data) {
   return dishes.filter(d => {
     // Distance gate: combines biome-relation distance with the `exotic` modifier.
     // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
-    // goods to a common inn that normally allows none). Condition still caps —
+    // goods to a common inn that normally allows none). Condition still caps:
     // siege/plague block trade regardless of caravans.
     const dist = resolveImportDistance(d, w, data);
     if (dist === null) return false;
     if (dist > effectiveImportMax(w)) return false;
-    // Biome-only distance for pricing/labeling — exotic native items shouldn't
+    // Biome-only distance for pricing/labeling: exotic native items shouldn't
     // pay transport markup, so we keep this separate from the filtering distance.
     d._importDistance = d.biomes.includes("any")
       ? 0
@@ -351,7 +351,7 @@ function filterAuthored(dishes, w, data) {
     // Economy: cost ceiling shrinks under shortage/famine
     if (d.cost > w.economy.remove_above_cost) return false;
 
-    // "peculiar" dishes appear only rarely — handled via weighting, not filtering. Under
+    // "peculiar" dishes appear only rarely; handled via weighting, not filtering. Under
     // war/plague/siege/isolation, peculiar stays allowed because those are local poor-food
     // dishes mostly.
 
@@ -384,7 +384,7 @@ function noveltyFactor(d, menuState) {
 }
 
 // Peculiar weighting. Same shape for authored and procedural paths, just a
-// different base. Hardship conditions raise weight — desperate kitchens reach
+// different base. Hardship conditions raise weight: desperate kitchens reach
 // for the local-weird. The first peculiar candidate per menu gets a pity
 // boost so the tag actually surfaces somewhere; once met, subsequent peculiar
 // items revert to base.
@@ -419,7 +419,7 @@ function weightAuthored(d, w, menuState) {
   // Event boosts: match boost_tags against the dish's tags or biomes (some events
   // key off biome-style values like "coastal"/"forest"), and treat fish/shellfish/game
   // boost_roles as proxies for the authored `contains` classifier. "protein" is
-  // intentionally not mapped — it's too broad to be a useful focus signal.
+  // intentionally not mapped: it's too broad to be a useful focus signal.
   const eventBoost = 1 + (TUNING.authored_event_tag_boost - 1) * TUNING.event_weight_mult;
   for (const t of w.event.boost_tags || []) {
     if ((d.tags || []).includes(t) || (d.biomes || []).includes(t)) weight *= eventBoost;
@@ -440,7 +440,7 @@ function weightAuthored(d, w, menuState) {
   if ((d.tags || []).includes("peculiar")) {
     weight *= peculiarFactor(TUNING.peculiar_authored_base, w, menuState);
   }
-  // "exotic" dishes are rare by definition — extra dampening on top of distance.
+  // "exotic" dishes are rare by definition; extra dampening on top of distance.
   if ((d.tags || []).includes("exotic")) weight *= 0.75;
 
   // Specificity: replaces the old hard-coded any+all-seasons rule with a
@@ -460,7 +460,7 @@ function weightAuthored(d, w, menuState) {
 
 // Per-distance price multiplier. Native = 1.0, regional adds ~30%, distant adds ~70%.
 // Exotic native dishes (effective filter distance bumped by EXOTIC_DISTANCE) keep
-// their biomeDist-based price — the rare ingredient is already priced into the
+// their biomeDist-based price: the rare ingredient is already priced into the
 // dish's `cost`, no transport markup applies on top.
 const IMPORT_PRICE_MULT = { 0: 1.0, 1: 1.3, 2: 1.7 };
 
@@ -482,7 +482,7 @@ function filterIngredientPool(ingredients, w, data) {
   const SEASONS = ["spring","summer","autumn","winter"];
   // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
   // now a distance modifier, but in the procedural pipeline we don't have a
-  // single "native biome" for an ingredient — most spices have no biome at
+  // single "native biome" for an ingredient: most spices have no biome at
   // all. We fall back to the inn-tier allowed_tags check: only noble inns
   // list `exotic`, so exotic ingredients still surface only at noble tier.
   const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
@@ -513,7 +513,7 @@ function filterIngredientPool(ingredients, w, data) {
         } else if (!subBiomeTags.length) {
           return false;
         }
-        // else: only sub-biome tags — ambient, keep.
+        // else: only sub-biome tags (ambient); keep.
       }
     }
 
@@ -522,7 +522,7 @@ function filterIngredientPool(ingredients, w, data) {
     const allSeason = tags.includes("all-seasons");
     if (seasonTags.length && !seasonTags.includes(w.season) && !allSeason) return false;
 
-    // Tier ceiling (no floor — cheap ingredients are fine anywhere as supporting roles)
+    // Tier ceiling (no floor: cheap ingredients are fine anywhere as supporting roles)
     if (ing.cost > w.tier.cost_max) return false;
 
     // Cultural tag gate
@@ -613,7 +613,7 @@ function weightIngredient(ing, w, menuState) {
   return weight;
 }
 
-// The "headline" ingredient is the one the dish is named after — protein for
+// The "headline" ingredient is the one the dish is named after: protein for
 // mains, otherwise the first non-optional filled slot. Used to decide whether
 // a procedural dish should carry an import label: a stew of native veg with a
 // regional fish in it is a regional import; a native dish that merely contains
@@ -724,7 +724,7 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
 
   if (trace) {
     // Drinks route through templates with prep "raw", but a drink isn't really
-    // "prepared" — counting it would swamp the prep histogram. Skip the prep
+    // "prepared"; counting it would swamp the prep histogram. Skip the prep
     // log for drink templates; ingredients still get traced.
     if (template.section !== "drink") trace.preparations.push(prep.id);
     for (const ing of ingredientsUsed) trace.ingredients.push(ing.id);
@@ -757,7 +757,7 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
     const tpl = pick(rng, from);
     if (!tpl) return null;
     // Weighted by weather's prep_bias (e.g. rain favors stewing/braising over
-    // outdoor methods). Missing keys default to 1.0 — i.e. neutral.
+    // outdoor methods). Missing keys default to 1.0, i.e. neutral.
     const prepBias = w.weather.prep_bias || {};
     const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
@@ -842,7 +842,7 @@ function generateMenu(world, data, seed) {
 // Same generation pipeline, but returns { menu, trace } where trace lists the
 // ids actually committed during this run (authored dish ids, ingredient ids,
 // preparation ids, template ids). Used by the smoke runner; UI does not need
-// this. Multiplicity is preserved — each emission appends one id.
+// this. Multiplicity is preserved: each emission appends one id.
 function generateMenuTraced(world, data, seed) {
   const trace = { authored: [], ingredients: [], preparations: [], templates: [] };
   const menu = generateMenuInternal(world, data, seed, trace);

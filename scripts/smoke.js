@@ -209,7 +209,7 @@ function tableRows(rows, opts = {}) {
 
 function buildReport() {
   const lines = [];
-  lines.push("# Inn Menu Simulator — Smoke Report");
+  lines.push("# Inn Menu Simulator: Smoke Report");
   lines.push("");
   lines.push("## Run config");
   lines.push("");
@@ -284,7 +284,7 @@ function buildReport() {
   checks.push(["≥ 80% authored dishes appear at least once",
     (allAuthored.length - authoredSum.never.length) / allAuthored.length >= 0.8]);
 
-  // Structural data-shape checks (don't depend on the sweep — pure on the data files).
+  // Structural data-shape checks (don't depend on the sweep; pure on the data files).
   const badBiomes = dishesWithBadBiomes(allAuthored);
   const missingContains = mainsMissingContains(allAuthored);
   const trueOrphans = unreachableNonUnusualIngredients(
