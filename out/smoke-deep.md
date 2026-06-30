@@ -1,7 +1,7 @@
 # Inn Menu Simulator: Deep Smoke Report
 
 - worlds: **40960**, samples/world: **3**, total menus: **122880**
-- elapsed: **76.6s**
+- elapsed: **53.7s**
 
 ## A. Top/bottom by world axis
 

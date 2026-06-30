@@ -8,7 +8,7 @@ The authored pool sets the tone; the procedural engine widens the vocabulary.
 
 A menu in a real medieval inn wasn't assembled from slots. A cook made specific dishes they knew how to make, and served whatever was in the larder that day. Hand-authored dishes (`data/authored_dishes.json`) are the primary pool: filtered by world state, drawn with weighted randomness. The procedural template system (`data/dishes.json` + `data/ingredients.json`) fills any remaining slots by assembling plausible dish names from ingredients and preparations, giving a much larger surface of permutations so repeated generations don't feel same-y.
 
-How much procedural vs authored mixes into any given slot is controlled by `TUNING.authored_ratio` in `src/generator.js` (default `0.75`, roughly three authored for every one procedural, with fallback to the other pool when the preferred source is empty).
+How much procedural vs authored mixes into any given slot is controlled by `TUNING.authored_ratio` in `src/generator.js` (default `0.65`, roughly two authored for every one procedural, with fallback to the other pool when the preferred source is empty).
 
 The consequence: **to change the stable, named dishes, edit `authored_dishes.json`.** To change the procedural flavor, edit ingredients and templates. To change the mix, edit the tuning block.
 
@@ -29,7 +29,7 @@ const TUNING = {
   ingredient_repeat_step: 0.5,
 
   peculiar_authored_base: 0.75,
-  peculiar_ingredient_base: 0.05,
+  peculiar_ingredient_base: 0.1,
   peculiar_hardship_mult: 2,
   peculiar_pity_mult: 2,
 
@@ -66,7 +66,7 @@ The procedural pool **no longer hard-filters** peculiar ingredients (rat, lichen
 | Knob | Default | What it does |
 |------|--------:|--------------|
 | `peculiar_authored_base` | 0.75 | Base multiplier on authored dishes tagged `peculiar`. Higher than the ingredient base because authored entries are pre-curated and intentional. |
-| `peculiar_ingredient_base` | 0.05 | Base multiplier on procedural ingredients tagged `peculiar`. Very low; these surface rarely under normal play. |
+| `peculiar_ingredient_base` | 0.1 | Base multiplier on procedural ingredients tagged `peculiar`. Very low; these surface rarely under normal play. |
 | `peculiar_hardship_mult` | 2 | Multiplier applied on top of `peculiar_*_base` when the world is in war / plague / siege / isolation / famine. Lifts peculiar items toward plausibility because that's exactly the kitchen pulling rats and lichen out when the larder is bare. |
 | `peculiar_pity_mult` | 2 | Multiplier applied while the in-progress menu has not yet committed any peculiar item (authored or ingredient). Once the first peculiar lands, this multiplier turns off for the rest of the menu, so peculiar surfaces somewhere but doesn't take over. |
 
@@ -74,10 +74,10 @@ Effective base weights, for reference:
 
 | State | Authored peculiar | Procedural peculiar |
 |-------|------------------:|--------------------:|
-| Default, menu has peculiar already | 0.75 | 0.05 |
-| Default, menu has none yet (pity) | 1.50 | 0.10 |
-| Hardship, menu has peculiar already | 1.50 | 0.10 |
-| Hardship, menu has none yet | 3.00 | 0.20 |
+| Default, menu has peculiar already | 0.75 | 0.10 |
+| Default, menu has none yet (pity) | 1.50 | 0.20 |
+| Hardship, menu has peculiar already | 1.50 | 0.20 |
+| Hardship, menu has none yet | 3.00 | 0.40 |
 
 ### Tier-fit knobs
 
@@ -97,7 +97,7 @@ These shape the procedural ingredient pool so low-tier inns lean rustic and high
 
 - Smoke run shows an authored dish at >5× uniform expected rate: lower `specificity_step` (more aggressive per-extra-biome dampening) or write more native dishes for the biomes / seasons it's invading.
 - Smoke run shows the same ingredient as top-1 across many axis slices: lower `ingredient_repeat_step` and (if it's an herb or staple) re-check its biome and season tags.
-- Peculiar ingredients still never appear: raise `peculiar_ingredient_base` toward 0.1, or write authored dishes that name them.
+- Peculiar ingredients still never appear: raise `peculiar_ingredient_base` further (it already sits at 0.1), or write authored dishes that name them.
 - Roadside menus feel narrow: raise `peasant_low_tier_boost` and `refined_low_tier_dampener` toward 1.0.
 - Events feel weak: raise `event_weight_mult` toward 1.5–2.0, or raise the per-tag/per-role boosts.
 

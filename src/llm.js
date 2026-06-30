@@ -8,7 +8,7 @@
 async function polishMenu(menu, apiKey) {
   const prompt = buildPrompt(menu);
   const body = {
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-5",
     max_tokens: 8000,
     messages: [{ role: "user", content: prompt }]
   };

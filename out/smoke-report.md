@@ -9,7 +9,7 @@
 - total ingredient slots filled: **1775505**
 - total preparations applied: **665322**
 - thresholds: rare < 0.2× expected uniform rate, overused > 5× expected uniform rate
-- elapsed: **120.6s**
+- elapsed: **84.9s**
 
 ## authored dishes
 
@@ -246,7 +246,7 @@ No authored dish that should have been reachable was missed.
 ## Sanity checks
 
 - [x] all 9 preparations appear at least once
-- [x] all 22 templates appear at least once
+- [x] all 40 templates appear at least once
 - [x] total ingredient slots > 0
 - [x] ≥ 80% authored dishes appear at least once
 - [x] all dish.biomes use valid tokens

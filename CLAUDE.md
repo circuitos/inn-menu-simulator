@@ -26,6 +26,7 @@ One owner per fact: link, don't restate.
 python3 -m http.server          # serve locally; opening index.html via file:// breaks fetch()
 
 npm run smoke                   # regression check: SAMPLES=N WORLDS=N RARE_FACTOR= OVER_FACTOR=
+npm run smoke:quick             # fast edit-loop check: WORLDS=400 stride sample of the full sweep
 node scripts/smoke-deep.js      # editorial audit: per-axis breakdown + structural data scans
 node scripts/balance-probe.js   # read-only: import/staple frequency probe at low tiers
 node scripts/import-label-check.js  # read-only: before/after probe for import labels

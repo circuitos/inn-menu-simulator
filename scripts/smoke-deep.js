@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
 const { ROOT, loadData, loadGenerator } = require("./lib/loader");
+const { bump, buildWorlds } = require("./lib/sweep");
 
 const OUT_DIR = path.join(ROOT, "out");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-deep.md");
@@ -26,31 +27,12 @@ const biomes = VALID_BIOMES;
 const seasons = ["spring","summer","autumn","winter"];
 const weathers = Object.keys(data.modifiers.weather);
 const tiers = Object.keys(data.modifiers.inn_tiers);
-const economies = Object.keys(data.modifiers.economy);
 const conditions = Object.keys(data.modifiers.conditions);
 const events = data.events.events.map(e => e.id);
-const incompat = data.modifiers.weather_incompatibilities || {};
 
-function weatherOk(b, s, w) {
-  const bad = incompat[w]; if (!bad) return true;
-  if ((bad.biomes || []).includes(b)) return false;
-  if ((bad.seasons || []).includes(s)) return false;
-  return true;
-}
-
-// Build worlds keyed by tag-of-interest for cross-tab. We sweep full Cartesian for
-// the per-axis aggregation; this matches scripts/smoke.js scope.
-const worlds = [];
-for (const biome of biomes)
-  for (const season of seasons)
-    for (const weather of weathers) {
-      if (!weatherOk(biome, season, weather)) continue;
-      for (const inn_tier of tiers)
-        for (const economy of economies)
-          for (const condition of conditions)
-            for (const event of events)
-              worlds.push({ biome, season, weather, inn_tier, economy, condition, event });
-    }
+// Full Cartesian sweep (shared with scripts/smoke.js via lib/sweep). The biome
+// axis is pinned to VALID_BIOMES so it matches the per-axis tally buckets below.
+const worlds = buildWorlds(data, { biomes });
 
 // ---------- per-axis tallies ----------
 function emptyAxis(values) {
@@ -69,7 +51,6 @@ const byEvent = emptyAxis(events);
 const biomeTier = {};
 for (const b of biomes) for (const t of tiers) biomeTier[`${b}|${t}`] = { ingredients: new Map() };
 
-function bump(map, k) { map.set(k, (map.get(k) || 0) + 1); }
 function record(axis, key, trace) {
   const slot = axis[key];
   slot.n++;
