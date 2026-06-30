@@ -1,7 +1,7 @@
 # Inn Menu Simulator: Deep Smoke Report
 
 - worlds: **40960**, samples/world: **3**, total menus: **122880**
-- elapsed: **53.7s**
+- elapsed: **53.9s**
 
 ## A. Top/bottom by world axis
 
@@ -858,10 +858,10 @@ Total flagged: **0**
 | biome / section | sparse seasons |
 |---|---|
 
-### C8. Authored mains missing 'contains' field (1)
+### C8. Authored mains missing 'contains' field (0)
 Without `contains`, the cap system treats them as meatless. May or may not be intentional.
 
-- gourds-cheese: Gourds filled with melted cheese (biomes: highland,heartland)
+None.
 
 ### C9. Authored dish counts per biome (native + 'any')
 

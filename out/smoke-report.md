@@ -9,7 +9,7 @@
 - total ingredient slots filled: **1775505**
 - total preparations applied: **665322**
 - thresholds: rare < 0.2× expected uniform rate, overused > 5× expected uniform rate
-- elapsed: **84.9s**
+- elapsed: **86.5s**
 
 ## authored dishes
 
@@ -250,8 +250,5 @@ No authored dish that should have been reachable was missed.
 - [x] total ingredient slots > 0
 - [x] ≥ 80% authored dishes appear at least once
 - [x] all dish.biomes use valid tokens
-- [ ] all mains have explicit contains or _comment
+- [x] all mains have explicit contains or _comment
 - [x] all non-peculiar ingredients are procedurally reachable
-
-Mains missing contains and _comment:
-  - gourds-cheese: Gourds filled with melted cheese
