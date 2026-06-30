@@ -9,7 +9,7 @@ const VALID_BIOME_TOKENS = new Set([
 ]);
 
 // True if some (template, prep) pair could pull this ingredient on role + affinity
-// alone. Independent of the procedural-pool's `peculiar` filter — that's a
+// alone. Independent of the procedural-pool's `peculiar` filter; that's a
 // curatorial decision, not a reachability fact.
 function ingredientReachable(ing, templates, preparations) {
   const roles = ing.roles || [];

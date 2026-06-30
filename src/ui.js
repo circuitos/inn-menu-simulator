@@ -1,4 +1,4 @@
-// ui.js — form wiring and menu rendering
+// ui.js: form wiring and menu rendering
 
 async function loadData() {
   const paths = {
@@ -42,7 +42,7 @@ async function loadFlavorPacks() {
 
 // Apply currently-active packs onto a shallow copy of base data. Pack dishes and
 // ingredients are concatenated; ingredient_overrides replace generic entries by id.
-// Returns a new data object — the original DATA stays untouched.
+// Returns a new data object; the original DATA stays untouched.
 function applyFlavorPacks(base, activeIds) {
   if (!activeIds.length) return base;
   const ingMap = new Map(base.ingredients.ingredients.map(i => [i.id, i]));
@@ -116,7 +116,7 @@ function populateFlavorPacks(data) {
   }
 }
 
-// Seasons and the weather order are intentionally fixed here — modifiers.json
+// Seasons and the weather order are intentionally fixed here: modifiers.json
 // stores them as objects (insertion-ordered in practice, but not load-bearing
 // in the generator). Listing them explicitly keeps dropdown order stable.
 const SEASON_ORDER = [
@@ -155,7 +155,7 @@ function populateSelects(data) {
     data.events.events.map(e => ({ value: e.id, label: e.label })));
 }
 
-// Some weathers don't make sense in some biomes/seasons — e.g. snow in arid or
+// Some weathers don't make sense in some biomes/seasons, e.g. snow in arid or
 // summer, heatwave in frostlands or winter. The rule table lives in
 // modifiers.json so it stays adjustable without touching code. We disable the
 // offending options in the weather <select>; if the user's current pick just
@@ -176,7 +176,7 @@ function applyWeatherCompatibility() {
   if (currentBecameInvalid) wsel.value = "clear";
 }
 
-// Defaults used by the Reset button — a calm baseline to start exploration from.
+// Defaults used by the Reset button: a calm baseline to start exploration from.
 const DEFAULTS = {
   biome: "heartland",
   season: "spring",
@@ -243,7 +243,7 @@ function resetLocks() {
 }
 
 function randomizeSelects() {
-  // Biome and season first — weather's available set depends on them.
+  // Biome and season first; weather's available set depends on them.
   for (const id of ["biome","season","inn_tier","economy","condition","event"]) {
     if (locks[id]) continue;
     const el = qs(id);

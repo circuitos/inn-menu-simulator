@@ -4,7 +4,7 @@ Zero prior GitHub experience assumed. No installation required.
 
 ## 1. Create a GitHub account
 
-1. Go to [github.com](https://github.com) and sign up. Use a personal email — this account should outlive any job.
+1. Go to [github.com](https://github.com) and sign up. Use a personal email; this account should outlive any job.
 2. Pick a username you won't regret. Verify your email.
 
 ## 2. Create the repository
@@ -12,7 +12,7 @@ Zero prior GitHub experience assumed. No installation required.
 1. Top-right, click the **+** icon → **New repository**.
 2. Name it `inn-menu-simulator` (or anything you like).
 3. Description: *"System-agnostic fantasy RPG inn menu generator"*.
-4. Set it to **Public** — required for free GitHub Pages hosting.
+4. Set it to **Public**: required for free GitHub Pages hosting.
 5. Check **Add a README file**.
 6. **Add .gitignore**: choose *None* (one is provided in this project).
 7. **License**: MIT.
@@ -28,9 +28,9 @@ The fastest way, with no install:
 4. Type a commit message like *"Initial project import"* into the box at the top.
 5. Click the **✓ Commit & Push** button.
 
-Your files are now on GitHub. You can close the tab — everything is saved.
+Your files are now on GitHub. You can close the tab: everything is saved.
 
-Alternative, even simpler: on the repo's main page click **Add file → Upload files**, drag the files in, scroll down, click **Commit changes**. Works but doesn't handle folders as elegantly.
+Alternative, even simpler: on the repo's main page click **Add file → Upload files**, drag the files in, scroll down, click **Commit changes**. Works, but doesn't handle folders as elegantly.
 
 ## 4. Turn on GitHub Pages
 
@@ -56,11 +56,11 @@ Two easy paths:
 The project runs entirely in the browser. No build step, no server. To test locally *without* pushing to GitHub every time:
 
 - **github.dev + Live Preview extension.** In github.dev, extensions are limited but work for simple serving.
-- **Just open `index.html` in your browser.** This works but modern browsers block `fetch()` on `file://` URLs, which breaks JSON loading. Workaround: github.dev's built-in preview, or a Codespace (see below).
+- **Just open `index.html` in your browser.** This works, but modern browsers block `fetch()` on `file://` URLs, which breaks JSON loading. Workaround: github.dev's built-in preview, or a Codespace (see below).
 - **GitHub Codespaces.** On your repo, click the green **Code** button → **Codespaces** tab → **Create codespace on main**. A full Linux dev environment opens in your browser. In the terminal, run `python3 -m http.server 8000` and a preview URL will pop up. Free tier: 60 hours/month.
 
 ## Troubleshooting
 
 - **"My Pages URL shows 404."** Wait a minute, then hard-refresh. If still broken, check Settings → Pages that the branch is `main` and folder is `/`. Your `index.html` must be at the repo root.
-- **"The menu won't generate."** Open the browser console (F12, Console tab). Most likely a JSON file didn't load — check paths in the Network tab.
+- **"The menu won't generate."** Open the browser console (F12, Console tab). Most likely a JSON file didn't load; check paths in the Network tab.
 - **"I committed something bad."** Every commit is reversible. On the repo page → click **commits** → find the commit → click **...** → **Revert**. Or just edit the file back and commit again.

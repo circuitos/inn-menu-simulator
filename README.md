@@ -1,6 +1,6 @@
 # Inn Menu Simulator
 
-A system-agnostic fantasy RPG inn menu generator. Feed it a biome, a season, some weather, an inn tier, and an event or two — get back a plausible menu with D&D-style copper/silver/gold prices.
+A system-agnostic fantasy RPG inn menu generator. Feed it a biome, a season, some weather, an inn tier, and an event or two: get back a plausible menu with D&D-style copper/silver/gold prices.
 
 Data-first: the generator is a thin layer over JSON data files. Anyone can fork it, edit ingredients and dishes, and have their own regional cuisine in an afternoon.
 
@@ -14,16 +14,16 @@ To host it live via GitHub Pages, see `docs/SETUP.md`.
 
 1. You set world parameters: biome, season, weather, inn tier, economy, condition (war, plague, etc.), optional event.
 2. The generator filters an **authored pool** of ~100 hand-written dishes by those tags (no citrus at a sieged mountain inn; no aurochs ribs at a roadside ale-house).
-3. It draws dishes using weighted random — native biome beats "any" beats import. Seasonal matches get boosted. Exotic trade goods appear only at fine/noble inns and never during war, plague, isolation, or siege.
+3. It draws dishes using weighted random: native biome beats "any" beats import. Seasonal matches get boosted. Exotic trade goods appear only at fine/noble inns and never during war, plague, isolation, or siege.
 4. If an authored dish can't fill a slot, the procedural engine assembles one from ingredients + preparations as a fallback. With the current pool, this rarely fires.
 5. Prices compute from `cost × tier × economy × condition × event × (1.5 if imported)`, rendered in cp/sp/gp.
-6. Optional "Polish with LLM" sends the raw menu to Anthropic's API (using a key you paste locally — never stored server-side) and returns flavor text.
+6. Optional "Polish with LLM" sends the raw menu to Anthropic's API (using a key you paste locally, never stored server-side) and returns flavor text.
 
 ## Flavor packs
 
-The default content pool is system-agnostic — generic medieval-fantasy fare that should fit most settings. **Flavor packs** are optional opt-in overlays that add setting-specific named dishes (e.g. "Stokvis Bay cod" instead of "cod") on top of the generic pool. Each pack is a single JSON file under `data/flavor_packs/`, listed in `data/flavor_packs/index.json`. Toggle them on or off with the checkboxes under the Seed field — all default off.
+The default content pool is system-agnostic: generic medieval-fantasy fare that should fit most settings. **Flavor packs** are optional opt-in overlays that add setting-specific named dishes (e.g. "Stokvis Bay cod" instead of "cod") on top of the generic pool. Each pack is a single JSON file under `data/flavor_packs/`, listed in `data/flavor_packs/index.json`. Toggle them on or off with the checkboxes under the Seed field, all default off.
 
-The repo ships with **Mog**, the author's campaign setting. Leave it unchecked for a generic pool; check it to add Mog's regional cuisine. Forks can drop their own packs into `data/flavor_packs/` and add an entry to `index.json` — no code changes required. See `docs/DESIGN.md` for the pack schema.
+The repo ships with **Mog**, the author's campaign setting. Leave it unchecked for a generic pool; check it to add Mog's regional cuisine. Forks can drop their own packs into `data/flavor_packs/` and add an entry to `index.json`: no code changes required. See `docs/DESIGN.md` for the pack schema.
 
 ## Project layout
 
@@ -74,6 +74,6 @@ Two Node-only scripts cover regression and curation. `npm run smoke` runs the re
 
 ## Contributing
 
-The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`. For setting-specific contributions (named regional dishes, proper-noun ingredients), add a flavor pack instead of touching the generic pool — see the Flavor packs section above.
+The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`. For setting-specific contributions (named regional dishes, proper-noun ingredients), add a flavor pack instead of touching the generic pool: see the Flavor packs section above.
 
-Code is MIT licensed. Data files are CC-BY-SA 4.0 — fork and remix freely, credit appreciated.
+Code is MIT licensed. Data files are CC-BY-SA 4.0: fork and remix freely, credit appreciated.
