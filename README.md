@@ -13,10 +13,10 @@ To host it live via GitHub Pages, see `docs/SETUP.md`.
 ## How it works
 
 1. You set world parameters: biome, season, weather, inn tier, economy, condition (war, plague, etc.), optional event.
-2. The generator filters an **authored pool** of ~100 hand-written dishes by those tags (no citrus at a sieged mountain inn; no aurochs ribs at a roadside ale-house).
+2. The generator filters an **authored pool** of ~200 hand-written dishes by those tags (no citrus at a sieged mountain inn; no aurochs ribs at a roadside ale-house).
 3. It draws dishes using weighted random: native biome beats "any" beats import. Seasonal matches get boosted. Exotic trade goods appear only at fine/noble inns and never during war, plague, isolation, or siege.
-4. If an authored dish can't fill a slot, the procedural engine assembles one from ingredients + preparations as a fallback. With the current pool, this rarely fires.
-5. Prices compute from `cost × tier × economy × condition × event × (1.5 if imported)`, rendered in cp/sp/gp.
+4. Each slot is routed to the procedural engine a set fraction of the time (about a third, set by `authored_ratio`), which assembles a dish from ingredients + preparations. It also serves as the fallback when the authored pool can't fill a slot.
+5. Prices compute from `cost × tier × economy × condition × event × import` (regional ×1.3, distant ×1.7), rendered in cp/sp/gp.
 6. Optional "Polish with LLM" sends the raw menu to Anthropic's API (using a key you paste locally, never stored server-side) and returns flavor text.
 
 ## Flavor packs

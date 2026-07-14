@@ -98,6 +98,13 @@ const TAGS_ADDED_AT_SEVERE_SCARCITY = new Set(["peasant", "common"]);
 // allowed_tags as a coarse signal, but actual gating is via distance.
 const TIER_TAGS = ["peasant", "common", "refined", "noble"];
 
+// Same gate for the procedural ingredient pool, plus `exotic`. Ingredients have
+// no single native biome to measure distance from (most spices have no biome at
+// all), so the procedural path leans on the inn-tier allowed_tags check to keep
+// exotic items at noble tier only. Derived from TIER_TAGS so a new cultural tag
+// added above flows into both gates at once.
+const ING_TIER_TAGS = [...TIER_TAGS, "exotic"];
+
 // Effective import distance contributed by the `exotic` tag: items off the
 // world map (saffron, sugar, true rare spices) act as if they came from two
 // regions away, regardless of their nominal biome. Stacks with biome distance
@@ -480,12 +487,8 @@ function importLabel(distance) {
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
 function filterIngredientPool(ingredients, w, data) {
   const SEASONS = ["spring","summer","autumn","winter"];
-  // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
-  // now a distance modifier, but in the procedural pipeline we don't have a
-  // single "native biome" for an ingredient: most spices have no biome at
-  // all. We fall back to the inn-tier allowed_tags check: only noble inns
-  // list `exotic`, so exotic ingredients still surface only at noble tier.
-  const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
+  // Procedural ingredients gate on the same cultural-tier tags via the
+  // module-level ING_TIER_TAGS (TIER_TAGS + `exotic`).
 
   // Effective import-distance ceiling for this world: same min(tier, condition)
   // rule the authored path uses. Ingredients native to a non-matching biome can
