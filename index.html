@@ -351,7 +351,7 @@ select option:disabled { color: var(--ink-faint); }
 </div>
 
 <div class="mobile-actions">
-  <button class="btn primary" type="button" data-proxy="generate">Generate</button>
+  <button class="btn primary" type="button" data-proxy="randomize">Randomize</button>
   <button class="btn" type="button" data-proxy="reroll">New seed</button>
 </div>
 
@@ -385,9 +385,11 @@ select option:disabled { color: var(--ink-faint); }
     tabParams.addEventListener("click", function () { setTab(true); });
     tabMenu.addEventListener("click", function () { setTab(false); });
 
+    // The bar's buttons regenerate the menu, so always land on the menu tab.
     document.querySelectorAll(".mobile-actions [data-proxy]").forEach(function (b) {
       b.addEventListener("click", function () {
         document.getElementById(b.dataset.proxy).click();
+        setTab(false);
       });
     });
 
