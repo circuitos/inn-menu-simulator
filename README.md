@@ -8,7 +8,7 @@ Data-first: the generator is a thin layer over JSON data files. Anyone can fork 
 
 Open `index.html` in a browser. That is the whole thing.
 
-To host it live via GitHub Pages, see `docs/SETUP.md`.
+To host it live via GitHub Pages, see `docs/SETUP.md`. Hosted repos also get an auto-deployed preview of every branch at `/previews/<branch>/`, with an index at `/previews/`.
 
 ## How it works
 
@@ -30,6 +30,9 @@ The repo ships with **Mog**, the author's campaign setting. Leave it unchecked f
 ```
 inn-menu-simulator/
 ├── index.html                  # the app
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml    # Pages deploy: main + branch previews
 ├── src/
 │   ├── generator.js            # authored-first generation logic
 │   ├── ui.js                   # form wiring + rendering + pack merging
@@ -50,6 +53,7 @@ inn-menu-simulator/
 │   ├── balance-probe.js        # focused import-frequency probe
 │   ├── import-label-check.js   # before/after probe for procedural import labels
 │   ├── tag-origins.js          # one-shot data sweep: tag ingredient origins
+│   ├── build-preview-site.mjs  # composes the Pages site (run by CI)
 │   └── lib/
 │       ├── loader.js           # shared Node bootstrap for the browser modules
 │       └── checks.js           # shared structural-check helpers

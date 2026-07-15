@@ -1,0 +1,57 @@
+# Deploys the site plus a preview of every branch to the gh-pages branch,
+# which GitHub Pages must be set to serve (Settings -> Pages -> Deploy from
+# a branch -> gh-pages, / (root)).
+#
+# Layout of the published site:
+#   /                    the default branch (the live site)
+#   /previews/<branch>/  every other branch
+#   /previews/           index of all previews
+#
+# Every push rebuilds the whole thing from scratch, so previews appear when a
+# branch is pushed and disappear when it is deleted. The gh-pages branch is
+# generated output: never edit or base work on it.
+
+name: Deploy site and branch previews
+
+on:
+  push:
+    branches-ignore: [gh-pages]
+  delete:
+  workflow_dispatch:
+
+# Later pushes supersede earlier ones; the final force-push is atomic, so
+# cancelling a mid-flight run never leaves a half-deployed site.
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    # Branch deletions also fire "push"-shaped delete events for tags; only
+    # branch changes matter here.
+    if: github.event_name != 'delete' || github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compose site (main at root, branches under previews/)
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: node scripts/build-preview-site.mjs "$RUNNER_TEMP/site"
+
+      - name: Force-push to gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd "$RUNNER_TEMP/site"
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Deploy from ${GITHUB_EVENT_NAME} on ${GITHUB_REF_NAME}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
