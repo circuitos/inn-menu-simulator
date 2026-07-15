@@ -50,7 +50,7 @@ That's your public URL. Share it, bookmark it, it updates automatically every ti
 
 Every branch you push gets its own live copy at
 `https://YOUR-USERNAME.github.io/inn-menu-simulator/previews/BRANCH-NAME/`,
-and `https://YOUR-USERNAME.github.io/inn-menu-simulator/previews/` lists them all with their latest commit. Deleting a branch removes its preview on the next deploy. The `gh-pages` branch itself is generated output; never edit it by hand.
+and `https://YOUR-USERNAME.github.io/inn-menu-simulator/previews/` lists them all with their latest commit. Deleting a branch removes its preview on the next deploy. If a branch has an open pull request, the workflow keeps a sticky comment on it with the preview link. The `gh-pages` branch itself is generated output; never edit it by hand.
 
 ## 5. Editing later
 
@@ -73,5 +73,6 @@ The project runs entirely in the browser. No build step, no server. To test loca
 - **"My Pages URL shows 404."** Wait a minute, then hard-refresh. If still broken, check Settings → Pages that the branch is `gh-pages` and folder is `/`, and that the latest run under the **Actions** tab is green.
 - **"I pushed but the site didn't update."** The deploy goes through the workflow now, so a red run under **Actions** means the site is stuck on the previous deploy. Open the failed run to see why.
 - **"A branch preview shows 404."** The preview appears only after the branch is pushed to GitHub and the workflow finishes. Check the spelling: the URL path is the exact branch name, including any slashes.
+- **"I deployed but still see the old version."** GitHub Pages serves with a cache of about 10 minutes (`max-age=600`). Hard-refresh (Ctrl+Shift+R, or Cmd+Shift+R on Mac), or wait it out.
 - **"The menu won't generate."** Open the browser console (F12, Console tab). Most likely a JSON file didn't load; check paths in the Network tab.
 - **"I committed something bad."** Every commit is reversible. On the repo page → click **commits** → find the commit → click **...** → **Revert**. Or just edit the file back and commit again.

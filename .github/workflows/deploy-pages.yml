@@ -58,3 +58,58 @@ jobs:
           git add -A
           git commit -qm "Deploy from ${GITHUB_EVENT_NAME} on ${GITHUB_REF_NAME}"
           git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+
+  # If the pushed branch has an open PR, keep a sticky comment on it holding
+  # the preview URL; the comment is updated in place on every deploy.
+  pr-preview-comment:
+    if: github.event_name == 'push'
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.ref.replace(/^refs\/heads\//, "");
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: `${context.repo.owner}:${branch}`,
+            });
+            if (!prs.length) return;
+            const marker = "<!-- deploy-pages preview url -->";
+            const site = `https://${context.repo.owner}.github.io/${context.repo.repo}`;
+            const isTrunk = branch === context.payload.repository.default_branch;
+            const path = isTrunk ? "/" : `/previews/${branch.split("/").map(encodeURIComponent).join("/")}/`;
+            const body = [
+              marker,
+              `**Live preview:** ${site}${path}`,
+              "",
+              `Deployed from ${context.sha.slice(0, 7)}; redeploys on every push. GitHub Pages caches for about 10 minutes, so hard-refresh if it looks stale.`,
+            ].join("\n");
+            for (const pr of prs) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                per_page: 100,
+              });
+              const existing = comments.find((c) => c.body && c.body.includes(marker));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body,
+                });
+              }
+            }
