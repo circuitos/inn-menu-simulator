@@ -265,7 +265,8 @@ function resolveWorld(world, data) {
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
     event: data.events.events.find(e => e.id === world.event) || data.events.events[0],
-    biomeRelations: (data.modifiers || {}).biome_relations || {}
+    biomeRelations: (data.modifiers || {}).biome_relations || {},
+    biomes: (data.modifiers || {}).biomes || {}
   };
 }
 
@@ -289,16 +290,21 @@ function biomeDistance(fromBiome, toBiome, relations) {
   return null;
 }
 
-// Min biome-distance from any biome in `biomes` to `target`. Returns null if
-// no biome in the list resolves against the relation table.
-function closestBiomeDistance(biomes, target, relations) {
-  let best = null;
+// Min biome-distance from any biome in `biomes` to `target`, plus which biome
+// won. dist is null (and origin null) if no biome in the list resolves against
+// the relation table.
+function closestBiomeOrigin(biomes, target, relations) {
+  let best = null, origin = null;
   for (const b of biomes) {
     const d = biomeDistance(b, target, relations);
     if (d === null) continue;
-    if (best === null || d < best) best = d;
+    if (best === null || d < best) { best = d; origin = b; }
   }
-  return best;
+  return { dist: best, origin };
+}
+
+function closestBiomeDistance(biomes, target, relations) {
+  return closestBiomeOrigin(biomes, target, relations).dist;
 }
 
 // Effective import-distance ceiling for a world: the lower of (tier ceiling,
@@ -340,9 +346,15 @@ function filterAuthored(dishes, w, data) {
     if (dist > effectiveImportMax(w)) return false;
     // Biome-only distance for pricing/labeling: exotic native items shouldn't
     // pay transport markup, so we keep this separate from the filtering distance.
-    d._importDistance = d.biomes.includes("any")
-      ? 0
-      : (closestBiomeDistance(d.biomes || [], w.biome, relations) ?? 0);
+    // The winning biome is kept as the label origin ("from the coast").
+    if (d.biomes.includes("any")) {
+      d._importDistance = 0;
+      d._importOrigin = null;
+    } else {
+      const closest = closestBiomeOrigin(d.biomes || [], w.biome, relations);
+      d._importDistance = closest.dist ?? 0;
+      d._importOrigin = closest.origin;
+    }
 
     // Season
     if (!d.seasons.includes("all-seasons") && !d.seasons.includes(w.season)) return false;
@@ -478,10 +490,18 @@ function priceAuthoredDish(d, w) {
   return Math.max(1, Math.round(price));
 }
 
-function importLabel(distance) {
-  if (distance === 1) return " (imported)";
-  if (distance >= 2) return " (rare import)";
-  return "";
+// Origin-flavored import labels: regional imports read "(from the coast)"
+// via the origin biome's `import_phrase`, distant ones "(rare desert
+// delicacy)" via its `import_adjective` (both in modifiers.json). Items with
+// no resolvable origin (off-map exotics, custom biomes without the fields)
+// keep the generic labels.
+function importLabel(distance, origin, w) {
+  if (!distance) return "";
+  const biome = origin && w.biomes[origin];
+  if (distance === 1) {
+    return biome && biome.import_phrase ? ` (from ${biome.import_phrase})` : " (imported)";
+  }
+  return biome && biome.import_adjective ? ` (rare ${biome.import_adjective} delicacy)` : " (rare import)";
 }
 
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
@@ -637,16 +657,20 @@ function headlineIngredient(template, picked) {
 // Mirrors resolveImportDistance but operates on one ingredient: `exotic` forces
 // EXOTIC_DISTANCE, otherwise we take the min distance across the ingredient's
 // top-biome tags. Ingredients with no biome tag are treated as ambient/native.
-function ingredientImportDistance(ing, w, data) {
-  if (!ing) return 0;
+function ingredientImport(ing, w, data) {
+  if (!ing) return { dist: 0, origin: null };
   const tags = ing.tags || [];
   let dist = tags.includes("exotic") ? EXOTIC_DISTANCE : 0;
+  let origin = null;
   const biomeTags = tags.filter(t => TOP_BIOMES.includes(t));
   if (biomeTags.length) {
-    const best = closestBiomeDistance(biomeTags, w.biome, (data.modifiers || {}).biome_relations || {});
-    if (best !== null && best > dist) dist = best;
+    const best = closestBiomeOrigin(biomeTags, w.biome, (data.modifiers || {}).biome_relations || {});
+    if (best.dist !== null) {
+      if (best.dist > 0) origin = best.origin;
+      if (best.dist > dist) dist = best.dist;
+    }
   }
-  return dist;
+  return { dist, origin };
 }
 
 // Per-menu state used by the novelty / repeat / peculiar-pity dampeners. One
@@ -713,7 +737,7 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   const baseCopper = ingredientsUsed.reduce((sum, ing) => sum + (COST_BASE[ing.cost] || 2), 0);
   const labor = prep.labor_add || 0;
   const headline = headlineIngredient(template, picked);
-  const importDistance = ingredientImportDistance(headline, w, data);
+  const { dist: importDistance, origin: importOrigin } = ingredientImport(headline, w, data);
   const importMult = IMPORT_PRICE_MULT[importDistance] ?? 1.0;
   const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
 
@@ -738,7 +762,7 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   return {
     source: "procedural",
     section: template.section,
-    name: capitalize(name) + importLabel(importDistance),
+    name: capitalize(name) + importLabel(importDistance, importOrigin, w),
     price_cp: Math.max(1, Math.round(priceCp)),
     price_text: formatPrice(priceCp),
     importDistance,
@@ -783,7 +807,7 @@ function buildAuthoredMenuDish(choice, w) {
   return {
     source: "authored",
     section: choice.section,
-    name: choice.name + importLabel(choice._importDistance),
+    name: choice.name + importLabel(choice._importDistance, choice._importOrigin, w),
     flavor: choice.flavor,
     importDistance: choice._importDistance || 0,
     price_cp: price,

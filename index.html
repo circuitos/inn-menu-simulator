@@ -6,7 +6,7 @@
 <title>Inn Menu Simulator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --desk: #cfc2a5;
@@ -23,6 +23,7 @@
   --book-shadow: 0 4px 10px rgba(50,35,10,0.2), 0 22px 60px rgba(50,35,10,0.28);
   --serif: "EB Garamond", Georgia, serif;
   --fell: "IM Fell English", "EB Garamond", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 [data-theme="dark"] {
   --desk: #12100b;
@@ -78,7 +79,7 @@ a { color: var(--rubric); } a:hover { color: var(--ink); }
 /* ---------- left page: parameters ---------- */
 .page-head { margin-bottom: 1.5rem; }
 .page-l h1 { font-family: var(--fell); font-weight: 400; font-size: 1.7rem; line-height: 1.1; margin: 0 0 0.15rem; }
-.tagline { font-style: italic; font-size: 0.9rem; color: var(--rubric); margin: 0; }
+.tagline { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rubric); margin: 0; }
 .page-head::after { content: ""; display: block; height: 5px; margin-top: 0.9rem; border-top: 1px solid var(--rubric); border-bottom: 1px solid var(--rubric); }
 fieldset { border: none; padding: 0; margin: 0; }
 .register-line {
@@ -86,7 +87,8 @@ fieldset { border: none; padding: 0; margin: 0; }
   padding: 0.35rem 0; border-bottom: 1px solid var(--rule);
 }
 .register-line label {
-  font-style: italic; font-size: 0.9rem; color: var(--rubric);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--rubric);
 }
 select, input[type="text"] {
   width: 100%; padding: 0.35rem 0.15rem; background: transparent;
@@ -104,7 +106,10 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
 .lock-btn[aria-pressed="true"] { color: var(--rubric); }
 .lock-btn[aria-pressed="true"] .icon-locked { display: block; }
 .lock-btn[aria-pressed="true"] .icon-unlocked { display: none; }
-.packs-head { font-style: italic; font-size: 0.9rem; color: var(--rubric); margin: 1.1rem 0 0.2rem; }
+.packs-head {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--rubric); margin: 1.1rem 0 0.2rem;
+}
 .flavor-packs { display: flex; flex-direction: column; }
 .flavor-pack-row {
   display: flex; align-items: center; gap: 0.6rem; cursor: pointer; min-height: 34px;
@@ -127,7 +132,7 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
 .polish-block p { margin: 0.5rem 0 0; font-size: 0.85rem; font-style: italic; color: var(--ink-soft); line-height: 1.5; }
 #polish-status { font-size: 0.8rem; font-style: italic; color: var(--ink-faint); margin-top: 0.4rem; min-height: 1em; }
 .footnote { margin-top: 1.4rem; font-size: 0.8rem; font-style: italic; color: var(--ink-faint); line-height: 1.6; }
-.footnote code { font-style: normal; font-variant: small-caps; font-family: inherit; }
+.footnote code { font-style: normal; font-family: var(--mono); font-size: 0.85em; }
 
 /* ---------- right page: the menu ---------- */
 .menu-header { text-align: center; margin-bottom: 1.9rem; }
@@ -136,8 +141,8 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
   color: var(--rubric); margin: 0 0 0.85rem;
 }
 .menu-header h2 { font-family: var(--fell); font-weight: 400; font-size: 2.6rem; line-height: 1.05; margin: 0 0 0.5rem; }
-.menu-sub { font-variant: small-caps; letter-spacing: 0.16em; font-size: 0.82rem; color: var(--ink-soft); margin: 0; }
-.menu-header::after { content: ""; display: block; height: 5px; margin-top: 1.1rem; border-top: 1px solid var(--rubric); border-bottom: 1px solid var(--rubric); }
+.menu-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin: 0; }
+.menu-header::after { content: ""; display: block; margin-top: 1.1rem; border-top: 1px solid var(--rule); }
 .event-note { text-align: center; font-style: italic; color: var(--rubric); margin: 0 auto 0.55rem; font-size: 0.98rem; max-width: 44ch; }
 .event-note::before { content: "\00B6\2002"; font-style: normal; color: var(--rubric-soft); }
 .section-heading {
@@ -150,13 +155,14 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
 .dish-name { font-size: 1.05rem; padding-right: 1rem; }
 .dish-import-label { color: var(--rubric); font-style: italic; font-size: 0.95rem; }
 .dish-price {
-  font-size: 0.98rem; color: var(--ink-soft); white-space: nowrap; font-variant: small-caps;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+  color: var(--ink-soft); white-space: nowrap;
   border-left: 1px solid var(--rule); padding-left: 1rem; min-width: 4.5rem; text-align: right;
 }
 .dish-desc { grid-column: 1 / -1; font-size: 0.9rem; font-style: italic; color: var(--ink-soft); line-height: 1.4; padding-right: 5.5rem; }
 .menu-footer {
-  margin-top: 2.4rem; text-align: center; font-variant: small-caps;
-  letter-spacing: 0.24em; font-size: 0.78rem; color: var(--ink-faint);
+  margin-top: 2.4rem; text-align: center; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: var(--ink-faint);
 }
 .menu-footer::before { content: "\2766"; display: block; color: var(--rubric); font-size: 1rem; margin-bottom: 0.55rem; letter-spacing: 0; }
 
@@ -167,7 +173,7 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
   .wrap { padding: 0 0.8rem calc(84px + env(safe-area-inset-bottom)); display: block; }
   .ribbon-tabs {
     display: flex; gap: 0.5rem; position: sticky; top: 0; z-index: 20;
-    padding: 0.65rem 0.2rem 0; background: var(--desk);
+    padding: 0.65rem 0.8rem 0; background: var(--desk);
   }
   .ribbon-tabs .tab {
     flex: 1; min-height: 46px; cursor: pointer;
@@ -255,7 +261,7 @@ select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(
   <div class="book">
     <aside class="page-l">
       <div class="page-head">
-        <h1>Parameters</h1>
+        <h1>Inn Menu</h1>
         <p class="tagline">a system-agnostic inn menu generator</p>
       </div>
 

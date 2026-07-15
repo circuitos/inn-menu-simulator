@@ -1,10 +1,10 @@
 {
   "biomes": {
-    "coastal":    { "label": "Coastal",    "description": "Temperate maritime. Fish, shellfish, citrus where warm." },
-    "heartland":  { "label": "Heartland",  "description": "Temperate plains and forest. Grain, pork, game, orchard fruit." },
-    "highland":   { "label": "Highland",   "description": "Cold mountain. Mutton, dairy, roots, smoked meats." },
-    "arid":       { "label": "Arid",       "description": "Mediterranean to semi-desert. Olive, legume, goat, warming spices." },
-    "frostlands": { "label": "Frostlands", "description": "Arctic subarctic. Seal, reindeer, fermented dairy, preserved fish." }
+    "coastal":    { "label": "Coastal",    "import_phrase": "the coast",      "import_adjective": "coastal",   "description": "Temperate maritime. Fish, shellfish, citrus where warm." },
+    "heartland":  { "label": "Heartland",  "import_phrase": "the heartland",  "import_adjective": "heartland", "description": "Temperate plains and forest. Grain, pork, game, orchard fruit." },
+    "highland":   { "label": "Highland",   "import_phrase": "the highlands",  "import_adjective": "highland",  "description": "Cold mountain. Mutton, dairy, roots, smoked meats." },
+    "arid":       { "label": "Arid",       "import_phrase": "the desert",     "import_adjective": "desert",    "description": "Mediterranean to semi-desert. Olive, legume, goat, warming spices." },
+    "frostlands": { "label": "Frostlands", "import_phrase": "the frostlands", "import_adjective": "frostland", "description": "Arctic subarctic. Seal, reindeer, fermented dairy, preserved fish." }
   },
   "biome_relations": {
     "_comment": "Symmetric trade-distance matrix. A dish/ingredient native to biome X served at biome Y has distance: 0 if X==Y, 1 if Y in regional, 2 if Y in distant. Edit to reshape your campaign world's geography.",

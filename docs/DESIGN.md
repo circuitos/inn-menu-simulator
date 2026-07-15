@@ -289,8 +289,10 @@ Imports are modeled as **trade distance** between the dish's native biome and th
 | Distance | Source | Label | Price multiplier |
 |----------|--------|-------|------------------|
 | 0 | Native to the world's biome (or `biomes: ["any"]`) | none | ×1.0 |
-| 1 | The dish's biome is a **regional** neighbor of the world's biome | `(imported)` | ×1.3 |
-| 2 | The dish's biome is a **distant** neighbor | `(rare import)` | ×1.7 |
+| 1 | The dish's biome is a **regional** neighbor of the world's biome | `(from the coast)` | ×1.3 |
+| 2 | The dish's biome is a **distant** neighbor | `(rare desert delicacy)` | ×1.7 |
+
+Labels name the origin biome: regional imports use its `import_phrase` field ("the coast", "the desert", ...), distant ones its `import_adjective` ("coastal", "desert", ...), both in `modifiers.json → biomes`. When no origin resolves (off-map `exotic` goods, or a custom biome missing the fields), the generic `(imported)` / `(rare import)` labels are used instead.
 
 The distance matrix lives in `modifiers.json → biome_relations`. It's symmetric and per-biome, for the default 5-biome map:
 
@@ -452,7 +454,7 @@ Common edits and the file to touch:
 | Change which tier serves which import distance | `max_import_distance` per entry in `modifiers.json` → `inn_tiers` |
 | Change which condition still permits trade | `max_import_distance` per entry in `modifiers.json` → `conditions` |
 | Reshape biome geography (move regions / 5×5 grid) | `modifiers.json` → `biome_relations` |
-| Change biome labels or add a biome | `modifiers.json` → `biomes` (and add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
+| Change biome labels or add a biome | `modifiers.json` → `biomes` (set `label`, `import_phrase`, `import_adjective`; add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 
