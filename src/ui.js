@@ -1,5 +1,12 @@
 // ui.js: form wiring and menu rendering
 
+// The deploy workflow stamps a per-branch build id on <html data-build="...">
+// (see scripts/build-preview-site.mjs). Appending it to data fetches busts
+// the GitHub Pages cache as soon as a new deploy lands. There is no stamp
+// when running locally, so paths stay clean.
+const BUILD_ID = document.documentElement.dataset.build || "";
+function versioned(path) { return BUILD_ID ? `${path}?v=${BUILD_ID}` : path; }
+
 async function loadData() {
   const paths = {
     ingredients: "data/ingredients.json",
@@ -11,7 +18,7 @@ async function loadData() {
   };
   const out = {};
   for (const [k, p] of Object.entries(paths)) {
-    const r = await fetch(p);
+    const r = await fetch(versioned(p));
     if (!r.ok) throw new Error(`Failed to load ${p}`);
     out[k] = await r.json();
   }
@@ -24,12 +31,12 @@ async function loadData() {
 // holds dishes, optional new ingredients, and optional ingredient_overrides keyed by id.
 async function loadFlavorPacks() {
   try {
-    const idxRes = await fetch("data/flavor_packs/index.json");
+    const idxRes = await fetch(versioned("data/flavor_packs/index.json"));
     if (!idxRes.ok) return { manifest: { packs: [] }, packs: {} };
     const manifest = await idxRes.json();
     const packs = {};
     for (const entry of manifest.packs || []) {
-      const r = await fetch(`data/flavor_packs/${entry.file}`);
+      const r = await fetch(versioned(`data/flavor_packs/${entry.file}`));
       if (!r.ok) continue;
       packs[entry.id] = await r.json();
     }

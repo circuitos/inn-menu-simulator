@@ -47,6 +47,24 @@ function extract(ref, dest) {
   execFileSync("tar", ["-x", "-C", dest], { input: tarball });
   // The workflow directory only matters to Actions, not to the served site.
   fs.rmSync(path.join(dest, ".github"), { recursive: true, force: true });
+  stampVersion(dest, ref);
+}
+
+// Stamp the tree's own commit id into index.html so browsers re-fetch scripts
+// and data the moment a new version of THAT branch deploys, instead of riding
+// out the Pages max-age=600 cache (which otherwise serves mixed old/new files
+// for up to 10 minutes). Script tags get ?v=<sha> directly; ui.js reads the
+// data-build attribute off <html> and appends the same stamp to its runtime
+// data fetches. Per-branch stamps mean a deploy triggered by one branch never
+// busts caches for the others.
+function stampVersion(dest, ref) {
+  const file = path.join(dest, "index.html");
+  if (!fs.existsSync(file)) return;
+  const sha = git("rev-parse", ref).trim().slice(0, 12);
+  let html = fs.readFileSync(file, "utf8");
+  html = html.replace(/<html(\s[^>]*)?>/, (_, attrs) => `<html${attrs || ""} data-build="${sha}">`);
+  html = html.replace(/(<script src=")(src\/[^"?]+)(")/g, `$1$2?v=${sha}$3`);
+  fs.writeFileSync(file, html);
 }
 
 function branchInfo(name) {
