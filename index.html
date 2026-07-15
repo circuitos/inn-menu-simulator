@@ -21,6 +21,7 @@
   --rubric-ink: #f7efdd;
   --spine: linear-gradient(90deg, rgba(60,40,10,0) 0%, rgba(60,40,10,0.14) 46%, rgba(60,40,10,0.22) 50%, rgba(60,40,10,0.14) 54%, rgba(60,40,10,0) 100%);
   --book-shadow: 0 4px 10px rgba(50,35,10,0.2), 0 22px 60px rgba(50,35,10,0.28);
+  color-scheme: light;
   --serif: "EB Garamond", Georgia, serif;
   --fell: "IM Fell English", "EB Garamond", Georgia, serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -38,6 +39,7 @@
   --rubric-ink: #211208;
   --spine: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 46%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.4) 54%, rgba(0,0,0,0) 100%);
   --book-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 22px 60px rgba(0,0,0,0.6);
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -96,6 +98,10 @@ select, input[type="text"] {
   font-family: var(--serif); font-size: 16px; color: var(--ink);
 }
 select:focus, input[type="text"]:focus { outline: none; box-shadow: 0 1px 0 var(--rubric); }
+/* Native dropdown popups don't inherit page styles; pair with color-scheme
+   above so the popup itself is readable in both themes. */
+select option { background: var(--page); color: var(--ink); }
+select option:disabled { color: var(--ink-faint); }
 .lock-btn {
   width: 32px; height: 32px; background: transparent; border: none; padding: 0; cursor: pointer;
   color: var(--ink-faint); display: inline-flex; align-items: center; justify-content: center;
