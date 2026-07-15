@@ -34,7 +34,7 @@ Alternative, even simpler: on the repo's main page click **Add file → Upload f
 
 ## 4. Turn on GitHub Pages
 
-The project ships a deploy workflow (`.github/workflows/deploy-pages.yml`) that runs on every push. It builds a `gh-pages` branch containing the `main` site at the root and a preview of every other branch under `previews/`. Pages should serve that branch:
+The project ships a deploy workflow (`.github/workflows/deploy-pages.yml`) that runs on every push. It builds a `gh-pages` branch containing your default branch's site at the root and a preview of every other branch under `previews/`. Pages should serve that branch:
 
 1. Push (or upload) the project first; within a minute the workflow creates the `gh-pages` branch. You can watch it under the **Actions** tab.
 2. On your repo's main page, click **Settings** (top tab).
@@ -44,7 +44,7 @@ The project ships a deploy workflow (`.github/workflows/deploy-pages.yml`) that 
 6. Wait 30-60 seconds. Refresh. At the top of the Pages settings you'll see:
    *"Your site is live at `https://YOUR-USERNAME.github.io/inn-menu-simulator/`"*.
 
-That's your public URL. Share it, bookmark it, it updates automatically every time you commit to the main branch.
+That's your public URL. Share it, bookmark it, it updates automatically every time you commit to your default branch.
 
 ### Branch previews
 

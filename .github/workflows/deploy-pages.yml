@@ -39,9 +39,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compose site (main at root, branches under previews/)
+      - name: Compose site (trunk at root, branches under previews/)
         env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          # The site root always serves the trunk: whatever branch is set as
+          # the repo default (currently experimental). Everything else,
+          # including main, gets a preview under /previews/<branch>/.
+          ROOT_BRANCH: ${{ github.event.repository.default_branch }}
         run: node scripts/build-preview-site.mjs "$RUNNER_TEMP/site"
 
       - name: Force-push to gh-pages
