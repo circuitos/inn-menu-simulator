@@ -212,11 +212,18 @@ const LOCK_SVGS = `
 function installLockButtons() {
   for (const id of LOCK_IDS) {
     const el = qs(id);
-    if (!el || el.parentElement.classList.contains("field-row")) continue;
-    const row = document.createElement("div");
-    row.className = "field-row";
-    el.parentNode.insertBefore(row, el);
-    row.appendChild(el);
+    if (!el) continue;
+    // index.html authors each field as a .register-line grid row
+    // (label | input | lock); the lock button fills the third column.
+    // Fields without an authored row get one created around them.
+    let row = el.closest(".register-line");
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "register-line";
+      el.parentNode.insertBefore(row, el);
+      row.appendChild(el);
+    }
+    if (row.querySelector(".lock-btn")) continue;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "lock-btn";
@@ -272,11 +279,15 @@ function renderMenu(menu) {
 
   const header = document.createElement("header");
   header.className = "menu-header";
+  const incipit = document.createElement("p");
+  incipit.className = "incipit";
+  incipit.textContent = "here beginneth the bill of fare";
   const inn = document.createElement("h2");
   inn.textContent = innNameFromSeed(menu.seed);
   const sub = document.createElement("p");
   sub.className = "menu-sub";
   sub.textContent = describeWorld(menu);
+  header.appendChild(incipit);
   header.appendChild(inn);
   header.appendChild(sub);
   root.appendChild(header);
@@ -299,7 +310,11 @@ function renderMenu(menu) {
     if (!section || !section.dishes.length) continue;
     const h = document.createElement("h3");
     h.className = "section-heading";
-    h.textContent = section.label;
+    const versal = document.createElement("span");
+    versal.className = "versal";
+    versal.textContent = section.label.charAt(0);
+    h.appendChild(versal);
+    h.appendChild(document.createTextNode(section.label.slice(1)));
     root.appendChild(h);
     const ul = document.createElement("ul");
     ul.className = "dish-list";
@@ -337,7 +352,7 @@ function renderMenu(menu) {
 
   const footer = document.createElement("footer");
   footer.className = "menu-footer";
-  footer.textContent = `seed: ${menu.seed}`;
+  footer.textContent = `seed · ${menu.seed}`;
   root.appendChild(footer);
 }
 
