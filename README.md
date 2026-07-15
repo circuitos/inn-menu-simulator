@@ -35,6 +35,7 @@ inn-menu-simulator/
 │       └── deploy-pages.yml    # Pages deploy: main + branch previews
 ├── src/
 │   ├── generator.js            # authored-first generation logic
+│   ├── innname.js              # sign-based inn/tavern name generator
 │   ├── ui.js                   # form wiring + rendering + pack merging
 │   └── llm.js                  # optional flavor polish
 ├── data/
@@ -44,6 +45,7 @@ inn-menu-simulator/
 │   ├── dishes.json             # procedural templates (fallback only)
 │   ├── modifiers.json          # biomes, tiers, economy, conditions, weather
 │   ├── events.json             # transient events
+│   ├── inn_names.json          # charges, colors, patterns for inn names
 │   └── flavor_packs/           # optional setting-specific overlays
 │       ├── index.json          # manifest of available packs
 │       └── mog.json            # the Mog setting pack (off by default)

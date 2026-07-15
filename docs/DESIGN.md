@@ -434,6 +434,47 @@ Templates are invoked either as fallback when the authored pool is empty for a s
 
 If procedural fires too often with awkward combinations, adjust in one of three places depending on symptom: add authored dishes (stabilizes specific gaps), add ingredient affinities (expands valid combinations within existing templates), or add templates (new dish shapes).
 
+## Inn names
+
+The name in the menu header (`The White Hart Great Inn`) comes from `src/innname.js`, a thin generator over `data/inn_names.json`. It models the structural syntax of medieval and Renaissance English tavern signs: a name is a **charge** (the device painted on the sign) optionally dressed with a color, a number, a heraldic posture, a second charge, a location phrase, or a figure's body part. `generate(world, seed, data)` returns `{ name, sign, designator }`; the header shows `name` and hangs `sign` (the substantive element, i.e. what the board depicts) off the `<h2>` as a tooltip.
+
+### Determinism
+
+The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn but reshapes when the world changes: a coastal noble inn reliably draws anchors and ships, an arid one draws suns and serpents. This is a deliberate change from the old seed-only hash; changing the biome or tier dropdown now re-signs the inn.
+
+### Patterns
+
+`patterns` weights the six recombinatory templates (weights are relative, not percentages):
+
+| Pattern | Example | Weight |
+|---|---|---|
+| `single` | The Bell | 65 |
+| `color` | The White Hart | 17 |
+| `number` | The Three Tuns | 8 |
+| `pair` | The Rose and Crown | 5 |
+| `on_object` | The George on Horseback | 3 |
+| `body_part` | The Saracen's Head | 2 |
+
+A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name.
+
+### Biome and tier gating
+
+Each charge and figure carries `biomes` (this project's five biomes, or `any`) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) are filtered **strictly** by tier so royalty stays out of roadside alehouses. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+
+### Coherence constraints
+
+- **Body parts**: figures show a `Head` or `Hand`; horned animals a `Head` or `Horn`; other animals a `Head` only. Allowed parts live in each entry's `parts` list.
+- **Numbers**: `Three` carries almost every numbered sign. `Seven` and `Four` are locked to a specific charge (`Seven Stars`, `Four Birds`) via `requires_charge`, and only fire when that charge is reachable at the world's tier; otherwise the sign falls back to `Three <charge>`.
+- **Postures** (`Ramping`, `Spread`, `Flying`, ...) attach only at `fine`/`noble` tiers, only to charges that list them, and only `posture_chance` of the time.
+
+### Tuning
+
+The `tuning` block holds the flair probabilities: `designator_chance` (append a building word), `archaic_color_chance` (use `Alba`/`Redd`/`Blake`/`Gilt` instead of `White`/`Red`/`Black`/`Golden`), `posture_chance`, and `hoop_suffix_chance` (the archaic "on the Hoop" suffix).
+
+### Adding a charge
+
+Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures` and `parts`. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
+
 ## Editing data
 
 Common edits and the file to touch:
@@ -455,6 +496,7 @@ Common edits and the file to touch:
 | Change which condition still permits trade | `max_import_distance` per entry in `modifiers.json` → `conditions` |
 | Reshape biome geography (move regions / 5×5 grid) | `modifiers.json` → `biome_relations` |
 | Change biome labels or add a biome | `modifiers.json` → `biomes` (set `label`, `import_phrase`, `import_adjective`; add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
+| Add an inn-name charge, or retune name patterns / flair | `inn_names.json` (see [Inn names](#inn-names)) |
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 

@@ -13,6 +13,7 @@ One owner per fact: link, don't restate.
 | GitHub account/repo/Pages setup, troubleshooting | `docs/SETUP.md` |
 | The actual content (dishes, ingredients, prices, biomes, events) | `data/*.json` |
 | Generation logic, `TUNING` block | `src/generator.js` |
+| Inn/tavern name generation (charges, patterns) | `src/innname.js` + `data/inn_names.json` |
 | Form wiring, rendering, flavor-pack merging | `src/ui.js` |
 | Optional LLM flavor polish | `src/llm.js` |
 
