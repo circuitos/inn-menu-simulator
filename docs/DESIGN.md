@@ -455,13 +455,13 @@ The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn
 | `arms` | The Miller's Arms, The King's Arms | 6 | common, fine, noble |
 | `pair` | The Rose and Crown | 5 | all |
 | `on_object` | The George on Horseback | 3 | all |
-| `body_part` | The Saracen's Head | 2 | all |
+| `body_part` | The Nomad's Head | 2 | all |
 
 A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name. A pattern with a `tiers` list additionally only fires at those tiers: `possessive` is a low-tier, plainspoken register, while guild and royal `arms` carry prestige.
 
 ### Biome and tier gating
 
-Each charge, figure, and trade carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) and trades (`Miller`, `Shipwright`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses, the Saracen's Head stays in the desert, and a Furrier's Arms hangs only in the frostlands. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+Each charge, figure, and trade carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Nomad`, ...) and trades (`Miller`, `Shipwright`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses, the Nomad's Head stays in the desert, and a Furrier's Arms hangs only in the frostlands. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
 
 **Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
 
@@ -484,6 +484,8 @@ A quick check: `require('src/innname.js')`, generate a few thousand names for `<
 The `tuning` block holds the flair probabilities: `designator_chance` (append a building word), `archaic_color_chance` (use `Alba`/`Redd`/`Blake`/`Gilt` instead of `White`/`Red`/`Black`/`Golden`), `posture_chance`, and `hoop_suffix_chance` (the archaic "on the Hoop" suffix).
 
 ### Adding a charge
+
+Keep the vocabulary **setting-agnostic**: no terms tied to a real-world religion, people, or place. Prefer `Guardian` over `Angel`, `Nomad` over `Saracen`, `Temple` over `Mitre`, `Prelate` over `Pope`. The shared fantasy bestiary (`Griffin`, `Sphinx`, `Phoenix`) and generic ruler titles (`King`, `Sultan`, `Jarl`) are fine; a name a player would place on an Earth map is not.
 
 Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures`, `parts`, and `haunts`. A new trade goes in `trades` with `biomes`, `tiers`, and an `arms_sign` (for the arms pattern), a `sign` plus `haunts` (for the possessive pattern), or both. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
 

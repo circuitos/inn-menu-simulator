@@ -60,11 +60,14 @@
 
   const HIGH_TIERS = ["fine", "noble"]; // postures are an elite-sign flourish
 
+  // Returns { name, plain }: `name` may be the archaic form (Blake, Gilt) and
+  // goes in the inn name; `plain` is the modern word and goes in the sign
+  // prose, where "a blake waystone" would read as a typo rather than flavor.
   function chooseColor(rng, cfg) {
     const c = pick(rng, cfg.colors || []);
     if (!c) return null;
     const useArchaic = c.archaic && rng() < (cfg.tuning.archaic_color_chance || 0);
-    return useArchaic ? c.archaic : c.word;
+    return { name: useArchaic ? c.archaic : c.word, plain: c.word };
   }
 
   // Postures only attach to high-tier signs, and only to charges that list one.
@@ -88,7 +91,7 @@
     const color = opts.color || null;
     const posture = choosePosture(rng, cfg, charge, tier);
     const words = ["The"];
-    if (color) words.push(color);
+    if (color) words.push(color.name);
     if (posture) words.push(posture);
     words.push(charge.name);
     const name = words.join(" ");
@@ -96,7 +99,7 @@
     // The posture rides in the name only; the base sign prose already reads as
     // a coherent depiction, so injecting the heraldic term here would double up.
     let sign = charge.sign;
-    if (color) sign = color.toLowerCase() + " " + sign;
+    if (color) sign = color.plain.toLowerCase() + " " + sign;
     sign = article(sign) + sign;
     return { name, sign };
   }
