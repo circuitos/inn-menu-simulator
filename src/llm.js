@@ -53,6 +53,16 @@ const PROVIDERS = {
     placeholder: "sk-...",
     url: "https://api.deepseek.com/chat/completions",
     model: "deepseek-chat"
+  },
+  cerebras: {
+    // Hosts open-weight models; ids churn as they rotate the lineup, so if
+    // this 404s check https://inference-docs.cerebras.ai/models/overview.
+    label: "Cerebras",
+    host: "api.cerebras.ai",
+    placeholder: "csk-...",
+    url: "https://api.cerebras.ai/v1/chat/completions",
+    model: "gpt-oss-120b",
+    extraBody: { reasoning_effort: "low" }
   }
 };
 
@@ -62,6 +72,7 @@ function guessProvider(key) {
   if (key.startsWith("sk-ant-")) return "anthropic";
   if (key.startsWith("AIza")) return "google";
   if (key.startsWith("sk-proj-")) return "openai";
+  if (key.startsWith("csk-") || key.startsWith("csk_")) return "cerebras";
   return null;
 }
 
