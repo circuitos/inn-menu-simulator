@@ -424,8 +424,36 @@ async function init() {
     qs("seed").value = randomSeed();
     generate();
   });
+  initPolish();
   qs("polish").addEventListener("click", polish);
   generate();
+}
+
+function initPolish() {
+  const sel = qs("llm-provider");
+  const providers = window.InnLLM.PROVIDERS;
+  for (const [id, p] of Object.entries(providers)) {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = p.label;
+    sel.appendChild(opt);
+  }
+  let saved = null;
+  try { saved = localStorage.getItem("llm-provider"); } catch (e) {}
+  if (saved && providers[saved]) sel.value = saved;
+  const sync = () => {
+    const p = providers[sel.value];
+    qs("api-key").placeholder = p.placeholder;
+    qs("polish-note").textContent = `Key stays in your browser. Sent only to ${p.host}.`;
+    try { localStorage.setItem("llm-provider", sel.value); } catch (e) {}
+  };
+  sel.addEventListener("change", sync);
+  // Auto-select the provider when the pasted key has an unambiguous prefix.
+  qs("api-key").addEventListener("input", () => {
+    const guess = window.InnLLM.guessProvider(qs("api-key").value.trim());
+    if (guess && guess !== sel.value) { sel.value = guess; sync(); }
+  });
+  sync();
 }
 
 function generate() {
@@ -445,7 +473,7 @@ async function polish() {
   if (!key) { status.textContent = "Paste an API key above. It stays in your browser."; return; }
   status.textContent = "Polishing…";
   try {
-    const flavored = await window.InnLLM.polishMenu(window.__lastMenu, key);
+    const flavored = await window.InnLLM.polishMenu(window.__lastMenu, key, qs("llm-provider").value);
     for (const sec of Object.keys(window.__lastMenu.sections)) {
       const orig = window.__lastMenu.sections[sec].dishes;
       const flav = (flavored.sections && flavored.sections[sec] && flavored.sections[sec].dishes) || [];

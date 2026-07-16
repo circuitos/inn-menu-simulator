@@ -351,10 +351,14 @@ select option:disabled { color: var(--ink-faint); }
 
       <div class="polish-block">
         <div class="register-line">
-          <label for="api-key">LLM polish</label>
+          <label for="llm-provider">LLM polish</label>
+          <select id="llm-provider"></select>
+        </div>
+        <div class="register-line">
+          <label for="api-key">API key</label>
           <input type="text" id="api-key" placeholder="sk-ant-..." autocomplete="off" />
         </div>
-        <p>Key stays in your browser. Sent only to api.anthropic.com.</p>
+        <p id="polish-note">Key stays in your browser. Sent only to api.anthropic.com.</p>
         <div class="button-row"><button class="btn" id="polish">Polish menu</button></div>
         <div id="polish-status"></div>
       </div>

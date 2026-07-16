@@ -1,14 +1,80 @@
-// llm.js: optional flavor text via Anthropic API (bring your own key)
+// llm.js: optional flavor text via a bring-your-own-key LLM provider.
 // The key is held in a form field and passed per-request. Never stored.
-// NOTE: Calling the API directly from a browser with a user-provided key requires
+// NOTE: Calling an API directly from a browser with a user-provided key requires
 // the API to allow browser CORS. Anthropic supports this with the
-// "anthropic-dangerous-direct-browser-access" header for client-side testing.
+// "anthropic-dangerous-direct-browser-access" header for client-side testing;
+// the other providers serve CORS headers on their OpenAI-compatible endpoints.
 // For production use, proxy through your own backend.
 
-async function polishMenu(menu, apiKey) {
+// Every provider except Anthropic speaks the OpenAI chat-completions dialect,
+// so they share one request path and differ only in url/model/body tweaks.
+// - tokenParam: OpenAI's newer models reject "max_tokens" in favor of
+//   "max_completion_tokens"; the rest still expect "max_tokens".
+// - extraBody: keeps reasoning models from spending the token budget on
+//   thinking instead of menu copy.
+const PROVIDERS = {
+  anthropic: {
+    label: "Anthropic (Claude)",
+    host: "api.anthropic.com",
+    placeholder: "sk-ant-...",
+    model: "claude-sonnet-5"
+  },
+  google: {
+    label: "Google AI Studio (Gemini)",
+    host: "generativelanguage.googleapis.com",
+    placeholder: "AIza...",
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    model: "gemini-2.5-flash",
+    extraBody: { reasoning_effort: "low" }
+  },
+  openai: {
+    label: "OpenAI (ChatGPT)",
+    host: "api.openai.com",
+    placeholder: "sk-proj-...",
+    url: "https://api.openai.com/v1/chat/completions",
+    model: "gpt-5-mini",
+    tokenParam: "max_completion_tokens",
+    extraBody: { reasoning_effort: "low" }
+  },
+  kimi: {
+    // Keys issued by platform.moonshot.cn only work against api.moonshot.cn;
+    // this targets the international platform (platform.moonshot.ai).
+    label: "Kimi (Moonshot AI)",
+    host: "api.moonshot.ai",
+    placeholder: "sk-...",
+    url: "https://api.moonshot.ai/v1/chat/completions",
+    model: "kimi-latest"
+  },
+  deepseek: {
+    label: "DeepSeek",
+    host: "api.deepseek.com",
+    placeholder: "sk-...",
+    url: "https://api.deepseek.com/chat/completions",
+    model: "deepseek-chat"
+  }
+};
+
+// Providers with unambiguous key prefixes; bare "sk-..." could be
+// OpenAI, Kimi, or DeepSeek, so those never auto-select.
+function guessProvider(key) {
+  if (key.startsWith("sk-ant-")) return "anthropic";
+  if (key.startsWith("AIza")) return "google";
+  if (key.startsWith("sk-proj-")) return "openai";
+  return null;
+}
+
+async function polishMenu(menu, apiKey, providerId) {
+  const provider = PROVIDERS[providerId] || PROVIDERS.anthropic;
   const prompt = buildPrompt(menu);
+  const text = provider === PROVIDERS.anthropic
+    ? await callAnthropic(prompt, apiKey)
+    : await callOpenAICompatible(provider, prompt, apiKey);
+  return extractJson(text);
+}
+
+async function callAnthropic(prompt, apiKey) {
   const body = {
-    model: "claude-sonnet-5",
+    model: PROVIDERS.anthropic.model,
     max_tokens: 8000,
     messages: [{ role: "user", content: prompt }]
   };
@@ -22,15 +88,40 @@ async function polishMenu(menu, apiKey) {
     },
     body: JSON.stringify(body)
   });
+  const data = await checkResponse(res);
+  const textBlock = (data.content || []).find(c => c.type === "text");
+  if (!textBlock) throw new Error("No text in response");
+  return textBlock.text;
+}
+
+async function callOpenAICompatible(provider, prompt, apiKey) {
+  const body = {
+    model: provider.model,
+    messages: [{ role: "user", content: prompt }]
+  };
+  body[provider.tokenParam || "max_tokens"] = 8000;
+  Object.assign(body, provider.extraBody || {});
+  const res = await fetch(provider.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await checkResponse(res);
+  const choice = (data.choices || [])[0];
+  const text = choice && choice.message && choice.message.content;
+  if (!text) throw new Error("No text in response");
+  return text;
+}
+
+async function checkResponse(res) {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API ${res.status}: ${text.slice(0, 200)}`);
   }
-  const data = await res.json();
-  const textBlock = (data.content || []).find(c => c.type === "text");
-  if (!textBlock) throw new Error("No text in response");
-  const json = extractJson(textBlock.text);
-  return json;
+  return res.json();
 }
 
 const TIER_INSTRUCTIONS = {
@@ -83,4 +174,4 @@ function extractJson(text) {
   }
 }
 
-window.InnLLM = { polishMenu };
+window.InnLLM = { polishMenu, PROVIDERS, guessProvider };

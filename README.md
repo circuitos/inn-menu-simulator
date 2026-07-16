@@ -17,7 +17,7 @@ To host it live via GitHub Pages, see `docs/SETUP.md`. Hosted repos also get an 
 3. It draws dishes using weighted random: native biome beats "any" beats import. Seasonal matches get boosted. Exotic trade goods appear only at fine/noble inns and never during war, plague, isolation, or siege.
 4. Each slot is routed to the procedural engine a set fraction of the time (about a third, set by `authored_ratio`), which assembles a dish from ingredients + preparations. It also serves as the fallback when the authored pool can't fill a slot.
 5. Prices compute from `cost × tier × economy × condition × event × import` (regional ×1.3, distant ×1.7), rendered in cp/sp/gp.
-6. Optional "Polish with LLM" sends the raw menu to Anthropic's API (using a key you paste locally, never stored server-side) and returns flavor text.
+6. Optional "Polish with LLM" sends the raw menu to an LLM provider of your choice (Anthropic, Google AI Studio, OpenAI, Kimi, or DeepSeek) using a key you paste locally, never stored server-side, and returns flavor text.
 
 ## Flavor packs
 
