@@ -17,13 +17,16 @@ async function loadData() {
     events: "data/events.json",
     inn_names: "data/inn_names.json"
   };
-  const out = {};
-  for (const [k, p] of Object.entries(paths)) {
+  // All fetches go out in parallel; awaiting them one by one would stack a
+  // full network round trip per file onto page load.
+  const entries = Promise.all(Object.entries(paths).map(async ([k, p]) => {
     const r = await fetch(versioned(p));
     if (!r.ok) throw new Error(`Failed to load ${p}`);
-    out[k] = await r.json();
-  }
-  out.flavor_packs = await loadFlavorPacks();
+    return [k, await r.json()];
+  }));
+  const [pairs, flavorPacks] = await Promise.all([entries, loadFlavorPacks()]);
+  const out = Object.fromEntries(pairs);
+  out.flavor_packs = flavorPacks;
   return out;
 }
 
