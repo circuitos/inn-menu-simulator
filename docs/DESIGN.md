@@ -434,6 +434,63 @@ Templates are invoked either as fallback when the authored pool is empty for a s
 
 If procedural fires too often with awkward combinations, adjust in one of three places depending on symptom: add authored dishes (stabilizes specific gaps), add ingredient affinities (expands valid combinations within existing templates), or add templates (new dish shapes).
 
+## Inn names
+
+The name in the menu header (`The White Hart Great Inn`) comes from `src/innname.js`, a thin generator over `data/inn_names.json`. It models the structural syntax of medieval and Renaissance English tavern signs: a name is a **charge** (the device painted on the sign) optionally dressed with a color, a number, a heraldic posture, a second charge, a location phrase, or a figure's body part, or one of two people-shaped forms: a creature's haunt (`The Fox's Den`) or guild and royal arms (`The Miller's Arms`, `The King's Arms`). `generate(world, seed, data)` returns `{ name, sign, designator }`; the header shows `name` and hangs `sign` (the substantive element, i.e. what the board depicts) off the `<h2>` as a tooltip.
+
+### Determinism
+
+The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn but reshapes when the world changes: a coastal noble inn reliably draws anchors and ships, an arid one draws suns and serpents. This is a deliberate change from the old seed-only hash; changing the biome or tier dropdown now re-signs the inn.
+
+### Patterns
+
+`patterns` weights the eight recombinatory templates (weights are relative, not percentages):
+
+| Pattern | Example | Weight | Tiers |
+|---|---|---|---|
+| `single` | The Bell | 56 | all |
+| `color` | The White Hart | 16 | all |
+| `number` | The Three Tuns | 8 | all |
+| `possessive` | The Fox's Den, The Drover's Rest | 8 | roadside, common |
+| `waypoint` | The Last Shade, The Ninth Milestone | 5 | roadside, common |
+| `arms` | The Miller's Arms, The King's Arms | 6 | common, fine, noble |
+| `pair` | The Rose and Crown | 5 | all |
+| `on_object` | The George on Horseback | 3 | all |
+| `body_part` | The Nomad's Head | 2 | all |
+
+A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name. A pattern with a `tiers` list additionally only fires at those tiers: `possessive` is a low-tier, plainspoken register, while guild and royal `arms` carry prestige.
+
+### Biome and tier gating
+
+Each charge, figure, and trade carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Nomad`, ...) and trades (`Miller`, `Shipwright`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses, the Nomad's Head stays in the desert, and a Furrier's Arms hangs only in the frostlands. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+
+**Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
+
+- A charge that fits every biome (an old `any` tag, or a device listed under all five) sits in every pool and so appears several times as often as a biome-native one. Give each charge the one or two biomes it actually belongs to; use a second biome only as deliberate connective tissue (e.g. `Bear` in highland and frostlands). For a device that legitimately spans two biomes at every tier, add a `weight` below 1 (default 1; the two-biome all-tier natives such as `Bear`, `Raven`, `Boar` run at 0.4 to 0.6) so it stops dominating the sweep. `weight` also works on figures (`King` and `Queen` are damped so the royal arms and heads do not crowd out the guilds).
+- If a biome's native charges are all locked below `noble`, its high-tier pool collapses onto whatever *is* noble-eligible, and every grand inn in that biome ends up drawing from the same few devices. Most charges should span all tiers; reserve tier locks for genuinely elite devices (`Griffin`, `Dragon`, `Phoenix`, `Sphinx`, `Wyvern`, `Pelican`) or genuinely humble ones (`Plough`, `Tun`, `Barge`, `Scorpion`). Tier prestige still reads through the designator, the posture, and those elite charges, so the common devices can stay available everywhere without muddying the tiers.
+
+A quick check: `require('src/innname.js')`, generate a few thousand names for `<biome>/noble`, and confirm the top charges are that biome's own, not a shared set that also tops another biome's noble list.
+
+### Coherence constraints
+
+- **Body parts**: figures show a `Head` or `Hand`; horned animals a `Head` or `Horn`; other animals a `Head` only. Allowed parts live in each entry's `parts` list.
+- **Numbers**: `Three` carries almost every numbered sign. `Seven` and `Four` are locked to a specific charge (`Seven Stars`, `Four Birds`) via `requires_charge`, and only fire when that charge is reachable at the world's tier; otherwise the sign falls back to `Three <charge>`.
+- **Postures** (`Ramping`, `Spread`, `Flying`, ...) attach only at `fine`/`noble` tiers, only to charges that list them, and only `posture_chance` of the time.
+- **Haunts**: the `possessive` pattern draws only from entries with a `haunts` list, and the haunt must fit the subject: birds get `Perch`/`Nest`, den animals `Den`, climbers `Leap`, beasts of burden and trades `Rest`. The board shows the subject (the charge's `sign`, or the trade's); the haunt lives in the name only.
+- **Arms**: the `arms` pattern draws from trades with an `arms_sign` (a blazon-flavored shield description), plus royal figures at `fine`/`noble` only, so `The King's Arms` stays a high-tier sign while `The Brewer's Arms` can hang in a market town.
+- **Riders**: an object marked `subjects: "figures"` (`on Horseback`) takes a figure, never a charge; the world gets `The Jarl on Horseback`, not `The Camel on Horseback`.
+- **Waypoints**: the `waypoint` pattern names an inn by its position on a route: an ordinal from `ordinals` (weighted toward `Last`) plus a biome-tagged stop from `waypoints` (`The Last Shade`, `The Third Well`, `The Ninth Milestone`). Waypoints filter strictly by biome and tier, and the hoop suffix never attaches (a waypoint is already a place).
+
+### Tuning
+
+The `tuning` block holds the flair probabilities: `designator_chance` (append a building word), `archaic_color_chance` (use `Alba`/`Redd`/`Blake`/`Gilt` instead of `White`/`Red`/`Black`/`Golden`), `posture_chance`, and `hoop_suffix_chance` (the archaic "on the Hoop" suffix).
+
+### Adding a charge
+
+Keep the vocabulary **setting-agnostic**: no terms tied to a real-world religion, people, or place. Prefer `Guardian` over `Angel`, `Nomad` over `Saracen`, `Temple` over `Mitre`, `Prelate` over `Pope`. The shared fantasy bestiary (`Griffin`, `Sphinx`, `Phoenix`) and generic ruler titles (`King`, `Sultan`, `Jarl`) are fine; a name a player would place on an Earth map is not.
+
+Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures`, `parts`, `haunts`, and a `weight` below 1 to damp an over-familiar device. A new trade goes in `trades` with `biomes`, `tiers`, and an `arms_sign` (for the arms pattern), a `sign` plus `haunts` (for the possessive pattern), or both. A new route stop goes in `waypoints` with a `word`, a `sign`, `biomes`, and `tiers`. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
+
 ## Editing data
 
 Common edits and the file to touch:
@@ -455,6 +512,7 @@ Common edits and the file to touch:
 | Change which condition still permits trade | `max_import_distance` per entry in `modifiers.json` → `conditions` |
 | Reshape biome geography (move regions / 5×5 grid) | `modifiers.json` → `biome_relations` |
 | Change biome labels or add a biome | `modifiers.json` → `biomes` (set `label`, `import_phrase`, `import_adjective`; add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
+| Add an inn-name charge, or retune name patterns / flair | `inn_names.json` (see [Inn names](#inn-names)) |
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 

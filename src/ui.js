@@ -14,15 +14,19 @@ async function loadData() {
     dishes: "data/dishes.json",
     authored_dishes: "data/authored_dishes.json",
     modifiers: "data/modifiers.json",
-    events: "data/events.json"
+    events: "data/events.json",
+    inn_names: "data/inn_names.json"
   };
-  const out = {};
-  for (const [k, p] of Object.entries(paths)) {
+  // All fetches go out in parallel; awaiting them one by one would stack a
+  // full network round trip per file onto page load.
+  const entries = Promise.all(Object.entries(paths).map(async ([k, p]) => {
     const r = await fetch(versioned(p));
     if (!r.ok) throw new Error(`Failed to load ${p}`);
-    out[k] = await r.json();
-  }
-  out.flavor_packs = await loadFlavorPacks();
+    return [k, await r.json()];
+  }));
+  const [pairs, flavorPacks] = await Promise.all([entries, loadFlavorPacks()]);
+  const out = Object.fromEntries(pairs);
+  out.flavor_packs = flavorPacks;
   return out;
 }
 
@@ -290,7 +294,11 @@ function renderMenu(menu) {
   incipit.className = "incipit";
   incipit.textContent = "here beginneth the bill of fare";
   const inn = document.createElement("h2");
-  inn.textContent = innNameFromSeed(menu.seed);
+  const named = innNameFor(menu);
+  inn.textContent = named.name;
+  // The sign (the substantive element: what the board actually depicts) rides
+  // along as a tooltip so the header stays terse but the flavor is there.
+  if (named.sign) inn.title = `Sign: ${named.sign}`;
   const sub = document.createElement("p");
   sub.className = "menu-sub";
   sub.textContent = describeWorld(menu);
@@ -361,6 +369,16 @@ function renderMenu(menu) {
   footer.className = "menu-footer";
   footer.textContent = `seed · ${menu.seed}`;
   root.appendChild(footer);
+}
+
+// Sign-based inn name from the world (biome + tier) and seed, via innname.js.
+// Falls back to a terse hashed name if the module or its data is unavailable,
+// so the header always has a name even before inn_names.json loads.
+function innNameFor(menu) {
+  if (window.InnName && DATA && DATA.inn_names) {
+    return window.InnName.generate(menu.world, menu.seed, DATA.inn_names);
+  }
+  return { name: innNameFromSeed(menu.seed), sign: null };
 }
 
 function innNameFromSeed(seed) {
