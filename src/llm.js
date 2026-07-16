@@ -10,8 +10,9 @@
 // so they share one request path and differ only in url/model/body tweaks.
 // - tokenParam: OpenAI's newer models reject "max_tokens" in favor of
 //   "max_completion_tokens"; the rest still expect "max_tokens".
-// - extraBody: keeps reasoning models from spending the token budget on
-//   thinking instead of menu copy.
+// - supportsEffort: reasoning models that accept reasoning_effort
+//   (low/medium/high). Default is low so the token budget goes to menu
+//   copy instead of thinking; the UI exposes the knob for these.
 const PROVIDERS = {
   anthropic: {
     label: "Anthropic (Claude)",
@@ -27,7 +28,7 @@ const PROVIDERS = {
     // Rolling alias for the newest Flash model. Pinned versions get retired
     // for new keys ("gemini-2.5-flash is no longer available to new users").
     model: "gemini-flash-latest",
-    extraBody: { reasoning_effort: "low" }
+    supportsEffort: true
   },
   openai: {
     label: "OpenAI (ChatGPT)",
@@ -36,7 +37,7 @@ const PROVIDERS = {
     url: "https://api.openai.com/v1/chat/completions",
     model: "gpt-5-mini",
     tokenParam: "max_completion_tokens",
-    extraBody: { reasoning_effort: "low" }
+    supportsEffort: true
   },
   kimi: {
     // Keys issued by platform.moonshot.cn only work against api.moonshot.cn;
@@ -62,7 +63,7 @@ const PROVIDERS = {
     placeholder: "csk-...",
     url: "https://api.cerebras.ai/v1/chat/completions",
     model: "gpt-oss-120b",
-    extraBody: { reasoning_effort: "low" }
+    supportsEffort: true
   }
 };
 
@@ -76,12 +77,12 @@ function guessProvider(key) {
   return null;
 }
 
-async function polishMenu(menu, apiKey, providerId) {
+async function polishMenu(menu, apiKey, providerId, effort) {
   const provider = PROVIDERS[providerId] || PROVIDERS.anthropic;
   const prompt = buildPrompt(menu);
   const text = provider === PROVIDERS.anthropic
     ? await callAnthropic(prompt, apiKey)
-    : await callOpenAICompatible(provider, prompt, apiKey);
+    : await callOpenAICompatible(provider, prompt, apiKey, effort);
   return extractJson(text);
 }
 
@@ -107,12 +108,13 @@ async function callAnthropic(prompt, apiKey) {
   return textBlock.text;
 }
 
-async function callOpenAICompatible(provider, prompt, apiKey) {
+async function callOpenAICompatible(provider, prompt, apiKey, effort) {
   const body = {
     model: provider.model,
     messages: [{ role: "user", content: prompt }]
   };
   body[provider.tokenParam || "max_tokens"] = 8000;
+  if (provider.supportsEffort) body.reasoning_effort = effort || "low";
   Object.assign(body, provider.extraBody || {});
   const res = await fetch(provider.url, {
     method: "POST",

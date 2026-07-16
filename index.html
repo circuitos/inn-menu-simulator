@@ -358,6 +358,14 @@ select option:disabled { color: var(--ink-faint); }
           <label for="api-key">API key</label>
           <input type="text" id="api-key" placeholder="sk-ant-..." autocomplete="off" />
         </div>
+        <div class="register-line" id="llm-effort-line">
+          <label for="llm-effort">Effort</label>
+          <select id="llm-effort">
+            <option value="low" selected>Low (fast)</option>
+            <option value="medium">Medium</option>
+            <option value="high">High (slow, spends more tokens)</option>
+          </select>
+        </div>
         <p id="polish-note">Key stays in your browser. Sent only to api.anthropic.com.</p>
         <div class="button-row"><button class="btn" id="polish">Polish menu</button></div>
         <div id="polish-status"></div>
