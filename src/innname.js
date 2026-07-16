@@ -3,9 +3,11 @@
 // A thin layer over data/inn_names.json. Names follow the structural syntax of
 // medieval and Renaissance English tavern signs: a charge (the device painted
 // on the sign) optionally dressed with a color, a number, a heraldic posture,
-// a second charge, a location phrase, or a figure's body part. The charge pool
-// is filtered by the world's biome and inn tier, and the whole thing is
-// deterministic for a given (seed, biome, tier) so the same inn keeps its name.
+// a second charge, a location phrase, or a figure's body part, plus two
+// people-shaped forms: a creature's haunt (The Fox's Den) and guild or royal
+// arms (The Miller's Arms, The King's Arms). The charge pool is filtered by
+// the world's biome and inn tier, and the whole thing is deterministic for a
+// given (seed, biome, tier) so the same inn keeps its name.
 //
 // See docs/DESIGN.md 'Inn names' for the model and tuning knobs. Public entry
 // point is window.InnName.generate(world, seed, data). It returns
@@ -103,22 +105,30 @@
     const tier = world.inn_tier;
     const biome = world.biome;
     const charges = poolFor(cfg.charges || [], biome, tier);
-    // Figures respect tier strictly (no full-pool fallback): a roadside alehouse
-    // should not sport "The Queen's Head". An empty result just means body_part
-    // falls back to animal subjects for this world.
+    // Figures and trades respect tier strictly (no full-pool fallback): a
+    // roadside alehouse should not sport "The Queen's Head", and a guild-arms
+    // sign belongs to its own biome's trades. An empty result just means the
+    // dependent patterns drop out for this world.
     const figures = (cfg.figures || []).filter(f => matchTier(f, tier) && matchBiome(f, biome));
+    const trades = (cfg.trades || []).filter(t => matchTier(t, tier) && matchBiome(t, biome));
+    const royals = figures.filter(f => (f.flavor || []).includes("royal"));
 
     // Some patterns need a bigger pool than the world offers; fall back to a
-    // plain single charge when the chosen pattern can't be satisfied.
+    // plain single charge when the chosen pattern can't be satisfied. A pattern
+    // with a tiers list additionally only fires at those tiers.
     const feasible = {
       single: charges.length > 0,
       color: charges.some(c => c.color),
       number: charges.length > 0,
+      possessive: charges.some(c => (c.haunts || []).length) || trades.some(t => (t.haunts || []).length),
+      arms: trades.some(t => t.arms_sign) || (HIGH_TIERS.includes(tier) && royals.length > 0),
       pair: charges.length >= 2,
-      on_object: charges.length > 0 && (cfg.objects || []).length > 0,
+      on_object: charges.length > 0 &&
+        (cfg.objects || []).some(o => !o.subjects || (o.subjects === "figures" && figures.length > 0)),
       body_part: charges.some(c => (c.parts || []).length) || figures.some(f => (f.parts || []).length)
     };
-    const usable = (cfg.patterns || []).filter(p => feasible[p.id]);
+    const usable = (cfg.patterns || []).filter(p =>
+      feasible[p.id] && (!p.tiers || p.tiers.includes(tier)));
     const pattern = weightedPick(rng, usable.length ? usable : [{ id: "single", weight: 1 }], p => p.weight);
 
     if (pattern.id === "color") {
@@ -152,6 +162,36 @@
       };
     }
 
+    if (pattern.id === "possessive") {
+      // A creature's haunt (The Fox's Den, The Gull's Perch) or a trade at
+      // rest (The Drover's Rest). The board shows the subject; the haunt
+      // lives in the name only.
+      const subjects = charges.filter(c => (c.haunts || []).length)
+        .concat(trades.filter(t => (t.haunts || []).length));
+      const subject = pick(rng, subjects);
+      const haunt = pick(rng, subject.haunts);
+      const sign = subject.sign || lc(subject.name);
+      return {
+        name: `The ${subject.name}'s ${haunt}`,
+        sign: `${article(sign)}${sign}`
+      };
+    }
+
+    if (pattern.id === "arms") {
+      // Guild arms (The Miller's Arms) or, at high tiers, the royal arms
+      // (The King's Arms). Guilds paint their blazon; royalty needs none.
+      const bearers = trades.filter(t => t.arms_sign)
+        .concat(HIGH_TIERS.includes(tier) ? royals : []);
+      const bearer = pick(rng, bearers);
+      const possessive = bearer.possessive || `${bearer.name}'s`;
+      return {
+        name: `The ${possessive} Arms`,
+        sign: bearer.arms_sign
+          ? `${article(bearer.arms_sign)}${bearer.arms_sign}`
+          : "the royal arms, quartered and crowned"
+      };
+    }
+
     if (pattern.id === "pair") {
       const a = pick(rng, charges);
       const rest = charges.filter(c => c.name !== a.name);
@@ -163,11 +203,23 @@
     }
 
     if (pattern.id === "on_object") {
-      const charge = pick(rng, charges);
+      // An object marked subjects:"figures" (on Horseback) takes a rider, not
+      // an arbitrary charge; a camel on horseback is not a paintable sign.
       const o = pick(rng, cfg.objects);
+      if (o.subjects === "figures" && figures.length) {
+        const f = pick(rng, figures);
+        const noun = lc(f.name);
+        return {
+          name: `The ${f.name} ${o.prep} ${o.object}`,
+          sign: `${article(noun)}${noun} ${o.prep} ${lc(o.object)}`
+        };
+      }
+      const plainObjects = (cfg.objects || []).filter(x => !x.subjects);
+      const obj = o.subjects ? pick(rng, plainObjects) : o;
+      const charge = pick(rng, charges);
       return {
-        name: `The ${charge.name} ${o.prep} ${o.object}`,
-        sign: `${article(charge.sign)}${charge.sign} ${o.prep} ${lc(o.object)}`
+        name: `The ${charge.name} ${obj.prep} ${obj.object}`,
+        sign: `${article(charge.sign)}${charge.sign} ${obj.prep} ${lc(obj.object)}`
       };
     }
 

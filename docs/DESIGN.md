@@ -436,7 +436,7 @@ If procedural fires too often with awkward combinations, adjust in one of three 
 
 ## Inn names
 
-The name in the menu header (`The White Hart Great Inn`) comes from `src/innname.js`, a thin generator over `data/inn_names.json`. It models the structural syntax of medieval and Renaissance English tavern signs: a name is a **charge** (the device painted on the sign) optionally dressed with a color, a number, a heraldic posture, a second charge, a location phrase, or a figure's body part. `generate(world, seed, data)` returns `{ name, sign, designator }`; the header shows `name` and hangs `sign` (the substantive element, i.e. what the board depicts) off the `<h2>` as a tooltip.
+The name in the menu header (`The White Hart Great Inn`) comes from `src/innname.js`, a thin generator over `data/inn_names.json`. It models the structural syntax of medieval and Renaissance English tavern signs: a name is a **charge** (the device painted on the sign) optionally dressed with a color, a number, a heraldic posture, a second charge, a location phrase, or a figure's body part, or one of two people-shaped forms: a creature's haunt (`The Fox's Den`) or guild and royal arms (`The Miller's Arms`, `The King's Arms`). `generate(world, seed, data)` returns `{ name, sign, designator }`; the header shows `name` and hangs `sign` (the substantive element, i.e. what the board depicts) off the `<h2>` as a tooltip.
 
 ### Determinism
 
@@ -444,22 +444,24 @@ The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn
 
 ### Patterns
 
-`patterns` weights the six recombinatory templates (weights are relative, not percentages):
+`patterns` weights the eight recombinatory templates (weights are relative, not percentages):
 
-| Pattern | Example | Weight |
-|---|---|---|
-| `single` | The Bell | 65 |
-| `color` | The White Hart | 17 |
-| `number` | The Three Tuns | 8 |
-| `pair` | The Rose and Crown | 5 |
-| `on_object` | The George on Horseback | 3 |
-| `body_part` | The Saracen's Head | 2 |
+| Pattern | Example | Weight | Tiers |
+|---|---|---|---|
+| `single` | The Bell | 56 | all |
+| `color` | The White Hart | 16 | all |
+| `number` | The Three Tuns | 8 | all |
+| `possessive` | The Fox's Den, The Drover's Rest | 8 | roadside, common |
+| `arms` | The Miller's Arms, The King's Arms | 6 | common, fine, noble |
+| `pair` | The Rose and Crown | 5 | all |
+| `on_object` | The George on Horseback | 3 | all |
+| `body_part` | The Saracen's Head | 2 | all |
 
-A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name.
+A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name. A pattern with a `tiers` list additionally only fires at those tiers: `possessive` is a low-tier, plainspoken register, while guild and royal `arms` carry prestige.
 
 ### Biome and tier gating
 
-Each charge and figure carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses and the Saracen's Head stays in the desert. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+Each charge, figure, and trade carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) and trades (`Miller`, `Shipwright`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses, the Saracen's Head stays in the desert, and a Furrier's Arms hangs only in the frostlands. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
 
 **Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
 
@@ -473,6 +475,9 @@ A quick check: `require('src/innname.js')`, generate a few thousand names for `<
 - **Body parts**: figures show a `Head` or `Hand`; horned animals a `Head` or `Horn`; other animals a `Head` only. Allowed parts live in each entry's `parts` list.
 - **Numbers**: `Three` carries almost every numbered sign. `Seven` and `Four` are locked to a specific charge (`Seven Stars`, `Four Birds`) via `requires_charge`, and only fire when that charge is reachable at the world's tier; otherwise the sign falls back to `Three <charge>`.
 - **Postures** (`Ramping`, `Spread`, `Flying`, ...) attach only at `fine`/`noble` tiers, only to charges that list them, and only `posture_chance` of the time.
+- **Haunts**: the `possessive` pattern draws only from entries with a `haunts` list, and the haunt must fit the subject: birds get `Perch`/`Nest`, den animals `Den`, climbers `Leap`, beasts of burden and trades `Rest`. The board shows the subject (the charge's `sign`, or the trade's); the haunt lives in the name only.
+- **Arms**: the `arms` pattern draws from trades with an `arms_sign` (a blazon-flavored shield description), plus royal figures at `fine`/`noble` only, so `The King's Arms` stays a high-tier sign while `The Brewer's Arms` can hang in a market town.
+- **Riders**: an object marked `subjects: "figures"` (`on Horseback`) takes a figure, never a charge; the world gets `The Jarl on Horseback`, not `The Camel on Horseback`.
 
 ### Tuning
 
@@ -480,7 +485,7 @@ The `tuning` block holds the flair probabilities: `designator_chance` (append a 
 
 ### Adding a charge
 
-Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures` and `parts`. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
+Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures`, `parts`, and `haunts`. A new trade goes in `trades` with `biomes`, `tiers`, and an `arms_sign` (for the arms pattern), a `sign` plus `haunts` (for the possessive pattern), or both. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
 
 ## Editing data
 
