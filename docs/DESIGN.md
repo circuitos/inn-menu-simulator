@@ -459,7 +459,14 @@ A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier 
 
 ### Biome and tier gating
 
-Each charge and figure carries `biomes` (this project's five biomes, or `any`) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) are filtered **strictly** by tier so royalty stays out of roadside alehouses. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+Each charge and figure carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Saracen`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses and the Saracen's Head stays in the desert. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+
+**Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
+
+- A charge that fits every biome (an old `any` tag, or a device listed under all five) sits in every pool and so appears several times as often as a biome-native one. Give each charge the one or two biomes it actually belongs to; use a second biome only as deliberate connective tissue (e.g. `Bear` in highland and frostlands).
+- If a biome's native charges are all locked below `noble`, its high-tier pool collapses onto whatever *is* noble-eligible, and every grand inn in that biome ends up drawing from the same few devices. Most charges should span all tiers; reserve tier locks for genuinely elite devices (`Griffin`, `Dragon`, `Phoenix`, `Sphinx`, `Wyvern`, `Pelican`) or genuinely humble ones (`Plough`, `Tun`, `Barge`, `Scorpion`). Tier prestige still reads through the designator, the posture, and those elite charges, so the common devices can stay available everywhere without muddying the tiers.
+
+A quick check: `require('src/innname.js')`, generate a few thousand names for `<biome>/noble`, and confirm the top charges are that biome's own, not a shared set that also tops another biome's noble list.
 
 ### Coherence constraints
 
