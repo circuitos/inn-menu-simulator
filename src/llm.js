@@ -24,7 +24,9 @@ const PROVIDERS = {
     host: "generativelanguage.googleapis.com",
     placeholder: "AIza...",
     url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    model: "gemini-2.5-flash",
+    // Rolling alias for the newest Flash model. Pinned versions get retired
+    // for new keys ("gemini-2.5-flash is no longer available to new users").
+    model: "gemini-flash-latest",
     extraBody: { reasoning_effort: "low" }
   },
   openai: {
