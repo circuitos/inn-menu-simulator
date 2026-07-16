@@ -452,6 +452,7 @@ The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn
 | `color` | The White Hart | 16 | all |
 | `number` | The Three Tuns | 8 | all |
 | `possessive` | The Fox's Den, The Drover's Rest | 8 | roadside, common |
+| `waypoint` | The Last Shade, The Ninth Milestone | 5 | roadside, common |
 | `arms` | The Miller's Arms, The King's Arms | 6 | common, fine, noble |
 | `pair` | The Rose and Crown | 5 | all |
 | `on_object` | The George on Horseback | 3 | all |
@@ -465,7 +466,7 @@ Each charge, figure, and trade carries `biomes` (concrete members of this projec
 
 **Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
 
-- A charge that fits every biome (an old `any` tag, or a device listed under all five) sits in every pool and so appears several times as often as a biome-native one. Give each charge the one or two biomes it actually belongs to; use a second biome only as deliberate connective tissue (e.g. `Bear` in highland and frostlands).
+- A charge that fits every biome (an old `any` tag, or a device listed under all five) sits in every pool and so appears several times as often as a biome-native one. Give each charge the one or two biomes it actually belongs to; use a second biome only as deliberate connective tissue (e.g. `Bear` in highland and frostlands). For a device that legitimately spans two biomes at every tier, add a `weight` below 1 (default 1; the two-biome all-tier natives such as `Bear`, `Raven`, `Boar` run at 0.4 to 0.6) so it stops dominating the sweep. `weight` also works on figures (`King` and `Queen` are damped so the royal arms and heads do not crowd out the guilds).
 - If a biome's native charges are all locked below `noble`, its high-tier pool collapses onto whatever *is* noble-eligible, and every grand inn in that biome ends up drawing from the same few devices. Most charges should span all tiers; reserve tier locks for genuinely elite devices (`Griffin`, `Dragon`, `Phoenix`, `Sphinx`, `Wyvern`, `Pelican`) or genuinely humble ones (`Plough`, `Tun`, `Barge`, `Scorpion`). Tier prestige still reads through the designator, the posture, and those elite charges, so the common devices can stay available everywhere without muddying the tiers.
 
 A quick check: `require('src/innname.js')`, generate a few thousand names for `<biome>/noble`, and confirm the top charges are that biome's own, not a shared set that also tops another biome's noble list.
@@ -478,6 +479,7 @@ A quick check: `require('src/innname.js')`, generate a few thousand names for `<
 - **Haunts**: the `possessive` pattern draws only from entries with a `haunts` list, and the haunt must fit the subject: birds get `Perch`/`Nest`, den animals `Den`, climbers `Leap`, beasts of burden and trades `Rest`. The board shows the subject (the charge's `sign`, or the trade's); the haunt lives in the name only.
 - **Arms**: the `arms` pattern draws from trades with an `arms_sign` (a blazon-flavored shield description), plus royal figures at `fine`/`noble` only, so `The King's Arms` stays a high-tier sign while `The Brewer's Arms` can hang in a market town.
 - **Riders**: an object marked `subjects: "figures"` (`on Horseback`) takes a figure, never a charge; the world gets `The Jarl on Horseback`, not `The Camel on Horseback`.
+- **Waypoints**: the `waypoint` pattern names an inn by its position on a route: an ordinal from `ordinals` (weighted toward `Last`) plus a biome-tagged stop from `waypoints` (`The Last Shade`, `The Third Well`, `The Ninth Milestone`). Waypoints filter strictly by biome and tier, and the hoop suffix never attaches (a waypoint is already a place).
 
 ### Tuning
 
@@ -487,7 +489,7 @@ The `tuning` block holds the flair probabilities: `designator_chance` (append a 
 
 Keep the vocabulary **setting-agnostic**: no terms tied to a real-world religion, people, or place. Prefer `Guardian` over `Angel`, `Nomad` over `Saracen`, `Temple` over `Mitre`, `Prelate` over `Pope`. The shared fantasy bestiary (`Griffin`, `Sphinx`, `Phoenix`) and generic ruler titles (`King`, `Sultan`, `Jarl`) are fine; a name a player would place on an Earth map is not.
 
-Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures`, `parts`, and `haunts`. A new trade goes in `trades` with `biomes`, `tiers`, and an `arms_sign` (for the arms pattern), a `sign` plus `haunts` (for the possessive pattern), or both. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
+Append to `charges` with a `name`, a `plural`, and a **bare, color-neutral `sign`** noun phrase (no leading article: `innname.js` adds the article and injects the chosen color, so don't bake a tincture into a `color: true` charge). Tag `biomes`, `tiers`, and `flavor`, set `color`, and optionally add `postures`, `parts`, `haunts`, and a `weight` below 1 to damp an over-familiar device. A new trade goes in `trades` with `biomes`, `tiers`, and an `arms_sign` (for the arms pattern), a `sign` plus `haunts` (for the possessive pattern), or both. A new route stop goes in `waypoints` with a `word`, a `sign`, `biomes`, and `tiers`. There is no smoke script for names; sanity-check by loading the app across biome/tier combinations, or require `src/innname.js` in Node and call `generate` directly.
 
 ## Editing data
 

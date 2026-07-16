@@ -40,6 +40,12 @@
     for (const it of items) { r -= Math.max(0, weightFn(it)); if (r < 0) return it; }
     return items[items.length - 1];
   }
+  // Entry pick honoring the optional per-entry weight (default 1). Charges that
+  // sit in several biomes at every tier land in many pools at once; a weight
+  // below 1 damps them back so they stop dominating the sweep.
+  function pickW(rng, arr) {
+    return weightedPick(rng, arr, e => (e.weight == null ? 1 : e.weight));
+  }
 
   // A charge/figure is reachable when its biome list names this biome (or "any")
   // and its tier list names this tier. Biome filtering falls back to the full
@@ -115,6 +121,7 @@
     const figures = (cfg.figures || []).filter(f => matchTier(f, tier) && matchBiome(f, biome));
     const trades = (cfg.trades || []).filter(t => matchTier(t, tier) && matchBiome(t, biome));
     const royals = figures.filter(f => (f.flavor || []).includes("royal"));
+    const waypoints = (cfg.waypoints || []).filter(w => matchTier(w, tier) && matchBiome(w, biome));
 
     // Some patterns need a bigger pool than the world offers; fall back to a
     // plain single charge when the chosen pattern can't be satisfied. A pattern
@@ -124,6 +131,7 @@
       color: charges.some(c => c.color),
       number: charges.length > 0,
       possessive: charges.some(c => (c.haunts || []).length) || trades.some(t => (t.haunts || []).length),
+      waypoint: waypoints.length > 0,
       arms: trades.some(t => t.arms_sign) || (HIGH_TIERS.includes(tier) && royals.length > 0),
       pair: charges.length >= 2,
       on_object: charges.length > 0 &&
@@ -136,7 +144,7 @@
 
     if (pattern.id === "color") {
       const colored = charges.filter(c => c.color);
-      const charge = pick(rng, colored.length ? colored : charges);
+      const charge = pickW(rng, colored.length ? colored : charges);
       return dressCharge(rng, cfg, charge, tier, { color: chooseColor(rng, cfg) });
     }
 
@@ -158,10 +166,24 @@
       }
       const three = (cfg.numbers || []).find(n => n.word === "Three") || { word: "Three" };
       const plain = charges.filter(c => !isNumberLocked(cfg, c.name));
-      const charge = pick(rng, plain.length ? plain : charges);
+      const charge = pickW(rng, plain.length ? plain : charges);
       return {
         name: `The ${three.word} ${charge.plural}`,
         sign: `${three.word.toLowerCase()} ${lc(charge.plural)}`
+      };
+    }
+
+    if (pattern.id === "waypoint") {
+      // A stop on a route, named by position: The Last Shade, The Ninth
+      // Milestone, The Third Well. "Last" leads because a traveler's inn is
+      // most often the last of something. The hoop suffix is suppressed: a
+      // waypoint is already a place.
+      const wp = pickW(rng, waypoints);
+      const ord = weightedPick(rng, cfg.ordinals || [], o => o.weight) || { word: "Last" };
+      return {
+        name: `The ${ord.word} ${wp.word}`,
+        sign: `${article(wp.sign)}${wp.sign}`,
+        hoop: false
       };
     }
 
@@ -171,7 +193,7 @@
       // lives in the name only.
       const subjects = charges.filter(c => (c.haunts || []).length)
         .concat(trades.filter(t => (t.haunts || []).length));
-      const subject = pick(rng, subjects);
+      const subject = pickW(rng, subjects);
       const haunt = pick(rng, subject.haunts);
       const sign = subject.sign || lc(subject.name);
       return {
@@ -185,7 +207,7 @@
       // (The King's Arms). Guilds paint their blazon; royalty needs none.
       const bearers = trades.filter(t => t.arms_sign)
         .concat(HIGH_TIERS.includes(tier) ? royals : []);
-      const bearer = pick(rng, bearers);
+      const bearer = pickW(rng, bearers);
       const possessive = bearer.possessive || `${bearer.name}'s`;
       return {
         name: `The ${possessive} Arms`,
@@ -196,9 +218,9 @@
     }
 
     if (pattern.id === "pair") {
-      const a = pick(rng, charges);
+      const a = pickW(rng, charges);
       const rest = charges.filter(c => c.name !== a.name);
-      const b = pick(rng, rest.length ? rest : charges);
+      const b = pickW(rng, rest.length ? rest : charges);
       return {
         name: `The ${a.name} and ${b.name}`,
         sign: `${article(a.sign)}${a.sign} beside ${article(b.sign)}${b.sign}`
@@ -210,7 +232,7 @@
       // an arbitrary charge; a camel on horseback is not a paintable sign.
       const o = pick(rng, cfg.objects);
       if (o.subjects === "figures" && figures.length) {
-        const f = pick(rng, figures);
+        const f = pickW(rng, figures);
         const noun = lc(f.name);
         return {
           name: `The ${f.name} ${o.prep} ${o.object}`,
@@ -219,7 +241,7 @@
       }
       const plainObjects = (cfg.objects || []).filter(x => !x.subjects);
       const obj = o.subjects ? pick(rng, plainObjects) : o;
-      const charge = pick(rng, charges);
+      const charge = pickW(rng, charges);
       return {
         name: `The ${charge.name} ${obj.prep} ${obj.object}`,
         sign: `${article(charge.sign)}${charge.sign} ${obj.prep} ${lc(obj.object)}`
@@ -231,7 +253,7 @@
       // the part to what the subject can plausibly show keeps signs coherent.
       const animals = charges.filter(c => (c.parts || []).length);
       const subjectPool = figures.concat(animals);
-      const subject = pick(rng, subjectPool);
+      const subject = pickW(rng, subjectPool);
       const part = pick(rng, subject.parts);
       const possessive = subject.possessive || `${subject.name}'s`;
       const noun = lc(subject.name);
@@ -242,7 +264,7 @@
     }
 
     // single (default)
-    const charge = pick(rng, charges);
+    const charge = pickW(rng, charges);
     return dressCharge(rng, cfg, charge, tier, {});
   }
 
@@ -274,9 +296,10 @@
     let name = designator ? `${core.name} ${designator}` : core.name;
 
     // "on the Hoop" is an archaic-district flourish; skip it when the name
-    // already carries an "on/in ..." phrase from the on_object pattern.
+    // already carries an "on/in ..." phrase from the on_object pattern, or
+    // when the pattern opted out (waypoints are already places).
     const hasLocation = / (on|in) /.test(core.name);
-    if (!hasLocation && rng() < (cfg.tuning.hoop_suffix_chance || 0)) {
+    if (!hasLocation && core.hoop !== false && rng() < (cfg.tuning.hoop_suffix_chance || 0)) {
       name += " on the Hoop";
     }
     return { name, sign: core.sign, designator };
