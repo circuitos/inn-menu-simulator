@@ -52,7 +52,25 @@ Every branch you push gets its own live copy at
 `https://YOUR-USERNAME.github.io/inn-menu-simulator/previews/BRANCH-NAME/`,
 and `https://YOUR-USERNAME.github.io/inn-menu-simulator/previews/` lists them all with their latest commit. Deleting a branch removes its preview on the next deploy. If a branch has an open pull request, the workflow keeps a sticky comment on it with the preview link. The `gh-pages` branch itself is generated output; never edit it by hand.
 
-## 5. Editing later
+## 5. Optional: show up on Google (Search Console)
+
+Once the site is public, Google will find it eventually, but slowly, and you'll have no visibility into how. **Google Search Console** (GSC) is Google's free webmaster tool: it shows which searches surface your site, how many people click through, and any indexing problems.
+
+1. Go to [search.google.com/search-console](https://search.google.com/search-console) and sign in with any Google account.
+2. Click **Add property** and choose the **URL prefix** type (the *Domain* type needs DNS records you can't set on `github.io`). Enter your full Pages URL exactly, trailing slash included: `https://YOUR-USERNAME.github.io/inn-menu-simulator/`.
+3. Prove you own the site. Two methods work with this project's deploy setup:
+   - **HTML file (recommended).** GSC offers a verification file to download, named like `google1234abcd.html`. Upload it to the *root* of your repository on the default branch (**Add file → Upload files**). The deploy workflow copies every repo file to the site, so once the Actions run is green the file is live at your Pages URL and GSC's **Verify** button will succeed. Leave the file in place afterwards; removing it un-verifies the property.
+   - **HTML tag.** Copy the `<meta name="google-site-verification" ...>` line GSC shows you into the `<head>` section of `index.html` and commit.
+
+   Either way, wait for the green Actions run, plus up to 10 minutes of Pages cache, before clicking **Verify**.
+4. No sitemap needed: it's a single page. To speed up the first crawl, paste your URL into the **URL inspection** box at the top and click **Request indexing**. Expect a few days before the page is indexed, and a few more before the **Performance** tab shows search data.
+
+Two footnotes:
+
+- **Branch previews are kept out of search.** Every branch preview under `/previews/` is a full copy of the site. The project ships a `robots.txt` telling crawlers to skip that folder, so Google only indexes the real site and not stale duplicates.
+- **GSC only counts visitors arriving from Google Search.** If you want total visit numbers, that requires an analytics snippet in the page. [GoatCounter](https://www.goatcounter.com) is a free option with no cookie banner; Google Analytics works too but is heavier and needs a consent banner in most places. Neither is wired into this project.
+
+## 6. Editing later
 
 Two easy paths:
 
@@ -60,7 +78,7 @@ Two easy paths:
 
 **GitHub Desktop (if you want to work offline).** Download from [desktop.github.com](https://desktop.github.com). Probably OK under admin-by-request. Clone your repo to your machine, edit in any editor (VS Code is free: [code.visualstudio.com](https://code.visualstudio.com)), commit and push via the Desktop app.
 
-## 6. Running / debugging
+## 7. Running / debugging
 
 The project runs entirely in the browser. No build step, no server. To test locally *without* pushing to GitHub every time:
 

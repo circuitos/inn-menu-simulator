@@ -30,6 +30,7 @@ The repo ships with **Mog**, the author's campaign setting. Leave it unchecked f
 ```
 inn-menu-simulator/
 ├── index.html                  # the app
+├── robots.txt                  # keeps /previews/ out of search engines
 ├── .github/
 │   └── workflows/
 │       └── deploy-pages.yml    # Pages deploy: main + branch previews
