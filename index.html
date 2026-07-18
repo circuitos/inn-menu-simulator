@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Inn Menu Simulator</title>
+<link rel="canonical" href="https://circuitos.github.io/inn-menu-simulator/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -432,5 +433,12 @@ select option:disabled { color: var(--ink-faint); }
   })();
   /* ===== END bound-codex layout JS ===== */
 </script>
+<script>
+  // Analytics: count only the live site, not branch previews. count.js
+  // already skips localhost and file:// on its own.
+  if (location.pathname.includes("/previews/")) window.goatcounter = { no_onload: true };
+</script>
+<script data-goatcounter="https://innmenu.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

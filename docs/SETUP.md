@@ -68,7 +68,7 @@ Once the site is public, Google will find it eventually, but slowly, and you'll 
 Two footnotes:
 
 - **Branch previews are kept out of search.** Every branch preview under `/previews/` is a full copy of the site. The project ships a `robots.txt` telling crawlers to skip that folder, so Google only indexes the real site and not stale duplicates.
-- **GSC only counts visitors arriving from Google Search.** If you want total visit numbers, that requires an analytics snippet in the page. [GoatCounter](https://www.goatcounter.com) is a free option with no cookie banner; Google Analytics works too but is heavier and needs a consent banner in most places. Neither is wired into this project.
+- **GSC only counts visitors arriving from Google Search.** Total visit numbers come from [GoatCounter](https://www.goatcounter.com) instead: a free, privacy-friendly counter (no cookies, so no consent banner needed). The two `<script>` tags at the bottom of `index.html` report pageviews to the dashboard named in the `data-goatcounter` URL. Branch previews, localhost, and `file://` visits are not counted. If your own visits don't show up, your adblocker is probably blocking the script; otherwise pageviews appear within about 10 seconds. To exclude your own visits from the stats, see the "Prevent tracking my own pageviews" page in GoatCounter's docs. **If you fork this project:** replace the `data-goatcounter` URL with your own GoatCounter site's (or delete both script tags to go analytics-free), and point the `<link rel="canonical">` in the `<head>` at your own Pages URL.
 
 ## 6. Editing later
 
