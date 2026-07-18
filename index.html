@@ -155,9 +155,8 @@ select option:disabled { color: var(--ink-faint); }
 .polish-block { margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid var(--rule); }
 .polish-block .packs-head { margin-top: 0; }
 .polish-block .register-line { grid-template-columns: 96px 1fr; }
-.polish-block p { margin: 0.5rem 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-soft); line-height: 1.6; }
+#polish-note { margin: 0.5rem 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-soft); line-height: 1.6; }
 #polish-status { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 0.4rem; min-height: 1em; }
-.footnote { margin-top: 1.4rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-faint); line-height: 1.6; }
 
 /* ---------- right page: the menu ---------- */
 .menu-header { text-align: center; margin-bottom: 1.9rem; }
@@ -185,11 +184,11 @@ select option:disabled { color: var(--ink-faint); }
   border-left: 1px solid var(--rule); padding-left: 1rem; min-width: 4.5rem; text-align: right;
 }
 .dish-desc { grid-column: 1 / -1; font-size: 0.9rem; font-style: italic; color: var(--ink-soft); line-height: 1.4; padding-right: 5.5rem; }
-.menu-footer {
-  margin-top: 2.4rem; text-align: center; font-family: var(--mono);
-  text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: var(--ink-faint);
+.menu-footer, .footnote {
+  margin-top: 1.8rem; text-align: center; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: var(--ink-faint); line-height: 1.6;
 }
-.menu-footer::before { content: "\2766"; display: block; color: var(--rubric); font-size: 1rem; margin-bottom: 0.55rem; letter-spacing: 0; }
+.menu-footer::before, .footnote::before { content: "\2766"; display: block; color: var(--rubric); font-size: 1rem; margin-bottom: 0.55rem; letter-spacing: 0; }
 
 .ribbon-tabs, .mobile-actions { display: none; }
 
@@ -381,7 +380,8 @@ select option:disabled { color: var(--ink-faint); }
       </div>
 
       <p class="footnote">
-        This is a hobby project by Alex Monge. If you enjoyed it, feel free to let me know,
+        This is a hobby project by Alex Monge. If you enjoyed it, feel free to
+        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>,
         or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>
     </aside>
