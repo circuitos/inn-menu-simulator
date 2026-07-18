@@ -4,6 +4,11 @@ A system-agnostic fantasy RPG inn menu generator. Feed it a biome, a season, som
 
 Data-first: the generator is a thin layer over JSON data files. Anyone can fork it, edit ingredients and dishes, and have their own regional cuisine in an afternoon.
 
+<p align="center">
+  <img src="docs/screenshot-light.png" width="49%" alt="Inn Menu Simulator, light theme" />
+  <img src="docs/screenshot-dark.png" width="49%" alt="Inn Menu Simulator, dark theme" />
+</p>
+
 ## Quick start
 
 Open `index.html` in a browser. That is the whole thing.
@@ -65,7 +70,8 @@ inn-menu-simulator/
 │   └── smoke-deep.md           # latest editorial audit (regenerated)
 ├── docs/
 │   ├── DESIGN.md               # architecture, tag taxonomy, decision log
-│   └── SETUP.md                # GitHub + Pages walkthrough
+│   ├── SETUP.md                # GitHub + Pages walkthrough
+│   └── screenshot-*.png        # README miniatures (light/dark)
 ├── package.json
 ├── LICENSE
 └── README.md
