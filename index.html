@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Inn Menu Simulator</title>
+<link rel="canonical" href="https://circuitos.github.io/inn-menu-simulator/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -67,7 +68,7 @@ body {
   min-height: 100vh; min-height: 100dvh;
   transition: background 0.25s ease, color 0.25s ease;
 }
-a { color: var(--rubric); } a:hover { color: var(--ink); }
+a { color: var(--rubric); text-decoration: none; } a:hover { color: var(--ink); }
 :focus-visible { outline: 2px solid var(--rubric); outline-offset: 2px; }
 
 .theme-toggle {
@@ -152,10 +153,10 @@ select option:disabled { color: var(--ink-faint); }
 .btn.primary { background: var(--rubric); border-color: var(--rubric); color: var(--rubric-ink); }
 .btn.primary:hover { filter: brightness(1.1); color: var(--rubric-ink); }
 .polish-block { margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid var(--rule); }
+.polish-block .packs-head { margin-top: 0; }
 .polish-block .register-line { grid-template-columns: 96px 1fr; }
-.polish-block p { margin: 0.5rem 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-soft); line-height: 1.6; }
+#polish-note { margin: 0.5rem 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-soft); line-height: 1.6; }
 #polish-status { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 0.4rem; min-height: 1em; }
-.footnote { margin-top: 1.4rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.02em; color: var(--ink-faint); line-height: 1.6; }
 
 /* ---------- right page: the menu ---------- */
 .menu-header { text-align: center; margin-bottom: 1.9rem; }
@@ -183,11 +184,12 @@ select option:disabled { color: var(--ink-faint); }
   border-left: 1px solid var(--rule); padding-left: 1rem; min-width: 4.5rem; text-align: right;
 }
 .dish-desc { grid-column: 1 / -1; font-size: 0.9rem; font-style: italic; color: var(--ink-soft); line-height: 1.4; padding-right: 5.5rem; }
-.menu-footer {
-  margin-top: 2.4rem; text-align: center; font-family: var(--mono);
-  text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: var(--ink-faint);
+.menu-footer, .footnote {
+  margin-top: 1.8rem; text-align: center; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: var(--ink-faint); line-height: 1.6;
 }
-.menu-footer::before { content: "\2766"; display: block; color: var(--rubric); font-size: 1rem; margin-bottom: 0.55rem; letter-spacing: 0; }
+.menu-footer::before, .footnote::before { content: "\2766"; display: block; color: var(--rubric); font-size: 1rem; margin-bottom: 0.55rem; letter-spacing: 0; }
+.footnote { text-transform: none; letter-spacing: 0.02em; }
 
 .ribbon-tabs, .mobile-actions { display: none; }
 
@@ -350,8 +352,14 @@ select option:disabled { color: var(--ink-faint); }
       </div>
 
       <div class="polish-block">
+        <p class="packs-head">LLM polish</p>
+        <label class="flavor-pack-row">
+          <input type="checkbox" id="polish-enabled" />
+          <span id="polish-toggle-label">Off</span>
+        </label>
+        <div id="polish-controls" hidden>
         <div class="register-line">
-          <label for="llm-provider">LLM polish</label>
+          <label for="llm-provider">Provider</label>
           <select id="llm-provider"></select>
         </div>
         <div class="register-line">
@@ -369,10 +377,13 @@ select option:disabled { color: var(--ink-faint); }
         <p id="polish-note">Key stays in your browser. Sent only to api.anthropic.com.</p>
         <div class="button-row"><button class="btn" id="polish">Polish menu</button></div>
         <div id="polish-status"></div>
+        </div>
       </div>
 
       <p class="footnote">
-        Edit data files on GitHub to change the content pool. See docs/DESIGN.md.
+        This is a hobby project by Alex Monge. If you enjoyed it, feel free to
+        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>,
+        or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>
     </aside>
 
@@ -431,5 +442,12 @@ select option:disabled { color: var(--ink-faint); }
   })();
   /* ===== END bound-codex layout JS ===== */
 </script>
+<script>
+  // Analytics: count only the live site, not branch previews. count.js
+  // already skips localhost and file:// on its own.
+  if (location.pathname.includes("/previews/")) window.goatcounter = { no_onload: true };
+</script>
+<script data-goatcounter="https://innmenu.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

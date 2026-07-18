@@ -430,6 +430,11 @@ async function init() {
 }
 
 function initPolish() {
+  const toggle = qs("polish-enabled");
+  toggle.addEventListener("change", () => {
+    qs("polish-controls").hidden = !toggle.checked;
+    qs("polish-toggle-label").textContent = toggle.checked ? "On" : "Off";
+  });
   const sel = qs("llm-provider");
   const providers = window.InnLLM.PROVIDERS;
   for (const [id, p] of Object.entries(providers)) {
