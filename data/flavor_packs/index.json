@@ -9,6 +9,13 @@
       "hidden": true
     },
     {
+      "id": "fabled",
+      "label": "Fabled fare",
+      "file": "fabled.json",
+      "description": "Monster meats and fey provisions for tables that like their inns a little enchanted: hippogriff steak, slime soup, kraken fritters, wyvern tail stew, plus procedural ingredients like griffin eggs and phoenix pepper, overlaid on the mundane pool. Every creature is folklore, not someone's rulebook. Added on a suggestion from the announcement thread.",
+      "default_active": false
+    },
+    {
       "id": "mog",
       "label": "Mog",
       "file": "mog.json",
