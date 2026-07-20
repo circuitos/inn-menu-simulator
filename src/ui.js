@@ -510,10 +510,20 @@ function initHistorical() {
   });
   const info = qs("historical-info");
   if (info) info.addEventListener("click", openModal);
-  const close = qs("historical-modal-close");
-  if (close) close.addEventListener("click", () => modal.close());
-  const packClose = qs("pack-info-close");
-  if (packClose) packClose.addEventListener("click", () => qs("pack-info-modal").close());
+
+  // Shared dismissal for both info dialogs: the corner X, a click on the
+  // backdrop (which registers on the dialog element itself), and Escape
+  // (native <dialog> behavior, nothing to wire).
+  for (const dlg of document.querySelectorAll("dialog.info-modal")) {
+    const x = dlg.querySelector(".modal-x");
+    if (x) x.addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", (e) => {
+      if (e.target !== dlg) return;
+      const r = dlg.getBoundingClientRect();
+      const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      if (outside) dlg.close();
+    });
+  }
 }
 
 function initPolish() {

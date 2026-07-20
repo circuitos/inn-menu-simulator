@@ -144,11 +144,20 @@ select option:disabled { color: var(--ink-faint); }
 .info-btn:hover { color: var(--ink-soft); }
 .info-btn svg { width: 15px; height: 15px; display: block; }
 .flavor-pack-row.disabled { opacity: 0.45; }
-.info-modal { max-width: 34rem; border: 1px solid var(--rule); border-radius: 6px; padding: 1.25rem 1.5rem; background: var(--page); color: var(--ink); font-family: var(--serif); }
+.info-modal { width: min(46rem, calc(100vw - 3rem)); border: 1px solid var(--rule); border-radius: 6px; padding: 1.5rem 1.75rem; background: var(--page); color: var(--ink); font-family: var(--serif); position: relative; }
 .info-modal::backdrop { background: rgba(30, 20, 5, 0.5); }
 .info-modal h3 { margin-top: 0; color: var(--rubric); }
 .info-modal ul { padding-left: 1.2rem; }
 .info-modal li { margin: 0.35rem 0; }
+.modal-x {
+  position: absolute; top: 0.6rem; right: 0.7rem; width: 30px; height: 30px;
+  background: transparent; border: none; padding: 0; cursor: pointer;
+  color: var(--ink-faint); font-size: 22px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.modal-x:hover { color: var(--ink); }
+.modal-sources-head { margin-bottom: 0.3rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rubric); }
+.modal-sources { font-size: 0.92em; color: var(--ink-soft); margin-top: 0; }
 .flavor-pack-row {
   display: flex; align-items: center; gap: 0.6rem; cursor: pointer; min-height: 34px;
   font-size: 1rem; color: var(--ink);
@@ -367,31 +376,29 @@ select option:disabled { color: var(--ink-faint); }
       </fieldset>
 
       <dialog id="pack-info-modal" class="info-modal">
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
         <h3 id="pack-info-title"></h3>
         <p id="pack-info-body"></p>
-        <div class="button-row">
-          <button class="btn primary" id="pack-info-close">Close</button>
-        </div>
       </dialog>
 
       <dialog id="historical-modal" class="info-modal">
-        <h3>Historical: what this box does</h3>
-        <p>The generator is a fantasy tool, but this mode biases it toward what a kitchen in roughly 14th to 16th century Europe could have plausibly served. Concretely, checking it:</p>
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
+        <h3>A note about the Historical mode</h3>
+        <p>Biases the generator toward what a kitchen in roughly 14th to 16th century Europe could plausibly serve. Checking it:</p>
         <ul>
-          <li>Removes New World foods (potato, tomato, maize, squash, turkey and friends) and distilled spirits, and renames modern beer styles to their period ancestors (ale was unhopped; hopped beer was an import).</li>
-          <li>Drops pickled vegetables in the European-style regions, where they are a post-medieval habit. The arid south keeps its vinegar pickles, which are genuinely period there.</li>
-          <li>Acknowledges fish days: for much of the real calendar (about 195 days a year) meat was off the table, and in Lent eggs and dairy went too. The mode rolls those days probabilistically rather than keeping a liturgical calendar; the arid region follows different rhythms and skips them.</li>
-          <li>Caps how many dishes an inn offers, in the spirit of the 1363 English sumptuary statutes.</li>
-          <li>Steadies bread and ale prices, which were fixed by statute (the assize), so crisis shows up as scarcity rather than staple price swings.</li>
-          <li>Adds period items the sources insisted on: verjuice, stockfish, perry, metheglin, wafers, pottages, mortrews, galantyne.</li>
-          <li>Renames a few things honestly: carrots turn white, cranberries become lingonberries. Even the word "menu" is from 1718; the header already knew.</li>
+          <li>Removes New World foods (potato, tomato, maize, squash, turkey) and distilled spirits; modern beer styles take their period names.</li>
+          <li>Drops pickled vegetables in the European regions; the arid south keeps its vinegar pickles, which are period there.</li>
+          <li>Rolls fish days (about 195 a year in the real calendar): no meat, and on the strict days no eggs or dairy. The arid region follows other rhythms and skips them.</li>
+          <li>Trims dish counts (the 1363 sumptuary statutes) and steadies bread and ale prices (the assize).</li>
+          <li>Adds period fare: verjuice, stockfish, perry, metheglin, wafers, pottages, mortrews.</li>
         </ul>
-        <p>Fantasy setting packs (like Mog) are disabled while this is on; the two layers claim different worlds.</p>
-        <p>It stays a game aid, not a simulation: the biomes are not Earth and the coinage is not sterling. One anachronism stays in on purpose: you are reading a written menu with choices, which real roadside inns did not offer (city taverns, to be fair, served more variety than the legend says). Commercial inns are themselves a period and place assumption; much of the world hosted travelers through obligation, endowment, and honor rather than coin. And a candid note on coverage: the evidence behind this mode is strongest for northwest Europe; the arid region's historical layer is being researched and will deepen.</p>
-        <p>This mode exists because food historians on Reddit generously tore the first version's assumptions apart. Errors that remain are ours. Reading that shaped it: Ian Mortimer's <em>The Time Traveler's Guide to Medieval England</em>, Peter Clark's <em>The English Alehouse</em>, and the primary sources those historians pointed to.</p>
-        <div class="button-row">
-          <button class="btn primary" id="historical-modal-close">Close</button>
-        </div>
+        <p>Fantasy packs are disabled while this is on. It stays a game aid: the biomes are not Earth, and the written menu itself is a cheerful anachronism (the word is from 1718). Coverage is strongest for northwest Europe; the arid layer is still being researched.</p>
+        <p class="modal-sources-head">Sources consulted:</p>
+        <ul class="modal-sources">
+          <li><em>The Time Traveler's Guide to Medieval England</em>, Ian Mortimer</li>
+          <li><em>The English Alehouse</em>, Peter Clark</li>
+          <li>u/chezjim and u/iuabv of r/AskFoodHistorians, who generously pointed at sources and errors</li>
+        </ul>
       </dialog>
 
       <div class="action-dock">
