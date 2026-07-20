@@ -237,6 +237,74 @@ function setSelect(id, value) {
   if (option) el.value = value;
 }
 
+// ---------- shareable URLs ----------
+// Every dial plus the seed round-trips through the query string, so a menu
+// can be shared, bookmarked, or preset by an external tool (a VTT macro can
+// link straight to ?biome=frostlands&season=winter&seed=...). Values equal
+// to the Reset defaults are omitted to keep links short.
+const PARAM_IDS = ["biome","season","weather","inn_tier","economy","condition","event"];
+const PARAM_ALIASES = { inn_tier: "tier" };
+function paramName(id) { return PARAM_ALIASES[id] || id; }
+
+function readUrlState() {
+  const p = new URLSearchParams(location.search);
+  const state = {
+    seed: p.get("seed"),
+    historical: p.get("historical") === "1",
+    packs: p.get("packs") !== null ? p.get("packs").split(",").filter(Boolean) : null
+  };
+  for (const id of PARAM_IDS) state[id] = p.get(paramName(id));
+  return state;
+}
+
+// setSelect ignores values that don't match an option, so junk params fall
+// back to the defaults instead of erroring.
+function applyUrlState(state) {
+  for (const id of PARAM_IDS) if (state[id]) setSelect(id, state[id]);
+  applyWeatherCompatibility();
+  if (state.packs) {
+    for (const t of document.querySelectorAll(".flavor-pack-toggle")) {
+      t.checked = state.packs.includes(t.value);
+    }
+  }
+}
+
+function syncUrl(world, seed, packIds) {
+  const p = new URLSearchParams();
+  for (const id of PARAM_IDS) {
+    if (world[id] !== DEFAULTS[id]) p.set(paramName(id), world[id]);
+  }
+  if (world.historical) p.set("historical", "1");
+  if (packIds.length) p.set("packs", packIds.join(","));
+  p.set("seed", seed);
+  try { history.replaceState(null, "", `${location.pathname}?${p.toString()}`); } catch (e) {}
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy") ? resolve() : reject(new Error("copy failed"));
+    } finally { ta.remove(); }
+  });
+}
+
+function flashButton(btn, label) {
+  if (btn.dataset.flashing) return;
+  const original = btn.textContent;
+  btn.dataset.flashing = "1";
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = original; delete btn.dataset.flashing; }, 1200);
+}
+
 // Per-field lock state. Locked fields are skipped by Randomize / New seed.
 const LOCK_IDS = ["biome","season","weather","inn_tier","economy","condition","event","seed"];
 const locks = Object.fromEntries(LOCK_IDS.map(id => [id, false]));
@@ -452,13 +520,14 @@ let DATA = null;
 
 async function init() {
   DATA = await loadData();
+  const urlState = readUrlState();
   populateSelects(DATA);
   populateFlavorPacks(DATA);
-  applyWeatherCompatibility();
+  applyUrlState(urlState);
   installLockButtons();
   qs("biome").addEventListener("change", applyWeatherCompatibility);
   qs("season").addEventListener("change", applyWeatherCompatibility);
-  qs("seed").value = randomSeed();
+  qs("seed").value = urlState.seed || randomSeed();
   qs("generate").addEventListener("click", generate);
   qs("reroll").addEventListener("click", () => {
     if (!locks.seed) qs("seed").value = randomSeed();
@@ -475,7 +544,15 @@ async function init() {
     qs("seed").value = randomSeed();
     generate();
   });
-  initHistorical();
+  qs("share").addEventListener("click", async () => {
+    try {
+      await copyToClipboard(location.href);
+      flashButton(qs("share"), "Link copied");
+    } catch (e) {
+      flashButton(qs("share"), "Copy failed");
+    }
+  });
+  initHistorical(urlState.historical);
   initPolish();
   qs("polish").addEventListener("click", polish);
   generate();
@@ -485,7 +562,7 @@ async function init() {
 // layers claim different worlds). Checking it stores each pack toggle's state,
 // unchecks and disables them; unchecking restores what the user had. The modal
 // opens on the first activation and from the "what does this do?" link.
-function initHistorical() {
+function initHistorical(activeFromUrl) {
   const cb = qs("historical-mode");
   const modal = qs("historical-modal");
   if (!cb) return;
@@ -528,6 +605,13 @@ function initHistorical() {
   });
   const info = qs("historical-info");
   if (info) info.addEventListener("click", openModal);
+
+  // A shared ?historical=1 link arrives pre-checked, without the first-time
+  // modal: the recipient asked for a menu, not an explainer.
+  if (activeFromUrl && !cb.checked) {
+    cb.checked = true;
+    setPacksDisabled(true);
+  }
 
   // Shared dismissal for both info dialogs: the corner X, a click on the
   // backdrop (which registers on the dialog element itself), and Escape
@@ -592,6 +676,7 @@ function generate() {
   // Historical mode rides the pack machinery for its content layer: the
   // hidden "historical" pack merges in whenever the checkbox is on.
   const packIds = activeFlavorPackIds();
+  syncUrl(world, seed, packIds);
   if (world.historical) packIds.push("historical");
   const data = applyFlavorPacks(DATA, packIds);
   const menu = window.InnMenu.generateMenu(world, data, seed);
