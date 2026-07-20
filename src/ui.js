@@ -478,6 +478,35 @@ function renderMenu(menu) {
   root.appendChild(footer);
 }
 
+// Plain-text rendering of the last menu, for pasting into session notes or a
+// VTT journal. Mirrors the on-page order: name, world line, notes, sections.
+function menuAsText(menu) {
+  const lines = [];
+  const named = innNameFor(menu);
+  lines.push(named.name);
+  lines.push(describeWorld(menu));
+  lines.push("");
+  const notes = [];
+  if (menu.condition_note) notes.push(`${conditionLabel(menu)}: ${menu.condition_note}`);
+  if (menu.event_note) notes.push(`${eventLabel(menu)}: ${menu.event_note}`);
+  if (menu.calendar_note) notes.push(`Calendar: ${menu.calendar_note}`);
+  if (notes.length) { lines.push(...notes, ""); }
+  const order = ["appetizer","main","dessert","drink"];
+  for (const sectionId of order) {
+    const section = menu.sections[sectionId];
+    if (!section || !section.dishes.length) continue;
+    lines.push(section.label.toUpperCase());
+    for (const d of section.dishes) {
+      lines.push(`- ${d.name} (${d.price_text})`);
+      if (d.flavor) lines.push(`    ${d.flavor}`);
+    }
+    lines.push("");
+  }
+  lines.push(`Seed: ${menu.seed}`);
+  lines.push(location.href);
+  return lines.join("\n");
+}
+
 // Sign-based inn name from the world (biome + tier) and seed, via innname.js.
 // Falls back to a terse hashed name if the module or its data is unavailable,
 // so the header always has a name even before inn_names.json loads.
@@ -552,6 +581,16 @@ async function init() {
       flashButton(qs("share"), "Copy failed");
     }
   });
+  qs("copy-text").addEventListener("click", async () => {
+    if (!window.__lastMenu) return;
+    try {
+      await copyToClipboard(menuAsText(window.__lastMenu));
+      flashButton(qs("copy-text"), "Copied");
+    } catch (e) {
+      flashButton(qs("copy-text"), "Copy failed");
+    }
+  });
+  qs("print").addEventListener("click", () => window.print());
   initHistorical(urlState.historical);
   initPolish();
   qs("polish").addEventListener("click", polish);
