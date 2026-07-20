@@ -114,6 +114,8 @@ function populateFlavorPacks(data) {
     // Hidden packs (the Historical content layer) are activated by their own
     // control, not the pack list.
     if (entry.hidden) continue;
+    const row = document.createElement("div");
+    row.className = "option-row";
     const wrap = document.createElement("label");
     wrap.className = "flavor-pack-row";
     const cb = document.createElement("input");
@@ -124,12 +126,37 @@ function populateFlavorPacks(data) {
     if (entry.default_active) cb.checked = true;
     cb.addEventListener("change", () => generate());
     const text = document.createElement("span");
-    text.textContent = entry.label;
-    if (entry.description) text.title = entry.description;
+    text.textContent = `Flavor pack: ${entry.label}`;
     wrap.appendChild(cb);
     wrap.appendChild(text);
-    root.appendChild(wrap);
+    row.appendChild(wrap);
+    if (entry.description) {
+      const info = document.createElement("button");
+      info.type = "button";
+      info.className = "info-btn";
+      info.setAttribute("aria-label", `About the ${entry.label} pack`);
+      info.innerHTML = INFO_SVG;
+      info.addEventListener("click", () => openPackInfo(entry));
+      row.appendChild(info);
+    }
+    root.appendChild(row);
   }
+}
+
+// Same minimal stroke style as the lock icons; a circled question mark.
+const INFO_SVG = `
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.2 9.2a2.8 2.8 0 0 1 5.44.93c0 1.87-2.8 2.34-2.8 3.74" />
+    <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+  </svg>`;
+
+function openPackInfo(entry) {
+  const modal = qs("pack-info-modal");
+  if (!modal || typeof modal.showModal !== "function") return;
+  qs("pack-info-title").textContent = `Flavor pack: ${entry.label}`;
+  qs("pack-info-body").textContent = entry.description || "";
+  modal.showModal();
 }
 
 // Seasons and the weather order are intentionally fixed here: modifiers.json
@@ -485,6 +512,8 @@ function initHistorical() {
   if (info) info.addEventListener("click", openModal);
   const close = qs("historical-modal-close");
   if (close) close.addEventListener("click", () => modal.close());
+  const packClose = qs("pack-info-close");
+  if (packClose) packClose.addEventListener("click", () => qs("pack-info-modal").close());
 }
 
 function initPolish() {

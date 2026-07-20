@@ -136,18 +136,22 @@ select option:disabled { color: var(--ink-faint); }
   text-transform: uppercase; color: var(--rubric); margin: 1.1rem 0 0.2rem;
 }
 .flavor-packs { display: flex; flex-direction: column; }
-.historical-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px solid var(--rule); }
-.linkish { background: none; border: none; padding: 0; font: inherit; font-size: 0.78em; color: var(--ink-soft); text-decoration: underline; cursor: pointer; }
-.linkish:hover { color: var(--ink); }
+.option-row { display: flex; align-items: center; }
+.info-btn {
+  width: 28px; height: 28px; background: transparent; border: none; padding: 0; cursor: pointer;
+  color: var(--ink-faint); display: inline-flex; align-items: center; justify-content: center;
+}
+.info-btn:hover { color: var(--ink-soft); }
+.info-btn svg { width: 15px; height: 15px; display: block; }
 .flavor-pack-row.disabled { opacity: 0.45; }
-#historical-modal { max-width: 34rem; border: 1px solid var(--rule); border-radius: 6px; padding: 1.25rem 1.5rem; background: var(--page); color: var(--ink); font-family: var(--serif); }
-#historical-modal::backdrop { background: rgba(30, 20, 5, 0.5); }
-#historical-modal h3 { margin-top: 0; color: var(--rubric); }
-#historical-modal ul { padding-left: 1.2rem; }
-#historical-modal li { margin: 0.35rem 0; }
+.info-modal { max-width: 34rem; border: 1px solid var(--rule); border-radius: 6px; padding: 1.25rem 1.5rem; background: var(--page); color: var(--ink); font-family: var(--serif); }
+.info-modal::backdrop { background: rgba(30, 20, 5, 0.5); }
+.info-modal h3 { margin-top: 0; color: var(--rubric); }
+.info-modal ul { padding-left: 1.2rem; }
+.info-modal li { margin: 0.35rem 0; }
 .flavor-pack-row {
   display: flex; align-items: center; gap: 0.6rem; cursor: pointer; min-height: 34px;
-  font-size: 1rem; color: var(--ink); border-bottom: 1px solid var(--rule);
+  font-size: 1rem; color: var(--ink);
 }
 .flavor-pack-row input { accent-color: var(--rubric); width: 15px; height: 15px; cursor: pointer; }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
@@ -345,18 +349,32 @@ select option:disabled { color: var(--ink-faint); }
       </fieldset>
 
       <fieldset id="flavor-packs-fieldset">
-        <p class="packs-head">Flavor packs</p>
-        <div class="flavor-packs" id="flavor-packs"></div>
-        <div class="historical-row">
+        <p class="packs-head">Options</p>
+        <div class="option-row">
           <label class="flavor-pack-row" for="historical-mode">
             <input type="checkbox" id="historical-mode" />
-            <span>Historical</span>
+            <span>Historical Mode</span>
           </label>
-          <button type="button" class="linkish" id="historical-info">what does this do?</button>
+          <button type="button" class="info-btn" id="historical-info" aria-label="About Historical Mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.2 9.2a2.8 2.8 0 0 1 5.44.93c0 1.87-2.8 2.34-2.8 3.74" />
+              <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
         </div>
+        <div class="flavor-packs" id="flavor-packs"></div>
       </fieldset>
 
-      <dialog id="historical-modal">
+      <dialog id="pack-info-modal" class="info-modal">
+        <h3 id="pack-info-title"></h3>
+        <p id="pack-info-body"></p>
+        <div class="button-row">
+          <button class="btn primary" id="pack-info-close">Close</button>
+        </div>
+      </dialog>
+
+      <dialog id="historical-modal" class="info-modal">
         <h3>Historical: what this box does</h3>
         <p>The generator is a fantasy tool, but this mode biases it toward what a kitchen in roughly 14th to 16th century Europe could have plausibly served. Concretely, checking it:</p>
         <ul>
@@ -387,7 +405,9 @@ select option:disabled { color: var(--ink-faint); }
         </div>
       </div>
 
-      <div class="polish-block">
+      <!-- LLM polish is hidden for now (option shelved, code kept). Remove
+           the hidden attribute to bring it back. -->
+      <div class="polish-block" hidden>
         <p class="packs-head">LLM polish</p>
         <label class="flavor-pack-row">
           <input type="checkbox" id="polish-enabled" />
