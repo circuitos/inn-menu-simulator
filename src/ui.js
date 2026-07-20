@@ -109,6 +109,9 @@ function populateFlavorPacks(data) {
   if (!entries.length) { fieldset.style.display = "none"; return; }
   root.innerHTML = "";
   for (const entry of entries) {
+    // Hidden packs (the Historical content layer) are activated by their own
+    // control, not the pack list.
+    if (entry.hidden) continue;
     const wrap = document.createElement("label");
     wrap.className = "flavor-pack-row";
     const cb = document.createElement("input");

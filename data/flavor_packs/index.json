@@ -1,6 +1,14 @@
 {
   "packs": [
     {
+      "id": "historical",
+      "label": "Historical",
+      "file": "historical.json",
+      "description": "Period content layer for Historical mode. Hidden from the pack list; the Historical checkbox activates it.",
+      "default_active": false,
+      "hidden": true
+    },
+    {
       "id": "mog",
       "label": "Mog",
       "file": "mog.json",
