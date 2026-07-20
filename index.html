@@ -191,6 +191,11 @@ select option:disabled { color: var(--ink-faint); }
 .menu-header::after { content: ""; display: block; margin-top: 1.1rem; border-top: 1px solid var(--rule); }
 .event-note { text-align: center; font-style: italic; color: var(--rubric); margin: 0 auto 0.55rem; font-size: 0.98rem; text-wrap: balance; }
 .event-note::before { content: "\00B6\2002"; font-style: normal; color: var(--rubric-soft); }
+.note-kicker {
+  font-family: var(--mono); font-style: normal; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
+  margin-right: 0.5rem; vertical-align: 0.08em;
+}
 .section-heading {
   font-family: var(--fell); font-weight: 400; font-size: 1.4rem;
   text-align: center; color: var(--ink); margin: 2.1rem 0 0.7rem;
@@ -447,8 +452,8 @@ select option:disabled { color: var(--ink-faint); }
       <p class="footnote">
         This is a hobby project by Alex Monge,
         <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>.
-        If you enjoyed it, feel free to
-        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>,
+        If you enjoyed it, you can
+        <a href="https://github.com/circuitos/inn-menu-simulator/issues" target="_blank" rel="noopener">let me know on GitHub</a>,
         or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>
     </aside>

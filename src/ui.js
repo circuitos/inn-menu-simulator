@@ -339,17 +339,23 @@ function renderMenu(menu) {
   header.appendChild(sub);
   root.appendChild(header);
 
+  // Each note carries a small label naming its source (the condition, the
+  // event, the calendar), so the lines read as world state, not stray flavor.
   const notes = [];
-  if (menu.condition_note) notes.push(menu.condition_note);
-  if (menu.event_note) notes.push(menu.event_note);
-  if (menu.calendar_note) notes.push(menu.calendar_note);
-  if (notes.length) {
-    for (const n of notes) {
-      const p = document.createElement("p");
-      p.className = "event-note";
-      p.textContent = n;
-      root.appendChild(p);
+  if (menu.condition_note) notes.push({ kicker: conditionLabel(menu), text: menu.condition_note });
+  if (menu.event_note) notes.push({ kicker: eventLabel(menu), text: menu.event_note });
+  if (menu.calendar_note) notes.push({ kicker: "Calendar", text: menu.calendar_note });
+  for (const n of notes) {
+    const p = document.createElement("p");
+    p.className = "event-note";
+    if (n.kicker) {
+      const k = document.createElement("span");
+      k.className = "note-kicker";
+      k.textContent = n.kicker;
+      p.appendChild(k);
     }
+    p.appendChild(document.createTextNode(n.text));
+    root.appendChild(p);
   }
 
   const order = ["appetizer","main","dessert","drink"];
@@ -422,10 +428,22 @@ function innNameFromSeed(seed) {
   return `The ${adj[h % adj.length]} ${noun[(h >>> 8) % noun.length]}`;
 }
 
+// Same order as the parameter form (biome, season, weather, tier, economy,
+// condition) so the line under the inn name reads as an echo of the dials.
 function describeWorld(menu) {
   const w = menu.world;
   const biomeLabel = menu.biome_label || w.biome;
-  return `${cap(w.season)} · ${w.weather} · ${biomeLabel} · ${w.inn_tier} inn · ${w.economy} year · ${w.condition}`;
+  return `${biomeLabel} · ${w.season} · ${w.weather} · ${w.inn_tier} inn · ${w.economy} year · ${w.condition}`;
+}
+
+function conditionLabel(menu) {
+  const c = DATA && DATA.modifiers.conditions[menu.world.condition];
+  return (c && c.label) || cap(menu.world.condition);
+}
+
+function eventLabel(menu) {
+  const e = DATA && DATA.events.events.find(ev => ev.id === menu.world.event);
+  return (e && e.label) || "Event";
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
