@@ -402,6 +402,20 @@ select option:disabled { color: var(--ink-faint); }
         <p id="pack-info-body"></p>
       </dialog>
 
+      <dialog id="howto-modal" class="info-modal">
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
+        <h3>How it works</h3>
+        <p>Set the world on the left and press Generate. The menu is built from hand-written dishes and tagged ingredients, filtered and priced by what the dials say about the world. No AI is involved: the rules are deterministic and the data files are open.</p>
+        <ul>
+          <li><strong>Seed.</strong> The same seed with the same dials always rebuilds the same menu. New seed rerolls it, and the lock icons hold any dial (or the seed) in place while you explore.</li>
+          <li><strong>Share link.</strong> Copies a URL carrying every dial and the seed, so a menu can be bookmarked, shared, or preset by an external tool.</li>
+          <li><strong>Events and conditions.</strong> Events (a market day, a caravan, a feast) are one-night color that nudges the kitchen. Conditions (war, plague, siege) cut trade routes and thin the larder. The labeled notes above the menu say what is acting on the kitchen tonight.</li>
+          <li><strong>Prices.</strong> Base cost times inn tier, economy, condition, event and import distance. Imported dishes are labeled and marked up; a siege seals the gates entirely.</li>
+          <li><strong>Historical Mode.</strong> An optional bias toward what a kitchen in roughly 14th to 16th century Europe could serve. The info button next to it has the details.</li>
+          <li><strong>Export.</strong> Copy text puts a paste-ready version on the clipboard for session notes; Print / PDF prints just the menu page.</li>
+        </ul>
+      </dialog>
+
       <dialog id="historical-modal" class="info-modal">
         <button type="button" class="modal-x" aria-label="Close">&#215;</button>
         <h3>A note about the Historical mode</h3>
@@ -472,7 +486,8 @@ select option:disabled { color: var(--ink-faint); }
 
       <p class="footnote">
         This is a hobby project by Alex Monge,
-        <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>.
+        <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>
+        (<a href="#" id="howto-link">how it works</a>).
         If you enjoyed it, you can
         <a href="https://github.com/circuitos/inn-menu-simulator/issues" target="_blank" rel="noopener">let me know on GitHub</a>,
         or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.

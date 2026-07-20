@@ -591,6 +591,12 @@ async function init() {
     }
   });
   qs("print").addEventListener("click", () => window.print());
+  const howto = qs("howto-link");
+  if (howto) howto.addEventListener("click", (e) => {
+    e.preventDefault();
+    const dlg = qs("howto-modal");
+    if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+  });
   initHistorical(urlState.historical);
   initPolish();
   qs("polish").addEventListener("click", polish);
