@@ -705,9 +705,17 @@ function makeMenuState() {
   };
 }
 
+// Annotation tags that mark historical provenance rather than culinary
+// character. They are filtered by Historical mode and must stay OUT of the
+// novelty ledger: two dishes sharing "new-world" are not similar food, and
+// letting the tag accumulate would make annotations shift fantasy-mode
+// output.
+const META_TAGS = new Set(["new-world", "post-medieval", "post-medieval-west"]);
+
 function commitAuthoredToMenu(menuState, dish) {
   if (!menuState) return;
   for (const t of (dish.tags || [])) {
+    if (META_TAGS.has(t)) continue;
     menuState.authoredFamiliarity.set(t, (menuState.authoredFamiliarity.get(t) || 0) + 1);
   }
   if ((dish.tags || []).includes("peculiar")) menuState.hasPeculiar = true;
