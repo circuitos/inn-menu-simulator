@@ -54,6 +54,49 @@ const TUNING = {
   peasant_high_tier_dampener: 0.7
 };
 
+// ---------- Historical mode ----------
+// Opt-in (world.historical, set by the UI checkbox). Biases generation toward
+// a broadly 14th-16th century Western European frame: anachronism tags are
+// filtered, fish days roll probabilistically, section caps tighten in the
+// spirit of the 1363 sumptuary statutes, and staple prices hold steady per
+// the assize. The default (fantasy) path never consults this block.
+const REALISM = {
+  // Meat was off the table roughly 195 days a year (Wed/Fri/Sat + Advent +
+  // Lent). Rolled per generation from a dedicated seed stream; not a
+  // liturgical calendar and not pretending to be one.
+  fish_day_chance: 195 / 365,
+  // Share of fish days that are Lent-strict: eggs and dairy drop too
+  // (procedural pool only; authored dishes don't declare dairy/eggs yet).
+  lent_share: 0.2,
+  // The fish-day mechanic is Christian-calendar logic; the arid biome
+  // follows different rhythms and skips the roll entirely.
+  fish_day_exempt_biomes: new Set(["arid"]),
+  // Anachronism tags filtered by the mode. post-medieval-west is exempt in
+  // the arid biome: vinegar pickles (mukhallalat) are period there, and the
+  // historians' "lose the pickles" verdict was explicitly Western.
+  filtered_tags: ["new-world", "post-medieval"],
+  west_only_tag: "post-medieval-west",
+  pickle_exempt_biome: "arid",
+  // Sumptuary tightening (1363: five dishes for lords, three for gentlemen,
+  // two for grooms). Same shape as TIER_CAPS; replaces it when the mode is on.
+  tier_caps: {
+    roadside: { appetizer: 1, main_meatfish: 1, main_meatless: 1, drink: 2 },
+    common:   { appetizer: 2, main_meat: 1, main_fish: 1, main_meatless: 1, drink: 3 },
+    fine:     { appetizer: 3, main_meat: 1, main_fish: 1, main_meatless: 2, drink: 4 },
+    noble:    { appetizer: 3, main_meat: 2, main_fish: 2, main_meatless: 2, drink: 5 }
+  },
+  // Assize: bread and ale prices were fixed by statute. Staples (cheap
+  // drinks and dishes) keep this fraction of the economy/event price swing;
+  // 0 = fully pegged, 1 = normal swing. Condition multipliers still apply:
+  // a siege broke every assize in practice.
+  staple_swing: 0.35,
+  staple_cost_max: 2,
+  // Menu vocabulary: the word "menu" is 1718. The UI shows this instead.
+  header_label: "Bill of Fare",
+  fish_day_note: "A fast day. No flesh served; the kitchen keeps the calendar.",
+  lent_note: "Lenten fare. No flesh, eggs, or dairy; the kitchen keeps the calendar."
+};
+
 // ---------- condition-based menu caps ----------
 // Roadside and Common inns get tightened up by world conditions: a poorer world
 // produces a smaller menu, with little or no meat/fish unless a special event
@@ -142,7 +185,8 @@ function classifyMain(dish) {
 // post-floor; the caller can spend them directly.
 function computeCaps(world) {
   if (PLENTIFUL_EVENTS.has(world.event)) return null;
-  const base = TIER_CAPS[world.inn_tier];
+  const capTable = world.historical ? REALISM.tier_caps : TIER_CAPS;
+  const base = capTable[world.inn_tier];
   if (!base) return null;
 
   let scarcity = 0;
@@ -266,12 +310,17 @@ function resolveWorld(world, data) {
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
     event,
+    historical: !!world.historical,
     // Kinds ("meat" / "fish") the active event bans outright. Unlike
     // boost_roles, which only tilt weights, suppression is a hard gate: the
     // Religious Fast note promises "no meat tonight" and the filter has to
     // keep that promise. Authored dishes gate on their `contains` field;
-    // procedural proteins gate on ingredientMainKind.
+    // procedural proteins gate on ingredientMainKind. Historical fish days
+    // add "meat" to this set in generateMenuInternal.
     suppressKinds: new Set(event.suppress_contains || []),
+    // Lent-strict flag (Historical mode): drops eggs and dairy from the
+    // procedural pool on top of meat suppression.
+    lentStrict: false,
     biomeRelations: (data.modifiers || {}).biome_relations || {},
     biomes: (data.modifiers || {}).biomes || {}
   };
@@ -341,9 +390,20 @@ function resolveImportDistance(dish, w, data) {
 }
 
 // ---------- authored dish filter ----------
+// Historical anachronism gate, shared by both pools. Returns true when the
+// entry should be EXCLUDED under Historical mode.
+function historicalExcludes(tags, w) {
+  if (!w.historical) return false;
+  for (const t of REALISM.filtered_tags) if (tags.includes(t)) return true;
+  if (tags.includes(REALISM.west_only_tag) && w.biome !== REALISM.pickle_exempt_biome) return true;
+  return false;
+}
+
 function filterAuthored(dishes, w, data) {
   const relations = (data.modifiers || {}).biome_relations || {};
   return dishes.filter(d => {
+    // Historical mode: anachronisms out (pickled vegetables stay in arid).
+    if (historicalExcludes(d.tags || [], w)) return false;
     // Distance gate: combines biome-relation distance with the `exotic` modifier.
     // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
     // goods to a common inn that normally allows none). Condition still caps:
@@ -496,10 +556,28 @@ function weightAuthored(d, w, menuState) {
 // dish's `cost`, no transport markup applies on top.
 const IMPORT_PRICE_MULT = { 0: 1.0, 1: 1.3, 2: 1.7 };
 
+// Assize (Historical mode): staple drinks keep only `staple_swing` of the
+// economy and event price movement; bread and ale prices were fixed by
+// statute. Condition multipliers still apply in full: a siege broke every
+// assize in practice. Fantasy mode passes through unchanged.
+function economyEventMult(w, isStaple) {
+  let eco = w.economy.price_mult;
+  let evt = w.event.price_mult || 1;
+  if (w.historical && isStaple) {
+    eco = 1 + (eco - 1) * REALISM.staple_swing;
+    evt = 1 + (evt - 1) * REALISM.staple_swing;
+  }
+  return eco * evt;
+}
+
+function isStapleAuthored(d) {
+  return d.section === "drink" && d.cost <= REALISM.staple_cost_max;
+}
+
 function priceAuthoredDish(d, w) {
   const base = COST_BASE[d.cost] || 6;
   const importMult = IMPORT_PRICE_MULT[d._importDistance] ?? 1.0;
-  const price = base * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
+  const price = base * w.tier.price_mult * economyEventMult(w, isStapleAuthored(d)) * w.condition.price_mult * importMult;
   return Math.max(1, Math.round(price));
 }
 
@@ -532,6 +610,13 @@ function filterIngredientPool(ingredients, w, data) {
 
   return ingredients.filter(ing => {
     const tags = ing.tags || [];
+
+    // Historical mode: anachronisms out; Lent-strict days also drop eggs
+    // and fresh dairy from the pool.
+    if (historicalExcludes(tags, w)) return false;
+    if (w.lentStrict) {
+      if ((ing.roles || []).includes("dairy") || ing.id === "egg") return false;
+    }
 
     // Biome: native match passes outright. Otherwise, if at least one top-biome
     // tag is within the world's import distance, the ingredient passes as an
@@ -734,10 +819,16 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   const picked = {};
   const usedIds = new Set();
 
+  // Historical mode: pickled vegetables are post-medieval in the West; the
+  // pickled prep refuses vegetable-role slots outside the arid biome (where
+  // vinegar pickles are period). Fish brining is unaffected.
+  const pickleBlocked = w.historical && w.biome !== REALISM.pickle_exempt_biome && prep.id === "pickled";
+
   for (const slot of template.slots) {
     const candidates = pool.filter(ing => {
       if (usedIds.has(ing.id)) return false;
       if (!(ing.roles || []).includes(slot.role)) return false;
+      if (pickleBlocked && (ing.roles || []).includes("vegetable")) return false;
       const affs = ing.affinities || [];
       if (!prep.accepts.some(a => affs.includes(a))) return false;
       return true;
@@ -768,7 +859,9 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   const headline = headlineIngredient(template, picked);
   const { dist: importDistance, origin: importOrigin } = ingredientImport(headline, w, data);
   const importMult = IMPORT_PRICE_MULT[importDistance] ?? 1.0;
-  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
+  const staple = template.section === "drink"
+    && ingredientsUsed.every(ing => ing.cost <= REALISM.staple_cost_max);
+  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * economyEventMult(w, staple) * w.condition.price_mult * importMult;
 
   // Stamp meat/fish/meatless on mains so the cap loop can classify procedural dishes.
   let mainKind = null;
@@ -911,6 +1004,30 @@ function generateMenuInternal(world, data, seed, trace) {
   const sections = data.modifiers.sections;
   const caps = computeCaps(world);
 
+  // Historical fish days. Rolled on a dedicated seed stream so the calendar
+  // is stable for a given seed regardless of other dials. The arid biome
+  // skips the roll: this is Christian-calendar logic and that region keeps
+  // different rhythms. Selecting Religious Fast manually while Historical is
+  // on forces the strict (Lenten) variant.
+  let calendarNote = null;
+  if (w.historical && !REALISM.fish_day_exempt_biomes.has(w.biome)) {
+    if (world.event === "religious-fast") {
+      w.lentStrict = true;
+      calendarNote = "Lenten strictness: no eggs or dairy either.";
+    } else {
+      const fishRng = makeRng(String(seed) + "|fishday");
+      if (fishRng() < REALISM.fish_day_chance) {
+        w.suppressKinds = new Set([...w.suppressKinds, "meat"]);
+        if (fishRng() < REALISM.lent_share) {
+          w.lentStrict = true;
+          calendarNote = REALISM.lent_note;
+        } else {
+          calendarNote = REALISM.fish_day_note;
+        }
+      }
+    }
+  }
+
   // Severe-scarcity tier downgrade: with 2+ extreme scarcity hits, even a
   // noble kitchen can't put on airs. Strip the gilded tags from allowed_tags
   // and add the plain-fare tags so the menu falls back to whatever the
@@ -936,6 +1053,9 @@ function generateMenuInternal(world, data, seed, trace) {
     biome_label: (data.modifiers.biomes[w.biome] || {}).label,
     event_note: w.event.note,
     condition_note: w.condition.note,
+    calendar_note: calendarNote,
+    historical: w.historical,
+    header_label: w.historical ? REALISM.header_label : null,
     sections: {}
   };
 
