@@ -190,6 +190,8 @@ Two different concepts, deliberately separated.
 
 **Events** are transient. Market Day, Harvest Festival, Noble Visit, Good Catch. They add color (an italic note at the top of the menu) and nudge weights (boost certain tags, slight price adjustments). They assume the world is functioning.
 
+Events are mostly boost-only, with one hard gate: an event may carry `suppress_contains` (array of `"meat"` / `"fish"`), which removes authored dishes whose `contains` matches and drops matching proteins from the procedural pool. Religious Fast uses it (`["meat"]`) so its "No meat tonight" note is enforced, not just implied. Known gap: only mains are required to carry `contains`, so an untagged meat appetizer (venison sausage, chopped ham) can still slip through; fixing that is a data pass, tracked as future work.
+
 **Conditions** are durative and structural. War, Plague, Isolation, Siege. They gate entire categories of goods (no imports during war) and raise baseline prices (rationing). A condition note overrides the mood of the menu; an event decorates it. Both can coexist ("Market Day during the Plague" is a valid, grim scenario).
 
 ## Condition-based menu caps

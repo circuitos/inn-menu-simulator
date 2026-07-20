@@ -256,6 +256,7 @@ const COST_BASE = { 1: 2, 2: 6, 3: 18, 4: 55, 5: 180 };
 const TIER_INDEX = { roadside: 1, common: 2, fine: 3, noble: 4 };
 
 function resolveWorld(world, data) {
+  const event = data.events.events.find(e => e.id === world.event) || data.events.events[0];
   return {
     biome: world.biome,
     season: world.season,
@@ -264,7 +265,13 @@ function resolveWorld(world, data) {
     tierIdx: TIER_INDEX[world.inn_tier],
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
-    event: data.events.events.find(e => e.id === world.event) || data.events.events[0],
+    event,
+    // Kinds ("meat" / "fish") the active event bans outright. Unlike
+    // boost_roles, which only tilt weights, suppression is a hard gate: the
+    // Religious Fast note promises "no meat tonight" and the filter has to
+    // keep that promise. Authored dishes gate on their `contains` field;
+    // procedural proteins gate on ingredientMainKind.
+    suppressKinds: new Set(event.suppress_contains || []),
     biomeRelations: (data.modifiers || {}).biome_relations || {},
     biomes: (data.modifiers || {}).biomes || {}
   };
@@ -369,6 +376,12 @@ function filterAuthored(dishes, w, data) {
 
     // Economy: cost ceiling shrinks under shortage/famine
     if (d.cost > w.economy.remove_above_cost) return false;
+
+    // Event suppression (Religious Fast): dishes whose `contains` names a
+    // banned kind drop out. Dishes without the field pass; only mains are
+    // required to carry it today, so a meat appetizer can still slip through
+    // until the data pass that tags appetizers lands.
+    if (w.suppressKinds.size && d.contains && w.suppressKinds.has(d.contains)) return false;
 
     // "peculiar" dishes appear only rarely; handled via weighting, not filtering. Under
     // war/plague/siege/isolation, peculiar stays allowed because those are local poor-food
@@ -570,6 +583,14 @@ function filterIngredientPool(ingredients, w, data) {
 
     // Famine protein restriction
     if (w.economy.restrict_role && (ing.roles || []).includes(w.economy.restrict_role) && ing.cost > 2) return false;
+
+    // Event suppression (Religious Fast): proteins that classify as a banned
+    // kind (meat / fish) leave the pool entirely, so no template can pull
+    // them into any section.
+    if (w.suppressKinds.size) {
+      const kind = ingredientMainKind(ing);
+      if (kind && w.suppressKinds.has(kind)) return false;
+    }
 
     // Peculiar ingredients are no longer hard-filtered. They pass through with
     // a heavy weight dampener (see weightIngredient → peculiarFactor) so they
