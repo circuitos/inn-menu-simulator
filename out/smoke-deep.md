@@ -1,32 +1,31 @@
 # Inn Menu Simulator: Deep Smoke Report
 
-- worlds: **40960**, samples/world: **2**, total menus: **81920**
-- elapsed: **33.8s**
+- worlds: **40960**, samples/world: **3**, total menus: **122880**
+- elapsed: **49.7s**
 
 ## A. Top/bottom by world axis
 
 ### By biome
 
-#### coastal (n=17920)
+#### coastal (n=26880)
 
 Top 5 ingredients
-- salt: salt [spice] (8523)
-- ale-pale: pale ale [liquid,drink] (8191)
-- peated-beer: peated beer [liquid,drink] (7742)
-- potato: potato [starch,vegetable] (6924)
-- sage: sage [herb] (5721)
+- salt: salt [spice] (12746)
+- ale-pale: pale ale [liquid,drink] (12358)
+- peated-beer: peated beer [liquid,drink] (11538)
+- potato: potato [starch,vegetable] (10340)
+- sage: sage [herb] (8586)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (11750)
-- oyster-stout: Oyster stout (6689)
-- skewered-herring-veg: Skewered herring with vegetables (5462)
-- mackerel-stew: Mackerel stew (4901)
-- stuffed-fish-stomach: Stuffed fish stomach (4709)
+- samphire-liquor: Samphire liquor (17720)
+- oyster-stout: Oyster stout (10073)
+- skewered-herring-veg: Skewered herring with vegetables (8091)
+- mackerel-stew: Mackerel stew (7359)
+- stuffed-fish-stomach: Stuffed fish stomach (7038)
 
-Ingredients never appearing in this slice: **13** (of 491)
+Ingredients never appearing in this slice: **12** (of 491)
   - aurochs: aurochs [protein,ruminant]
   - truffle-black: black truffle [vegetable]
-  - pomelo: pomelos [fruit]
   - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - caviar: sturgeon caviar [protein,fish]
@@ -38,236 +37,291 @@ Ingredients never appearing in this slice: **13** (of 491)
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### heartland (n=17920)
+#### heartland (n=26880)
 
 Top 5 ingredients
-- sage: sage [herb] (8325)
-- broad-beans: broad beans [vegetable,protein] (3934)
-- ale: dark ale [liquid,drink] (3796)
-- ale-pale: pale ale [liquid,drink] (3706)
-- salt: salt [spice] (3080)
+- sage: sage [herb] (12426)
+- broad-beans: broad beans [vegetable,protein] (5947)
+- ale: dark ale [liquid,drink] (5676)
+- ale-pale: pale ale [liquid,drink] (5544)
+- salt: salt [spice] (4505)
 
 Top 5 authored dishes
-- barley-brown-stout: Barley brown stout (8890)
-- mulled-cider: Mulled cider (5327)
-- orchard-cider: Orchard cider (5274)
-- boiled-milk-cream: Boiled milk with sour cream (4240)
-- spinach-pie: Spinach pie with chervil and eggs (3842)
+- barley-brown-stout: Barley brown stout (13301)
+- mulled-cider: Mulled cider (7906)
+- orchard-cider: Orchard cider (7871)
+- boiled-milk-cream: Boiled milk with sour cream (6395)
+- spinach-pie: Spinach pie with chervil and eggs (5755)
 
-Ingredients never appearing in this slice: **9** (of 491)
+Ingredients never appearing in this slice: **8** (of 491)
   - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - caviar: sturgeon caviar [protein,fish]
-  - lobster: lobster [protein,shellfish]
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
   - starfruit: starfruit [fruit]
   - passion-fruit: passion fruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### highland (n=17920)
+#### highland (n=26880)
 
 Top 5 ingredients
-- egg: eggs [protein] (7206)
-- sage: sage [herb] (6988)
-- wild-rosemary: wild rosemary [herb] (5958)
-- potato: potato [starch,vegetable] (5278)
-- salt: salt [spice] (5270)
+- egg: eggs [protein] (10823)
+- sage: sage [herb] (10325)
+- wild-rosemary: wild rosemary [herb] (9021)
+- potato: potato [starch,vegetable] (7899)
+- salt: salt [spice] (7855)
 
 Top 5 authored dishes
-- peat-bitter-ale: Peat-smoked bitter (9814)
-- malt-aquavit: Malt aquavit (4161)
-- sauteed-chicken: Sautéed chicken (4111)
-- boiled-milk-cream: Boiled milk with sour cream (3364)
-- birch-sap-warmed: Warmed birch sap (3338)
+- peat-bitter-ale: Peat-smoked bitter (14712)
+- malt-aquavit: Malt aquavit (6252)
+- sauteed-chicken: Sautéed chicken (6112)
+- boiled-milk-cream: Boiled milk with sour cream (5050)
+- birch-sap-warmed: Warmed birch sap (5048)
 
-Ingredients never appearing in this slice: **35** (of 491)
+Ingredients never appearing in this slice: **28** (of 491)
+  - sorghum: sorghum [starch]
+  - cassava: cassava [starch,vegetable]
+  - yam: yam [starch,vegetable]
+  - amaranth: amaranth [starch]
+  - bamboo-shoot: bamboo shoots [vegetable]
+  - truffle-white: white truffle [vegetable]
+  - peach: peaches [fruit]
+  - mulberry: mulberries [fruit]
+  - melon: melons [fruit]
+  - cantaloupe: cantaloupes [fruit]
+  - mango: mangoes [fruit]
+  - chia: chia seeds [nut]
+  - molasses: molasses [sweetener,liquid]
+  - ostrich: ostrich [protein,game]
+  - caviar: sturgeon caviar [protein,fish]
+  - lychee: lychee [fruit]
+  - longan: longan [fruit]
+  - plantain: plantains [fruit,starch]
+  - egusi: egusi seeds [nut,protein]
+  - bitter-leaf: bitter leaf [vegetable,herb]
+  - kola-nut: kola nut [nut]
+  - black-beans: black beans [starch,protein]
+  - mare-milk: mare's milk [dairy,liquid]
+  - horse-meat: horse [protein,ruminant]
+  - purslane: purslane [vegetable,herb]
+  - starfruit: starfruit [fruit]
+  - seawater-brine: seawater brine [liquid,spice]
+  - pine-resin: pine resin [spice]
 
-#### arid (n=14080)
+#### arid (n=21120)
 
 Top 5 ingredients
-- koumiss: koumiss [liquid,drink,dairy] (10183)
-- date-syrup: date syrup [sweetener,liquid] (3570)
-- grape-molasses: grape molasses [sweetener,liquid] (3478)
-- molasses: molasses [sweetener,liquid] (3036)
-- coriander-seed: coriander seed [spice] (2688)
+- koumiss: koumiss [liquid,drink,dairy] (15153)
+- date-syrup: date syrup [sweetener,liquid] (5348)
+- grape-molasses: grape molasses [sweetener,liquid] (5254)
+- molasses: molasses [sweetener,liquid] (4493)
+- anise: anise [spice] (4032)
 
 Top 5 authored dishes
-- mint-infusion: Mint leaves infusion (8406)
-- chickpea-stew: Chickpea stew (4952)
-- bean-coriander-palm: Bean stew with coriander and palm oil (4874)
-- spinach-pie: Spinach pie with chervil and eggs (3761)
-- anise-spirit: Anise spirit (3750)
+- mint-infusion: Mint leaves infusion (12571)
+- chickpea-stew: Chickpea stew (7415)
+- bean-coriander-palm: Bean stew with coriander and palm oil (7254)
+- spinach-pie: Spinach pie with chervil and eggs (5637)
+- anise-spirit: Anise spirit (5606)
 
-Ingredients never appearing in this slice: **35** (of 491)
+Ingredients never appearing in this slice: **31** (of 491)
 
-#### frostlands (n=14080)
+#### frostlands (n=21120)
 
 Top 5 ingredients
-- sage: sage [herb] (6282)
-- salt: salt [spice] (6236)
-- cloudy-beer: cloudy beer [liquid,drink] (4720)
-- gruit-beer: gruit beer [liquid,drink] (4420)
-- potato: potato [starch,vegetable] (3729)
+- sage: sage [herb] (9383)
+- salt: salt [spice] (9329)
+- cloudy-beer: cloudy beer [liquid,drink] (7116)
+- gruit-beer: gruit beer [liquid,drink] (6605)
+- potato: potato [starch,vegetable] (5591)
 
 Top 5 authored dishes
-- skewered-herring-veg: Skewered herring with vegetables (4077)
-- skyr: Skyr with honey (3373)
-- pine-needle-tea: Pine needle tea (3162)
-- birch-sap-warmed: Warmed birch sap (2967)
-- cod-tongues-sauteed: Sautéed cod tongues (2884)
+- skewered-herring-veg: Skewered herring with vegetables (6117)
+- skyr: Skyr with honey (5102)
+- pine-needle-tea: Pine needle tea (4759)
+- birch-sap-warmed: Warmed birch sap (4452)
+- cod-tongues-sauteed: Sautéed cod tongues (4372)
 
-Ingredients never appearing in this slice: **34** (of 491)
+Ingredients never appearing in this slice: **29** (of 491)
+  - pomegranate: pomegranate [fruit]
+  - sorghum: sorghum [starch]
+  - cassava: cassava [starch,vegetable]
+  - yam: yam [starch,vegetable]
+  - amaranth: amaranth [starch]
+  - peach: peaches [fruit]
+  - persimmon: persimmons [fruit]
+  - melon: melons [fruit]
+  - watermelon: watermelons [fruit]
+  - cantaloupe: cantaloupes [fruit]
+  - pomelo: pomelos [fruit]
+  - mango: mangoes [fruit]
+  - chia: chia seeds [nut]
+  - molasses: molasses [sweetener,liquid]
+  - ostrich: ostrich [protein,game]
+  - caviar: sturgeon caviar [protein,fish]
+  - lychee: lychee [fruit]
+  - longan: longan [fruit]
+  - plantain: plantains [fruit,starch]
+  - egusi: egusi seeds [nut,protein]
+  - bitter-leaf: bitter leaf [vegetable,herb]
+  - kola-nut: kola nut [nut]
+  - avocado: avocado [fruit,fat]
+  - black-beans: black beans [starch,protein]
+  - mare-milk: mare's milk [dairy,liquid]
+  - horse-meat: horse [protein,ruminant]
+  - purslane: purslane [vegetable,herb]
+  - starfruit: starfruit [fruit]
+  - seawater-brine: seawater brine [liquid,spice]
 
 ### By season
 
-#### spring (n=23040)
+#### spring (n=34560)
 
 Top 5 ingredients
-- prune: prunes [fruit] (8694)
-- potato: potato [starch,vegetable] (7788)
-- sage: sage [herb] (7304)
-- salt: salt [spice] (6955)
-- ale-pale: pale ale [liquid,drink] (4318)
+- prune: prunes [fruit] (13095)
+- potato: potato [starch,vegetable] (11638)
+- sage: sage [herb] (10952)
+- salt: salt [spice] (10469)
+- ale-pale: pale ale [liquid,drink] (6513)
 
 Top 5 authored dishes
-- boiled-milk-cream: Boiled milk with sour cream (7550)
-- birch-sap-warmed: Warmed birch sap (7009)
-- skewered-herring-veg: Skewered herring with vegetables (6793)
-- spinach-pie: Spinach pie with chervil and eggs (5843)
-- samphire-liquor: Samphire liquor (4740)
+- boiled-milk-cream: Boiled milk with sour cream (11382)
+- birch-sap-warmed: Warmed birch sap (10563)
+- skewered-herring-veg: Skewered herring with vegetables (10099)
+- spinach-pie: Spinach pie with chervil and eggs (8787)
+- samphire-liquor: Samphire liquor (7149)
 
 Ingredients never appearing in this slice: **194** (of 491)
 
-#### summer (n=17920)
+#### summer (n=26880)
 
 Top 5 ingredients
-- potato: potato [starch,vegetable] (5449)
-- salt: salt [spice] (5445)
-- sage: sage [herb] (4148)
-- broad-beans: broad beans [vegetable,protein] (3385)
-- peated-beer: peated beer [liquid,drink] (3207)
+- potato: potato [starch,vegetable] (8152)
+- salt: salt [spice] (8083)
+- sage: sage [herb] (6122)
+- broad-beans: broad beans [vegetable,protein] (5065)
+- peated-beer: peated beer [liquid,drink] (4722)
 
 Top 5 authored dishes
-- skewered-herring-veg: Skewered herring with vegetables (4643)
-- boiled-milk-cream: Boiled milk with sour cream (3669)
-- orchard-cider: Orchard cider (3482)
-- mackerel-stew: Mackerel stew (3348)
-- samphire-liquor: Samphire liquor (3265)
+- skewered-herring-veg: Skewered herring with vegetables (6928)
+- boiled-milk-cream: Boiled milk with sour cream (5483)
+- orchard-cider: Orchard cider (5204)
+- mackerel-stew: Mackerel stew (5058)
+- samphire-liquor: Samphire liquor (4929)
 
 Ingredients never appearing in this slice: **153** (of 491)
 
-#### autumn (n=23040)
+#### autumn (n=34560)
 
 Top 5 ingredients
-- sage: sage [herb] (8438)
-- salt: salt [spice] (6490)
-- egg: eggs [protein] (3722)
-- parsley: parsley [herb] (3524)
-- beetroot: beetroot [vegetable] (3522)
+- sage: sage [herb] (12590)
+- salt: salt [spice] (9663)
+- egg: eggs [protein] (5637)
+- parsley: parsley [herb] (5237)
+- beetroot: beetroot [vegetable] (5237)
 
 Top 5 authored dishes
-- oyster-stout: Oyster stout (4896)
-- mulled-cider: Mulled cider (3683)
-- orchard-cider: Orchard cider (3650)
-- samphire-liquor: Samphire liquor (3356)
-- mackerel-stew: Mackerel stew (3317)
+- oyster-stout: Oyster stout (7423)
+- mulled-cider: Mulled cider (5510)
+- orchard-cider: Orchard cider (5456)
+- samphire-liquor: Samphire liquor (5020)
+- mackerel-stew: Mackerel stew (4999)
 
-Ingredients never appearing in this slice: **92** (of 491)
+Ingredients never appearing in this slice: **90** (of 491)
 
-#### winter (n=17920)
+#### winter (n=26880)
 
 Top 5 ingredients
-- sage: sage [herb] (9417)
-- salt: salt [spice] (6182)
-- prune: prunes [fruit] (4827)
-- beetroot: beetroot [vegetable] (3744)
-- potato: potato [starch,vegetable] (3400)
+- sage: sage [herb] (14041)
+- salt: salt [spice] (9136)
+- prune: prunes [fruit] (7237)
+- beetroot: beetroot [vegetable] (5677)
+- potato: potato [starch,vegetable] (5053)
 
 Top 5 authored dishes
-- oyster-stout: Oyster stout (4015)
-- apple-tart: Apple tart (3709)
-- mulled-cider: Mulled cider (3411)
-- salt-cod-roots: Salt cod stew with winter roots (3303)
-- pine-needle-tea: Pine needle tea (2814)
+- oyster-stout: Oyster stout (5991)
+- apple-tart: Apple tart (5550)
+- mulled-cider: Mulled cider (5114)
+- salt-cod-roots: Salt cod stew with winter roots (4884)
+- pine-needle-tea: Pine needle tea (4249)
 
 Ingredients never appearing in this slice: **163** (of 491)
 
 ### By tier
 
-#### roadside (n=20480)
+#### roadside (n=30720)
 
 Top 5 ingredients
-- prune: prunes [fruit] (5099)
-- sage: sage [herb] (5044)
-- koumiss: koumiss [liquid,drink,dairy] (3962)
-- salt: salt [spice] (3812)
-- potato: potato [starch,vegetable] (3519)
+- prune: prunes [fruit] (7649)
+- sage: sage [herb] (7505)
+- koumiss: koumiss [liquid,drink,dairy] (5942)
+- salt: salt [spice] (5622)
+- potato: potato [starch,vegetable] (5245)
 
 Top 5 authored dishes
-- boiled-milk-cream: Boiled milk with sour cream (3578)
-- samphire-liquor: Samphire liquor (3459)
-- pine-needle-tea: Pine needle tea (3194)
-- porridge-stew: Porridge stew (3045)
-- stuffed-fish-stomach: Stuffed fish stomach (3007)
+- boiled-milk-cream: Boiled milk with sour cream (5365)
+- samphire-liquor: Samphire liquor (5168)
+- pine-needle-tea: Pine needle tea (4806)
+- porridge-stew: Porridge stew (4609)
+- stuffed-fish-stomach: Stuffed fish stomach (4498)
 
 Ingredients never appearing in this slice: **239** (of 491)
 
-#### common (n=20480)
+#### common (n=30720)
 
 Top 5 ingredients
-- sage: sage [herb] (5285)
-- salt: salt [spice] (4856)
-- honey: honey [sweetener] (4565)
-- prune: prunes [fruit] (3599)
-- peated-beer: peated beer [liquid,drink] (3436)
+- sage: sage [herb] (7928)
+- salt: salt [spice] (7281)
+- honey: honey [sweetener] (6830)
+- prune: prunes [fruit] (5500)
+- ale-pale: pale ale [liquid,drink] (5194)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (3232)
-- pine-needle-tea: Pine needle tea (2900)
-- stuffed-fish-stomach: Stuffed fish stomach (2521)
-- porridge-stew: Porridge stew (2456)
-- oat-porridge-salt: Oat porridge with salt (2357)
+- samphire-liquor: Samphire liquor (4913)
+- pine-needle-tea: Pine needle tea (4330)
+- stuffed-fish-stomach: Stuffed fish stomach (3755)
+- porridge-stew: Porridge stew (3724)
+- oat-porridge-salt: Oat porridge with salt (3512)
 
 Ingredients never appearing in this slice: **117** (of 491)
 
-#### fine (n=20480)
+#### fine (n=30720)
 
 Top 5 ingredients
-- sage: sage [herb] (9671)
-- salt: salt [spice] (7656)
-- potato: potato [starch,vegetable] (6267)
-- egg: eggs [protein] (5539)
-- prune: prunes [fruit] (3862)
+- sage: sage [herb] (14381)
+- salt: salt [spice] (11410)
+- potato: potato [starch,vegetable] (9391)
+- egg: eggs [protein] (8300)
+- prune: prunes [fruit] (5740)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (3453)
-- skewered-herring-veg: Skewered herring with vegetables (3252)
-- peat-bitter-ale: Peat-smoked bitter (2954)
-- sauteed-chicken: Sautéed chicken (2901)
-- barley-brown-stout: Barley brown stout (2759)
+- samphire-liquor: Samphire liquor (5209)
+- skewered-herring-veg: Skewered herring with vegetables (4824)
+- peat-bitter-ale: Peat-smoked bitter (4484)
+- sauteed-chicken: Sautéed chicken (4353)
+- barley-brown-stout: Barley brown stout (4136)
 
-Ingredients never appearing in this slice: **35** (of 491)
+Ingredients never appearing in this slice: **34** (of 491)
 
-#### noble (n=20480)
+#### noble (n=30720)
 
 Top 5 ingredients
-- sage: sage [herb] (9307)
-- salt: salt [spice] (8748)
-- potato: potato [starch,vegetable] (7221)
-- egg: eggs [protein] (5885)
-- prune: prunes [fruit] (3717)
+- sage: sage [herb] (13891)
+- salt: salt [spice] (13038)
+- potato: potato [starch,vegetable] (10837)
+- egg: eggs [protein] (8780)
+- prune: prunes [fruit] (5529)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (3829)
-- peat-bitter-ale: Peat-smoked bitter (3824)
-- barley-brown-stout: Barley brown stout (3302)
-- skewered-herring-veg: Skewered herring with vegetables (3296)
-- sauteed-chicken: Sautéed chicken (3148)
+- samphire-liquor: Samphire liquor (5755)
+- peat-bitter-ale: Peat-smoked bitter (5700)
+- barley-brown-stout: Barley brown stout (4985)
+- skewered-herring-veg: Skewered herring with vegetables (4906)
+- sauteed-chicken: Sautéed chicken (4727)
 
-Ingredients never appearing in this slice: **6** (of 491)
+Ingredients never appearing in this slice: **5** (of 491)
   - sorghum: sorghum [starch]
-  - dandelion: dandelion greens [vegetable]
   - pumpkin-seed: pumpkin seeds [nut]
   - chia: chia seeds [nut]
   - kola-nut: kola nut [nut]
@@ -275,49 +329,47 @@ Ingredients never appearing in this slice: **6** (of 491)
 
 ### By condition
 
-#### peace (n=16384)
+#### peace (n=24576)
 
 Top 5 ingredients
-- sage: sage [herb] (3978)
-- salt: salt [spice] (2926)
-- potato: potato [starch,vegetable] (2600)
-- prune: prunes [fruit] (2054)
-- peated-beer: peated beer [liquid,drink] (1999)
+- sage: sage [herb] (5899)
+- salt: salt [spice] (4328)
+- potato: potato [starch,vegetable] (3901)
+- prune: prunes [fruit] (3075)
+- ale-pale: pale ale [liquid,drink] (2999)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (3026)
-- barley-brown-stout: Barley brown stout (2850)
-- skewered-herring-veg: Skewered herring with vegetables (2761)
-- peat-bitter-ale: Peat-smoked bitter (2671)
-- boiled-milk-cream: Boiled milk with sour cream (2606)
+- samphire-liquor: Samphire liquor (4519)
+- barley-brown-stout: Barley brown stout (4286)
+- skewered-herring-veg: Skewered herring with vegetables (4088)
+- peat-bitter-ale: Peat-smoked bitter (3976)
+- boiled-milk-cream: Boiled milk with sour cream (3888)
 
-Ingredients never appearing in this slice: **8** (of 491)
-  - mango: mangoes [fruit]
+Ingredients never appearing in this slice: **6** (of 491)
   - chia: chia seeds [nut]
   - suet: suet [fat]
   - lychee: lychee [fruit]
-  - longan: longan [fruit]
   - kola-nut: kola nut [nut]
   - starfruit: starfruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### war (n=16384)
+#### war (n=24576)
 
 Top 5 ingredients
-- sage: sage [herb] (4114)
-- salt: salt [spice] (3062)
-- potato: potato [starch,vegetable] (2687)
-- prune: prunes [fruit] (2167)
-- ale-pale: pale ale [liquid,drink] (2054)
+- sage: sage [herb] (6105)
+- salt: salt [spice] (4537)
+- potato: potato [starch,vegetable] (4035)
+- prune: prunes [fruit] (3279)
+- ale-pale: pale ale [liquid,drink] (3077)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2927)
-- barley-brown-stout: Barley brown stout (2755)
-- skewered-herring-veg: Skewered herring with vegetables (2710)
-- peat-bitter-ale: Peat-smoked bitter (2555)
-- boiled-milk-cream: Boiled milk with sour cream (2503)
+- samphire-liquor: Samphire liquor (4435)
+- barley-brown-stout: Barley brown stout (4160)
+- skewered-herring-veg: Skewered herring with vegetables (4039)
+- peat-bitter-ale: Peat-smoked bitter (3807)
+- boiled-milk-cream: Boiled milk with sour cream (3737)
 
-Ingredients never appearing in this slice: **14** (of 491)
+Ingredients never appearing in this slice: **13** (of 491)
   - albatross: albatross [protein,fowl]
   - aurochs: aurochs [protein,ruminant]
   - saffron: saffron [spice]
@@ -329,38 +381,35 @@ Ingredients never appearing in this slice: **14** (of 491)
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
   - cacao: cacao [spice,sweetener]
-  - passion-fruit: passion fruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### plague (n=16384)
+#### plague (n=24576)
 
 Top 5 ingredients
-- sage: sage [herb] (7121)
-- salt: salt [spice] (6319)
-- potato: potato [starch,vegetable] (4952)
-- prune: prunes [fruit] (4001)
-- egg: eggs [protein] (3773)
+- sage: sage [herb] (10587)
+- salt: salt [spice] (9451)
+- potato: potato [starch,vegetable] (7317)
+- prune: prunes [fruit] (5977)
+- egg: eggs [protein] (5647)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2666)
-- peat-bitter-ale: Peat-smoked bitter (2111)
-- boiled-milk-cream: Boiled milk with sour cream (2037)
-- skewered-herring-veg: Skewered herring with vegetables (1971)
-- barley-brown-stout: Barley brown stout (1920)
+- samphire-liquor: Samphire liquor (4013)
+- peat-bitter-ale: Peat-smoked bitter (3177)
+- boiled-milk-cream: Boiled milk with sour cream (3072)
+- skewered-herring-veg: Skewered herring with vegetables (2954)
+- barley-brown-stout: Barley brown stout (2857)
 
-Ingredients never appearing in this slice: **17** (of 491)
+Ingredients never appearing in this slice: **15** (of 491)
   - albatross: albatross [protein,fowl]
   - aurochs: aurochs [protein,ruminant]
   - saffron: saffron [spice]
-  - truffle-white: white truffle [vegetable]
   - cantaloupe: cantaloupes [fruit]
   - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - peacock: peacock [protein,fowl]
   - caviar: sturgeon caviar [protein,fish]
   - vanilla: vanilla bean [spice]
-  - yuzu: yuzu [fruit]
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
   - cacao: cacao [spice,sweetener]
@@ -368,27 +417,26 @@ Ingredients never appearing in this slice: **17** (of 491)
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### isolation (n=16384)
+#### isolation (n=24576)
 
 Top 5 ingredients
-- sage: sage [herb] (7126)
-- salt: salt [spice] (6395)
-- potato: potato [starch,vegetable] (4880)
-- prune: prunes [fruit] (4061)
-- egg: eggs [protein] (3717)
+- sage: sage [herb] (10615)
+- salt: salt [spice] (9522)
+- potato: potato [starch,vegetable] (7355)
+- prune: prunes [fruit] (6086)
+- egg: eggs [protein] (5563)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2687)
-- peat-bitter-ale: Peat-smoked bitter (2078)
-- boiled-milk-cream: Boiled milk with sour cream (2072)
-- skewered-herring-veg: Skewered herring with vegetables (1993)
-- barley-brown-stout: Barley brown stout (1928)
+- samphire-liquor: Samphire liquor (4040)
+- peat-bitter-ale: Peat-smoked bitter (3138)
+- boiled-milk-cream: Boiled milk with sour cream (3135)
+- skewered-herring-veg: Skewered herring with vegetables (2971)
+- barley-brown-stout: Barley brown stout (2868)
 
-Ingredients never appearing in this slice: **12** (of 491)
+Ingredients never appearing in this slice: **11** (of 491)
   - albatross: albatross [protein,fowl]
   - aurochs: aurochs [protein,ruminant]
   - saffron: saffron [spice]
-  - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - peacock: peacock [protein,fowl]
   - caviar: sturgeon caviar [protein,fish]
@@ -398,29 +446,27 @@ Ingredients never appearing in this slice: **12** (of 491)
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### siege (n=16384)
+#### siege (n=24576)
 
 Top 5 ingredients
-- sage: sage [herb] (6968)
-- salt: salt [spice] (6370)
-- potato: potato [starch,vegetable] (4869)
-- prune: prunes [fruit] (3994)
-- egg: eggs [protein] (3749)
+- sage: sage [herb] (10499)
+- salt: salt [spice] (9513)
+- potato: potato [starch,vegetable] (7301)
+- prune: prunes [fruit] (6001)
+- egg: eggs [protein] (5680)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2667)
-- peat-bitter-ale: Peat-smoked bitter (2119)
-- skewered-herring-veg: Skewered herring with vegetables (2001)
-- boiled-milk-cream: Boiled milk with sour cream (2001)
-- barley-brown-stout: Barley brown stout (1855)
+- samphire-liquor: Samphire liquor (4038)
+- peat-bitter-ale: Peat-smoked bitter (3185)
+- boiled-milk-cream: Boiled milk with sour cream (3033)
+- skewered-herring-veg: Skewered herring with vegetables (2975)
+- barley-brown-stout: Barley brown stout (2801)
 
-Ingredients never appearing in this slice: **17** (of 491)
+Ingredients never appearing in this slice: **14** (of 491)
   - albatross: albatross [protein,fowl]
   - aurochs: aurochs [protein,ruminant]
   - saffron: saffron [spice]
-  - truffle-black: black truffle [vegetable]
   - melon: melons [fruit]
-  - pomelo: pomelos [fruit]
   - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - peacock: peacock [protein,fowl]
@@ -429,49 +475,47 @@ Ingredients never appearing in this slice: **17** (of 491)
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
   - cacao: cacao [spice,sweetener]
-  - starfruit: starfruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
 ### By weather
 
-#### clear (n=25600)
+#### clear (n=38400)
 
 Top 5 ingredients
-- salt: salt [spice] (8140)
-- sage: sage [herb] (6559)
-- parsley: parsley [herb] (4651)
-- potato: potato [starch,vegetable] (4372)
-- prune: prunes [fruit] (4128)
+- salt: salt [spice] (12113)
+- sage: sage [herb] (9803)
+- parsley: parsley [herb] (6902)
+- potato: potato [starch,vegetable] (6557)
+- prune: prunes [fruit] (6182)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (4118)
-- skewered-herring-veg: Skewered herring with vegetables (3755)
-- peat-bitter-ale: Peat-smoked bitter (3383)
-- boiled-milk-cream: Boiled milk with sour cream (3382)
-- barley-brown-stout: Barley brown stout (3324)
+- samphire-liquor: Samphire liquor (6187)
+- skewered-herring-veg: Skewered herring with vegetables (5621)
+- boiled-milk-cream: Boiled milk with sour cream (5069)
+- peat-bitter-ale: Peat-smoked bitter (5063)
+- barley-brown-stout: Barley brown stout (5028)
 
-Ingredients never appearing in this slice: **4** (of 491)
-  - mango: mangoes [fruit]
+Ingredients never appearing in this slice: **3** (of 491)
   - chia: chia seeds [nut]
   - kola-nut: kola nut [nut]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### rain (n=25600)
+#### rain (n=38400)
 
 Top 5 ingredients
-- sage: sage [herb] (7605)
-- salt: salt [spice] (7474)
-- potato: potato [starch,vegetable] (5750)
-- prune: prunes [fruit] (4720)
-- egg: eggs [protein] (3989)
+- sage: sage [herb] (11381)
+- salt: salt [spice] (11105)
+- potato: potato [starch,vegetable] (8477)
+- prune: prunes [fruit] (7084)
+- egg: eggs [protein] (5940)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (4065)
-- skewered-herring-veg: Skewered herring with vegetables (3783)
-- boiled-milk-cream: Boiled milk with sour cream (3411)
-- peat-bitter-ale: Peat-smoked bitter (3384)
-- mint-infusion: Mint leaves infusion (3332)
+- samphire-liquor: Samphire liquor (6141)
+- skewered-herring-veg: Skewered herring with vegetables (5587)
+- boiled-milk-cream: Boiled milk with sour cream (5094)
+- peat-bitter-ale: Peat-smoked bitter (5065)
+- mint-infusion: Mint leaves infusion (4975)
 
 Ingredients never appearing in this slice: **7** (of 491)
   - aurochs: aurochs [protein,ruminant]
@@ -482,64 +526,61 @@ Ingredients never appearing in this slice: **7** (of 491)
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### snow (n=15360)
+#### snow (n=23040)
 
 Top 5 ingredients
-- sage: sage [herb] (8666)
-- salt: salt [spice] (5297)
-- potato: potato [starch,vegetable] (4856)
-- prune: prunes [fruit] (4402)
-- egg: eggs [protein] (3219)
+- sage: sage [herb] (12918)
+- salt: salt [spice] (7933)
+- potato: potato [starch,vegetable] (7318)
+- prune: prunes [fruit] (6645)
+- egg: eggs [protein] (4859)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2784)
-- oyster-stout: Oyster stout (2424)
-- peat-bitter-ale: Peat-smoked bitter (2387)
-- barley-brown-stout: Barley brown stout (2365)
-- birch-sap-warmed: Warmed birch sap (1987)
+- samphire-liquor: Samphire liquor (4193)
+- oyster-stout: Oyster stout (3670)
+- peat-bitter-ale: Peat-smoked bitter (3611)
+- barley-brown-stout: Barley brown stout (3516)
+- birch-sap-warmed: Warmed birch sap (2979)
 
-Ingredients never appearing in this slice: **137** (of 491)
+Ingredients never appearing in this slice: **135** (of 491)
 
-#### heatwave (n=15360)
+#### heatwave (n=23040)
 
 Top 5 ingredients
-- sage: sage [herb] (6477)
-- potato: potato [starch,vegetable] (5010)
-- salt: salt [spice] (4161)
-- prune: prunes [fruit] (3027)
-- koumiss: koumiss [liquid,drink,dairy] (2927)
+- sage: sage [herb] (9603)
+- potato: potato [starch,vegetable] (7557)
+- salt: salt [spice] (6200)
+- prune: prunes [fruit] (4507)
+- ale-pale: pale ale [liquid,drink] (4380)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (3006)
-- boiled-milk-cream: Boiled milk with sour cream (2490)
-- spinach-pie: Spinach pie with chervil and eggs (2475)
-- mint-infusion: Mint leaves infusion (2458)
-- peat-bitter-ale: Peat-smoked bitter (2380)
+- samphire-liquor: Samphire liquor (4524)
+- boiled-milk-cream: Boiled milk with sour cream (3785)
+- spinach-pie: Spinach pie with chervil and eggs (3681)
+- mint-infusion: Mint leaves infusion (3680)
+- barley-brown-stout: Barley brown stout (3550)
 
 Ingredients never appearing in this slice: **142** (of 491)
 
 ### By event
 
-#### none (n=10240)
+#### none (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (4498)
-- salt: salt [spice] (3892)
-- potato: potato [starch,vegetable] (3035)
-- prune: prunes [fruit] (1988)
-- beef-heart: beef heart [protein,offal] (1416)
+- sage: sage [herb] (6711)
+- salt: salt [spice] (5850)
+- potato: potato [starch,vegetable] (4568)
+- prune: prunes [fruit] (3015)
+- beef-heart: beef heart [protein,offal] (2120)
 
 Top 5 authored dishes
-- sauteed-chicken: Sautéed chicken (1598)
-- skewered-herring-veg: Skewered herring with vegetables (1495)
-- samphire-liquor: Samphire liquor (1493)
-- boiled-milk-cream: Boiled milk with sour cream (1399)
-- peat-bitter-ale: Peat-smoked bitter (1204)
+- sauteed-chicken: Sautéed chicken (2379)
+- samphire-liquor: Samphire liquor (2250)
+- skewered-herring-veg: Skewered herring with vegetables (2225)
+- boiled-milk-cream: Boiled milk with sour cream (2073)
+- barley-brown-stout: Barley brown stout (1828)
 
-Ingredients never appearing in this slice: **11** (of 491)
-  - aurochs: aurochs [protein,ruminant]
-  - truffle-black: black truffle [vegetable]
-  - mango: mangoes [fruit]
+Ingredients never appearing in this slice: **8** (of 491)
   - chia: chia seeds [nut]
   - caviar: sturgeon caviar [protein,fish]
   - lychee: lychee [fruit]
@@ -549,87 +590,78 @@ Ingredients never appearing in this slice: **11** (of 491)
   - passion-fruit: passion fruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### harvest-festival (n=10240)
+#### harvest-festival (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (2975)
-- salt: salt [spice] (2362)
-- prune: prunes [fruit] (1956)
-- peated-beer: peated beer [liquid,drink] (1862)
-- ale-pale: pale ale [liquid,drink] (1659)
+- sage: sage [herb] (4373)
+- salt: salt [spice] (3495)
+- prune: prunes [fruit] (2968)
+- peated-beer: peated beer [liquid,drink] (2752)
+- ale-pale: pale ale [liquid,drink] (2456)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (1845)
-- barley-brown-stout: Barley brown stout (1594)
-- peat-bitter-ale: Peat-smoked bitter (1593)
-- boiled-milk-cream: Boiled milk with sour cream (1411)
-- mint-infusion: Mint leaves infusion (1282)
+- samphire-liquor: Samphire liquor (2792)
+- peat-bitter-ale: Peat-smoked bitter (2408)
+- barley-brown-stout: Barley brown stout (2365)
+- boiled-milk-cream: Boiled milk with sour cream (2133)
+- mint-infusion: Mint leaves infusion (1900)
 
-Ingredients never appearing in this slice: **12** (of 491)
-  - albatross: albatross [protein,fowl]
-  - aurochs: aurochs [protein,ruminant]
+Ingredients never appearing in this slice: **8** (of 491)
   - truffle-black: black truffle [vegetable]
-  - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - suet: suet [fat]
   - caviar: sturgeon caviar [protein,fish]
   - lychee: lychee [fruit]
-  - longan: longan [fruit]
   - kola-nut: kola nut [nut]
   - starfruit: starfruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### market-day (n=10240)
+#### market-day (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (3043)
-- prune: prunes [fruit] (2237)
-- salt: salt [spice] (2079)
-- potato: potato [starch,vegetable] (2039)
-- peated-beer: peated beer [liquid,drink] (1877)
+- sage: sage [herb] (4513)
+- prune: prunes [fruit] (3314)
+- potato: potato [starch,vegetable] (3064)
+- salt: salt [spice] (3064)
+- peated-beer: peated beer [liquid,drink] (2779)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (1900)
-- peat-bitter-ale: Peat-smoked bitter (1618)
-- barley-brown-stout: Barley brown stout (1594)
-- boiled-milk-cream: Boiled milk with sour cream (1507)
-- skewered-herring-veg: Skewered herring with vegetables (1338)
+- samphire-liquor: Samphire liquor (2880)
+- barley-brown-stout: Barley brown stout (2411)
+- peat-bitter-ale: Peat-smoked bitter (2397)
+- boiled-milk-cream: Boiled milk with sour cream (2250)
+- skewered-herring-veg: Skewered herring with vegetables (1992)
 
-Ingredients never appearing in this slice: **18** (of 491)
+Ingredients never appearing in this slice: **13** (of 491)
   - albatross: albatross [protein,fowl]
   - aurochs: aurochs [protein,ruminant]
   - truffle-white: white truffle [vegetable]
-  - cantaloupe: cantaloupes [fruit]
   - mango: mangoes [fruit]
-  - pistachio: pistachios [nut]
   - chia: chia seeds [nut]
   - suet: suet [fat]
   - caviar: sturgeon caviar [protein,fish]
-  - monkfish: monkfish [protein,fish]
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
   - starfruit: starfruit [fruit]
-  - passion-fruit: passion fruit [fruit]
   - chamois: chamois [protein,game,ruminant]
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
-  - cave-bear: cave bear [protein,game]
 
-#### merchant-caravan (n=10240)
+#### merchant-caravan (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (4275)
-- salt: salt [spice] (3839)
-- potato: potato [starch,vegetable] (2807)
-- prune: prunes [fruit] (1793)
-- honey: honey [sweetener] (1380)
+- sage: sage [herb] (6434)
+- salt: salt [spice] (5661)
+- potato: potato [starch,vegetable] (4270)
+- prune: prunes [fruit] (2680)
+- honey: honey [sweetener] (2040)
 
 Top 5 authored dishes
-- sauteed-chicken: Sautéed chicken (1569)
-- skewered-herring-veg: Skewered herring with vegetables (1535)
-- samphire-liquor: Samphire liquor (1488)
-- boiled-milk-cream: Boiled milk with sour cream (1481)
-- barley-brown-stout: Barley brown stout (1230)
+- sauteed-chicken: Sautéed chicken (2377)
+- skewered-herring-veg: Skewered herring with vegetables (2249)
+- boiled-milk-cream: Boiled milk with sour cream (2219)
+- samphire-liquor: Samphire liquor (2215)
+- barley-brown-stout: Barley brown stout (1854)
 
 Ingredients never appearing in this slice: **10** (of 491)
   - truffle-white: white truffle [vegetable]
@@ -643,23 +675,23 @@ Ingredients never appearing in this slice: **10** (of 491)
   - starfruit: starfruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
 
-#### noble-visit (n=10240)
+#### noble-visit (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (3009)
-- salt: salt [spice] (2410)
-- prune: prunes [fruit] (2349)
-- ale-pale: pale ale [liquid,drink] (2114)
-- honey: honey [sweetener] (1753)
+- sage: sage [herb] (4489)
+- salt: salt [spice] (3628)
+- prune: prunes [fruit] (3552)
+- ale-pale: pale ale [liquid,drink] (3212)
+- honey: honey [sweetener] (2628)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (1823)
-- peat-bitter-ale: Peat-smoked bitter (1476)
-- barley-brown-stout: Barley brown stout (1444)
-- boiled-milk-cream: Boiled milk with sour cream (1313)
-- mint-infusion: Mint leaves infusion (1232)
+- samphire-liquor: Samphire liquor (2700)
+- peat-bitter-ale: Peat-smoked bitter (2254)
+- barley-brown-stout: Barley brown stout (2151)
+- boiled-milk-cream: Boiled milk with sour cream (1950)
+- mint-infusion: Mint leaves infusion (1844)
 
-Ingredients never appearing in this slice: **8** (of 491)
+Ingredients never appearing in this slice: **7** (of 491)
   - aurochs: aurochs [protein,ruminant]
   - chia: chia seeds [nut]
   - suet: suet [fat]
@@ -667,112 +699,105 @@ Ingredients never appearing in this slice: **8** (of 491)
   - kola-nut: kola nut [nut]
   - passion-fruit: passion fruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
-  - megaceront: megaceront [protein,game,ruminant]
 
-#### hunting-return (n=10240)
+#### hunting-return (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (3088)
-- salt: salt [spice] (2367)
-- prune: prunes [fruit] (2034)
-- gruit-beer: gruit beer [liquid,drink] (1837)
-- potato: potato [starch,vegetable] (1738)
+- sage: sage [herb] (4572)
+- salt: salt [spice] (3510)
+- prune: prunes [fruit] (3030)
+- gruit-beer: gruit beer [liquid,drink] (2786)
+- peated-beer: peated beer [liquid,drink] (2600)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (1860)
-- peat-bitter-ale: Peat-smoked bitter (1628)
-- barley-brown-stout: Barley brown stout (1535)
-- boiled-milk-cream: Boiled milk with sour cream (1338)
-- mint-infusion: Mint leaves infusion (1273)
+- samphire-liquor: Samphire liquor (2820)
+- peat-bitter-ale: Peat-smoked bitter (2419)
+- barley-brown-stout: Barley brown stout (2282)
+- boiled-milk-cream: Boiled milk with sour cream (2033)
+- mint-infusion: Mint leaves infusion (1907)
 
-Ingredients never appearing in this slice: **13** (of 491)
-  - albatross: albatross [protein,fowl]
-  - melon: melons [fruit]
+Ingredients never appearing in this slice: **9** (of 491)
   - mango: mangoes [fruit]
-  - pistachio: pistachios [nut]
   - chia: chia seeds [nut]
   - suet: suet [fat]
   - mahi-mahi: mahi-mahi [protein,fish]
   - lychee: lychee [fruit]
-  - longan: longan [fruit]
   - kola-nut: kola nut [nut]
   - starfruit: starfruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### fishing-good (n=10240)
+#### fishing-good (n=15360)
 
 Top 5 ingredients
-- sage: sage [herb] (2899)
-- salt: salt [spice] (2368)
-- peated-beer: peated beer [liquid,drink] (2290)
-- ale-pale: pale ale [liquid,drink] (2075)
-- prune: prunes [fruit] (1971)
+- sage: sage [herb] (4343)
+- salt: salt [spice] (3536)
+- peated-beer: peated beer [liquid,drink] (3389)
+- ale-pale: pale ale [liquid,drink] (3114)
+- prune: prunes [fruit] (2948)
 
 Top 5 authored dishes
-- samphire-liquor: Samphire liquor (2018)
-- cod-tongues-sauteed: Sautéed cod tongues (1914)
-- entrails-fish: Marinated entrails of large fish (1907)
-- peat-bitter-ale: Peat-smoked bitter (1573)
-- skewered-herring-veg: Skewered herring with vegetables (1515)
+- samphire-liquor: Samphire liquor (3044)
+- cod-tongues-sauteed: Sautéed cod tongues (2887)
+- entrails-fish: Marinated entrails of large fish (2850)
+- peat-bitter-ale: Peat-smoked bitter (2366)
+- skewered-herring-veg: Skewered herring with vegetables (2274)
 
-Ingredients never appearing in this slice: **13** (of 491)
+Ingredients never appearing in this slice: **11** (of 491)
   - aurochs: aurochs [protein,ruminant]
   - truffle-white: white truffle [vegetable]
-  - melon: melons [fruit]
   - mango: mangoes [fruit]
   - chia: chia seeds [nut]
   - suet: suet [fat]
   - caviar: sturgeon caviar [protein,fish]
   - lychee: lychee [fruit]
   - kola-nut: kola nut [nut]
-  - starfruit: starfruit [fruit]
   - passion-fruit: passion fruit [fruit]
   - seawater-brine: seawater brine [liquid,spice]
   - megaceront: megaceront [protein,game,ruminant]
 
-#### religious-fast (n=10240)
+#### religious-fast (n=15360)
 
 Top 5 ingredients
-- egg: eggs [protein] (9603)
-- salt: salt [spice] (5755)
-- potato: potato [starch,vegetable] (5642)
-- sage: sage [herb] (5520)
-- krill: krill paste [protein,shellfish] (2626)
+- egg: eggs [protein] (14387)
+- salt: salt [spice] (8607)
+- potato: potato [starch,vegetable] (8404)
+- sage: sage [herb] (8270)
+- krill: krill paste [protein,shellfish] (3925)
 
 Top 5 authored dishes
-- fish-meatballs-wine: Fish meatballs in wine (2350)
-- cod-mustard-sauce: Cod simmered in mustard sauce (2132)
-- skewered-herring-veg: Skewered herring with vegetables (2069)
-- smoked-salmon-rye: Salmon smoked in dill with dark rye bread (1928)
-- salt-cod-roots: Salt cod stew with winter roots (1896)
+- fish-meatballs-wine: Fish meatballs in wine (3520)
+- cod-mustard-sauce: Cod simmered in mustard sauce (3223)
+- skewered-herring-veg: Skewered herring with vegetables (3109)
+- smoked-salmon-rye: Salmon smoked in dill with dark rye bread (2911)
+- salt-cod-roots: Salt cod stew with winter roots (2839)
 
-Ingredients never appearing in this slice: **77** (of 491)
+Ingredients never appearing in this slice: **76** (of 491)
 
 ## B. Top ingredient by biome × tier
 
 | biome | tier | top ingredient | count |
 |---|---|---|---:|
-| coastal | roadside | prune (prunes [fruit]) | 2317 |
-| coastal | common | ale-pale (pale ale [liquid,drink]) | 2267 |
-| coastal | fine | salt (salt [spice]) | 2516 |
-| coastal | noble | salt (salt [spice]) | 3243 |
-| heartland | roadside | sage (sage [herb]) | 1787 |
-| heartland | common | sage (sage [herb]) | 1495 |
-| heartland | fine | sage (sage [herb]) | 2576 |
-| heartland | noble | sage (sage [herb]) | 2467 |
-| highland | roadside | sage (sage [herb]) | 1319 |
-| highland | common | ale (dark ale [liquid,drink]) | 1472 |
-| highland | fine | egg (eggs [protein]) | 3109 |
-| highland | noble | egg (eggs [protein]) | 3247 |
-| arid | roadside | koumiss (koumiss [liquid,drink,dairy]) | 3946 |
-| arid | common | koumiss (koumiss [liquid,drink,dairy]) | 2233 |
-| arid | fine | koumiss (koumiss [liquid,drink,dairy]) | 1959 |
-| arid | noble | koumiss (koumiss [liquid,drink,dairy]) | 2045 |
-| frostlands | roadside | cloudy-beer (cloudy beer [liquid,drink]) | 1146 |
-| frostlands | common | honey (honey [sweetener]) | 1323 |
-| frostlands | fine | sage (sage [herb]) | 2285 |
-| frostlands | noble | salt (salt [spice]) | 2280 |
+| coastal | roadside | prune (prunes [fruit]) | 3495 |
+| coastal | common | ale-pale (pale ale [liquid,drink]) | 3443 |
+| coastal | fine | salt (salt [spice]) | 3768 |
+| coastal | noble | salt (salt [spice]) | 4832 |
+| heartland | roadside | sage (sage [herb]) | 2626 |
+| heartland | common | sage (sage [herb]) | 2263 |
+| heartland | fine | sage (sage [herb]) | 3862 |
+| heartland | noble | sage (sage [herb]) | 3675 |
+| highland | roadside | prune (prunes [fruit]) | 1963 |
+| highland | common | ale (dark ale [liquid,drink]) | 2181 |
+| highland | fine | egg (eggs [protein]) | 4659 |
+| highland | noble | egg (eggs [protein]) | 4873 |
+| arid | roadside | koumiss (koumiss [liquid,drink,dairy]) | 5919 |
+| arid | common | koumiss (koumiss [liquid,drink,dairy]) | 3275 |
+| arid | fine | koumiss (koumiss [liquid,drink,dairy]) | 2914 |
+| arid | noble | koumiss (koumiss [liquid,drink,dairy]) | 3045 |
+| frostlands | roadside | cloudy-beer (cloudy beer [liquid,drink]) | 1737 |
+| frostlands | common | honey (honey [sweetener]) | 1994 |
+| frostlands | fine | sage (sage [herb]) | 3392 |
+| frostlands | noble | salt (salt [spice]) | 3414 |
 
 ## C. Inconsistencies & scope flags
 

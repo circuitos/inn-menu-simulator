@@ -319,6 +319,27 @@ So fine inns serve regional imports but not rare ones; noble inns serve everythi
 
 When a DM wants to reshape geography (move regions, add a sixth biome, or carve up a 5×5 grid), edit `biome_relations`. The generator never sees coordinates: only the distance table. Symmetry isn't enforced by the code, but breaking it produces strange one-way trade lanes; keep entries reciprocal unless you mean it.
 
+## Historical mode
+
+Opt-in checkbox (rendered with the flavor packs; off by default). Biases generation toward a broadly 14th-16th century Western European frame. Fantasy mode is bit-identical whether or not the feature exists: every mechanism below activates only when `world.historical` is true. The `REALISM` block at the top of `src/generator.js` (next to `TUNING`) holds every knob.
+
+What the mode does:
+
+- **Anachronism filtering.** Ingredients and dishes tagged `new-world` (potato, tomato, maize, squash, turkey...) or `post-medieval` (distilled spirits, stout) drop from both pools. `post-medieval-west` (the pickled-vegetable dishes) drops everywhere EXCEPT the arid biome: vinegar pickles are period in the medieval Islamic world, and the food-historian verdict behind the tag was explicitly Western. The `pickled` prep also refuses vegetable-role ingredients outside arid. These three are **annotation tags**: `META_TAGS` keeps them out of the per-menu novelty ledger so tagging an entry never shifts fantasy-mode output.
+- **Fish days.** Rolled per generation at 195/365 on a dedicated seed stream (`seed + "|fishday"`), suppressing meat via the same `suppress_contains` path Religious Fast uses; a nested roll (`lent_share`) makes some days Lent-strict, which also drops eggs and dairy from the procedural pool. Arid skips the roll entirely (Christian-calendar logic). Selecting Religious Fast manually under Historical forces the strict variant. The menu carries a `calendar_note`.
+- **Sumptuary caps.** `REALISM.tier_caps` replaces `TIER_CAPS`, tightened in the spirit of the 1363 English statutes.
+- **Assize price stability.** Staple drinks (cost ≤ `staple_cost_max`) keep only `staple_swing` of the economy and event price movement. Condition multipliers still apply in full: sieges broke every assize.
+- **Content layer.** The hidden `historical` flavor pack (`data/flavor_packs/historical.json`, `hidden: true` in the manifest) adds period items (verjuice, stockfish, perry, metheglin, wafers, gastels, pottages, mortrews, umbles, galantyne, eel pie) and renames via `ingredient_overrides` (white carrots, lingonberries, small ale). The checkbox activates it; it never appears in the pack list.
+- **UI.** Checking Historical stores, unchecks, and disables the fantasy setting packs (mutually exclusive world claims), restoring them on uncheck. A modal (first activation, and via the "what does this do?" link) states the mode's claims and limits. The LLM polish prompt is told to stay period-plausible when the mode is on.
+
+Testing: both smoke scripts accept `REALISM=1`, which flips every swept world to historical AND merges the historical pack node-side (`applyPacks` in `scripts/lib/loader.js`). `node scripts/historical-coverage.js` reports how much of each biome's pool the mode removes; a biome losing much more than the current 4-6% of dishes signals the pack needs period additions there.
+
+Known gaps, deliberate for v1:
+
+- `suppress_contains` keys off the `contains` field, which only mains must carry; an untagged meat appetizer (venison sausage, chopped ham) can slip onto a fast-day menu. Fix is a data pass tagging meat/fish appetizers plus widening smoke-deep's C8.
+- Lent-strict egg/dairy suppression reaches only the procedural pool; authored dishes don't declare dairy or eggs.
+- The arid biome's historical layer is thin: the mode's evidence base is northwest European. Research round pending (caravanserai fare, cookshops of the medieval Islamic world, mukhallalat pickles); the modal says so out loud.
+
 ## Flavor packs
 
 The generic pool aims to be system-agnostic: recognizable medieval-fantasy fare that fits most worlds. Setting-specific named dishes (proper nouns, regional cuisines, in-fiction beverages) live in **flavor packs** instead, so other DMs forking the project don't inherit one author's setting.
@@ -515,6 +536,10 @@ Common edits and the file to touch:
 | Reshape biome geography (move regions / 5×5 grid) | `modifiers.json` → `biome_relations` |
 | Change biome labels or add a biome | `modifiers.json` → `biomes` (set `label`, `import_phrase`, `import_adjective`; add an entry in `biome_relations`; retag dishes/ingredients accordingly) |
 | Add an inn-name charge, or retune name patterns / flair | `inn_names.json` (see [Inn names](#inn-names)) |
+| Mark an ingredient or dish as anachronistic for Historical mode | add `new-world` / `post-medieval` / `post-medieval-west` to its `tags` |
+| Add period content or renames for Historical mode | `data/flavor_packs/historical.json` |
+| Tune fish-day odds, sumptuary caps, assize damping | `REALISM` block in `src/generator.js` |
+| Make an event ban meat or fish outright | `suppress_contains` on the event in `events.json` |
 
 Tags are case-sensitive lowercase hyphenated strings. The generator does exact-string matching; a typo in a tag silently makes a dish invisible.
 
