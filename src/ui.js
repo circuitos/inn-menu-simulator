@@ -90,6 +90,7 @@ function randomSeed() {
 }
 
 function collectWorld() {
+  const historicalCb = qs("historical-mode");
   return {
     biome: qs("biome").value,
     season: qs("season").value,
@@ -97,7 +98,8 @@ function collectWorld() {
     inn_tier: qs("inn_tier").value,
     economy: qs("economy").value,
     condition: qs("condition").value,
-    event: qs("event").value
+    event: qs("event").value,
+    historical: !!(historicalCb && historicalCb.checked)
   };
 }
 
@@ -109,6 +111,11 @@ function populateFlavorPacks(data) {
   if (!entries.length) { fieldset.style.display = "none"; return; }
   root.innerHTML = "";
   for (const entry of entries) {
+    // Hidden packs (the Historical content layer) are activated by their own
+    // control, not the pack list.
+    if (entry.hidden) continue;
+    const row = document.createElement("div");
+    row.className = "option-row";
     const wrap = document.createElement("label");
     wrap.className = "flavor-pack-row";
     const cb = document.createElement("input");
@@ -119,12 +126,37 @@ function populateFlavorPacks(data) {
     if (entry.default_active) cb.checked = true;
     cb.addEventListener("change", () => generate());
     const text = document.createElement("span");
-    text.textContent = entry.label;
-    if (entry.description) text.title = entry.description;
+    text.textContent = `Flavor pack: ${entry.label}`;
     wrap.appendChild(cb);
     wrap.appendChild(text);
-    root.appendChild(wrap);
+    row.appendChild(wrap);
+    if (entry.description) {
+      const info = document.createElement("button");
+      info.type = "button";
+      info.className = "info-btn";
+      info.setAttribute("aria-label", `About the ${entry.label} pack`);
+      info.innerHTML = INFO_SVG;
+      info.addEventListener("click", () => openPackInfo(entry));
+      row.appendChild(info);
+    }
+    root.appendChild(row);
   }
+}
+
+// Same minimal stroke style as the lock icons; a circled question mark.
+const INFO_SVG = `
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.2 9.2a2.8 2.8 0 0 1 5.44.93c0 1.87-2.8 2.34-2.8 3.74" />
+    <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+  </svg>`;
+
+function openPackInfo(entry) {
+  const modal = qs("pack-info-modal");
+  if (!modal || typeof modal.showModal !== "function") return;
+  qs("pack-info-title").textContent = `Flavor pack: ${entry.label}`;
+  qs("pack-info-body").textContent = entry.description || "";
+  modal.showModal();
 }
 
 // Seasons and the weather order are intentionally fixed here: modifiers.json
@@ -310,6 +342,7 @@ function renderMenu(menu) {
   const notes = [];
   if (menu.condition_note) notes.push(menu.condition_note);
   if (menu.event_note) notes.push(menu.event_note);
+  if (menu.calendar_note) notes.push(menu.calendar_note);
   if (notes.length) {
     for (const n of notes) {
       const p = document.createElement("p");
@@ -424,9 +457,73 @@ async function init() {
     qs("seed").value = randomSeed();
     generate();
   });
+  initHistorical();
   initPolish();
   qs("polish").addEventListener("click", polish);
   generate();
+}
+
+// Historical checkbox: mutually exclusive with fantasy setting packs (the two
+// layers claim different worlds). Checking it stores each pack toggle's state,
+// unchecks and disables them; unchecking restores what the user had. The modal
+// opens on the first activation and from the "what does this do?" link.
+function initHistorical() {
+  const cb = qs("historical-mode");
+  const modal = qs("historical-modal");
+  if (!cb) return;
+  let storedPackState = null;
+  let modalSeen = false;
+  try { modalSeen = localStorage.getItem("historical-modal-seen") === "1"; } catch (e) {}
+
+  const setPacksDisabled = (disabled) => {
+    const toggles = document.querySelectorAll(".flavor-pack-toggle");
+    if (disabled) {
+      storedPackState = {};
+      for (const t of toggles) {
+        storedPackState[t.value] = t.checked;
+        t.checked = false;
+        t.disabled = true;
+        t.closest(".flavor-pack-row").classList.add("disabled");
+        t.closest(".flavor-pack-row").title = "Disabled while Historical is on";
+      }
+    } else {
+      for (const t of toggles) {
+        t.disabled = false;
+        if (storedPackState && t.value in storedPackState) t.checked = storedPackState[t.value];
+        t.closest(".flavor-pack-row").classList.remove("disabled");
+        t.closest(".flavor-pack-row").removeAttribute("title");
+      }
+      storedPackState = null;
+    }
+  };
+
+  const openModal = () => { if (modal && typeof modal.showModal === "function") modal.showModal(); };
+
+  cb.addEventListener("change", () => {
+    setPacksDisabled(cb.checked);
+    if (cb.checked && !modalSeen) {
+      modalSeen = true;
+      try { localStorage.setItem("historical-modal-seen", "1"); } catch (e) {}
+      openModal();
+    }
+    generate();
+  });
+  const info = qs("historical-info");
+  if (info) info.addEventListener("click", openModal);
+
+  // Shared dismissal for both info dialogs: the corner X, a click on the
+  // backdrop (which registers on the dialog element itself), and Escape
+  // (native <dialog> behavior, nothing to wire).
+  for (const dlg of document.querySelectorAll("dialog.info-modal")) {
+    const x = dlg.querySelector(".modal-x");
+    if (x) x.addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", (e) => {
+      if (e.target !== dlg) return;
+      const r = dlg.getBoundingClientRect();
+      const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      if (outside) dlg.close();
+    });
+  }
 }
 
 function initPolish() {
@@ -474,7 +571,11 @@ function generate() {
   const world = collectWorld();
   const seed = qs("seed").value.trim() || randomSeed();
   qs("seed").value = seed;
-  const data = applyFlavorPacks(DATA, activeFlavorPackIds());
+  // Historical mode rides the pack machinery for its content layer: the
+  // hidden "historical" pack merges in whenever the checkbox is on.
+  const packIds = activeFlavorPackIds();
+  if (world.historical) packIds.push("historical");
+  const data = applyFlavorPacks(DATA, packIds);
   const menu = window.InnMenu.generateMenu(world, data, seed);
   window.__lastMenu = menu;
   renderMenu(menu);

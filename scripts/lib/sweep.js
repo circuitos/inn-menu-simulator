@@ -31,6 +31,11 @@ function buildWorlds(data, opts = {}) {
   const events = data.events.events.map(e => e.id);
   const incompat = data.modifiers.weather_incompatibilities || {};
 
+  // REALISM=1 sweeps every world with Historical mode on, so both smoke
+  // scripts can exercise the anachronism filters, fish days, and sumptuary
+  // caps without a separate harness.
+  const historical = process.env.REALISM === "1";
+
   const list = [];
   for (const biome of biomes)
     for (const season of seasons)
@@ -40,7 +45,7 @@ function buildWorlds(data, opts = {}) {
           for (const economy of economies)
             for (const condition of conditions)
               for (const event of events)
-                list.push({ biome, season, weather, inn_tier, economy, condition, event });
+                list.push({ biome, season, weather, inn_tier, economy, condition, event, historical });
       }
   return list;
 }

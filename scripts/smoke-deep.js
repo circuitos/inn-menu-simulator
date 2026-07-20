@@ -7,7 +7,7 @@
 const fs = require("fs");
 const path = require("path");
 const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
-const { ROOT, loadData, loadGenerator } = require("./lib/loader");
+const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
 const { bump, buildWorlds } = require("./lib/sweep");
 
 const OUT_DIR = path.join(ROOT, "out");
@@ -15,7 +15,10 @@ const REPORT_PATH = path.join(OUT_DIR, "smoke-deep.md");
 
 const SAMPLES = parseInt(process.env.SAMPLES || "3", 10);
 
-const data = loadData();
+let data = loadData();
+// REALISM=1: merge the historical content layer so the sweep sees what the
+// browser sees when the Historical checkbox is on.
+if (process.env.REALISM === "1") data = applyPacks(data, ["historical"]);
 const { generateMenuTraced } = loadGenerator();
 
 const VALID_BIOMES = ["coastal","heartland","highland","arid","frostlands"];

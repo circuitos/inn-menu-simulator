@@ -24,7 +24,7 @@ const {
   mainsMissingContains,
   unreachableNonUnusualIngredients,
 } = require("./lib/checks");
-const { ROOT, loadData, loadGenerator } = require("./lib/loader");
+const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
 const { bump, buildWorlds } = require("./lib/sweep");
 
 const OUT_DIR = path.join(ROOT, "out");
@@ -40,7 +40,10 @@ const WORLDS_CAP = process.env.WORLDS ? parseInt(process.env.WORLDS, 10) : null;
 const RARE_FACTOR = parseFloat(process.env.RARE_FACTOR || "0.2");
 const OVER_FACTOR = parseFloat(process.env.OVER_FACTOR || "5");
 
-const data = loadData();
+let data = loadData();
+// REALISM=1: merge the historical content layer so the sweep sees what the
+// browser sees when the Historical checkbox is on.
+if (process.env.REALISM === "1") data = applyPacks(data, ["historical"]);
 const { generateMenuTraced, filterAuthored, resolveWorld } = loadGenerator();
 
 // ---------- world sweep ----------

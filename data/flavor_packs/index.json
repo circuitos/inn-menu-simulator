@@ -1,10 +1,18 @@
 {
   "packs": [
     {
+      "id": "historical",
+      "label": "Historical",
+      "file": "historical.json",
+      "description": "Period content layer for Historical mode. Hidden from the pack list; the Historical checkbox activates it.",
+      "default_active": false,
+      "hidden": true
+    },
+    {
       "id": "mog",
       "label": "Mog",
       "file": "mog.json",
-      "description": "Setting-specific dishes and ingredient names for the Mog campaign world. Adds named regional fare (Stokvis Bay cod, Briggan wine, Sasani ghostfish) on top of the generic pool.",
+      "description": "An example of a custom worldbuilding pack you can insert into the pool: setting-specific dishes and ingredient names for the Mog campaign world (Stokvis Bay cod, Briggan wine, Sasani ghostfish) overlaid on the generic fare. Forks can add their own setting the same way with one JSON file; see docs/DESIGN.md.",
       "default_active": false
     }
   ]

@@ -136,9 +136,31 @@ select option:disabled { color: var(--ink-faint); }
   text-transform: uppercase; color: var(--rubric); margin: 1.1rem 0 0.2rem;
 }
 .flavor-packs { display: flex; flex-direction: column; }
+.option-row { display: flex; align-items: center; }
+.info-btn {
+  width: 28px; height: 28px; background: transparent; border: none; padding: 0; cursor: pointer;
+  color: var(--ink-faint); display: inline-flex; align-items: center; justify-content: center;
+}
+.info-btn:hover { color: var(--ink-soft); }
+.info-btn svg { width: 15px; height: 15px; display: block; }
+.flavor-pack-row.disabled { opacity: 0.45; }
+.info-modal { width: min(46rem, calc(100vw - 3rem)); border: 1px solid var(--rule); border-radius: 6px; padding: 1.5rem 1.75rem; background: var(--page); color: var(--ink); font-family: var(--serif); position: relative; }
+.info-modal::backdrop { background: rgba(30, 20, 5, 0.5); }
+.info-modal h3 { margin-top: 0; color: var(--rubric); }
+.info-modal ul { padding-left: 1.2rem; }
+.info-modal li { margin: 0.35rem 0; }
+.modal-x {
+  position: absolute; top: 0.6rem; right: 0.7rem; width: 30px; height: 30px;
+  background: transparent; border: none; padding: 0; cursor: pointer;
+  color: var(--ink-faint); font-size: 22px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.modal-x:hover { color: var(--ink); }
+.modal-sources-head { margin-bottom: 0.3rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rubric); }
+.modal-sources { font-size: 0.92em; color: var(--ink-soft); margin-top: 0; }
 .flavor-pack-row {
   display: flex; align-items: center; gap: 0.6rem; cursor: pointer; min-height: 34px;
-  font-size: 1rem; color: var(--ink); border-bottom: 1px solid var(--rule);
+  font-size: 1rem; color: var(--ink);
 }
 .flavor-pack-row input { accent-color: var(--rubric); width: 15px; height: 15px; cursor: pointer; }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
@@ -336,9 +358,49 @@ select option:disabled { color: var(--ink-faint); }
       </fieldset>
 
       <fieldset id="flavor-packs-fieldset">
-        <p class="packs-head">Flavor packs</p>
+        <p class="packs-head">Options</p>
+        <div class="option-row">
+          <label class="flavor-pack-row" for="historical-mode">
+            <input type="checkbox" id="historical-mode" />
+            <span>Historical Mode</span>
+          </label>
+          <button type="button" class="info-btn" id="historical-info" aria-label="About Historical Mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.2 9.2a2.8 2.8 0 0 1 5.44.93c0 1.87-2.8 2.34-2.8 3.74" />
+              <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
+        </div>
         <div class="flavor-packs" id="flavor-packs"></div>
       </fieldset>
+
+      <dialog id="pack-info-modal" class="info-modal">
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
+        <h3 id="pack-info-title"></h3>
+        <p id="pack-info-body"></p>
+      </dialog>
+
+      <dialog id="historical-modal" class="info-modal">
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
+        <h3>A note about the Historical mode</h3>
+        <p>Biases the generator toward what a kitchen in roughly 14th to 16th century Europe could plausibly serve. Checking it:</p>
+        <ul>
+          <li>Removes New World foods (potato, tomato, maize, squash, turkey) and distilled spirits; modern beer styles take their period names.</li>
+          <li>Drops pickled vegetables in the European regions; the arid south keeps its vinegar pickles, which are period there.</li>
+          <li>Rolls fish days (about 195 a year in the real calendar): no meat, and on the strict days no eggs or dairy. The arid region follows other rhythms and skips them.</li>
+          <li>Limits how many dishes an inn will serve. An English law of 1363 restricted how many dishes people of each rank could be served at a meal, and the menu follows that spirit.</li>
+          <li>Keeps bread and ale at steady prices even in bad years. Medieval law fixed their price (the "assize of bread and ale"), so hard times show up as missing food rather than expensive ale.</li>
+          <li>Adds period fare: verjuice, stockfish, perry, metheglin, wafers, pottages, mortrews.</li>
+        </ul>
+        <p>Fantasy packs are disabled while this is on. It stays a game aid: the biomes are not Earth, and the written menu itself is a cheerful anachronism (the word is from 1718). Coverage is strongest for northwest Europe; the arid layer is still being researched.</p>
+        <p class="modal-sources-head">Sources consulted:</p>
+        <ul class="modal-sources">
+          <li><em>The Time Traveler's Guide to Medieval England</em>, Ian Mortimer</li>
+          <li><em>The English Alehouse</em>, Peter Clark</li>
+          <li>u/chezjim and u/iuabv of r/AskFoodHistorians, who generously pointed at sources and errors</li>
+        </ul>
+      </dialog>
 
       <div class="action-dock">
         <div class="button-row">
@@ -351,7 +413,9 @@ select option:disabled { color: var(--ink-faint); }
         </div>
       </div>
 
-      <div class="polish-block">
+      <!-- LLM polish is hidden for now (option shelved, code kept). Remove
+           the hidden attribute to bring it back. -->
+      <div class="polish-block" hidden>
         <p class="packs-head">LLM polish</p>
         <label class="flavor-pack-row">
           <input type="checkbox" id="polish-enabled" />
@@ -381,7 +445,9 @@ select option:disabled { color: var(--ink-faint); }
       </div>
 
       <p class="footnote">
-        This is a hobby project by Alex Monge. If you enjoyed it, feel free to
+        This is a hobby project by Alex Monge,
+        <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>.
+        If you enjoyed it, feel free to
         <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>,
         or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>

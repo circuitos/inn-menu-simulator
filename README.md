@@ -30,6 +30,10 @@ The default content pool is system-agnostic: generic medieval-fantasy fare that 
 
 The repo ships with **Mog**, the author's campaign setting. Leave it unchecked for a generic pool; check it to add Mog's regional cuisine. Forks can drop their own packs into `data/flavor_packs/` and add an entry to `index.json`: no code changes required. See `docs/DESIGN.md` for the pack schema.
 
+## Historical mode
+
+An opt-in **Historical** checkbox (next to the flavor packs) biases generation toward what a kitchen in roughly 14th-16th century Europe could plausibly serve: New World foods and distilled spirits drop out, fish days arrive probabilistically (meat off the board, and eggs and dairy too on the strict days), dish counts tighten per the 1363 sumptuary statutes, bread and ale hold near-assize prices, and period items the sources insisted on (verjuice, stockfish, pottages, mortrews, wafers) join the pool. A modal on the page explains exactly what changes and what the mode does not claim. It exists because food historians on Reddit audited the generator's assumptions; fantasy mode is completely unchanged when the box is off. Details in `docs/DESIGN.md`.
+
 ## Project layout
 
 ```
@@ -54,12 +58,14 @@ inn-menu-simulator/
 │   ├── inn_names.json          # charges, colors, patterns for inn names
 │   └── flavor_packs/           # optional setting-specific overlays
 │       ├── index.json          # manifest of available packs
+│       ├── historical.json     # period layer for Historical mode (hidden)
 │       └── mog.json            # the Mog setting pack (off by default)
 ├── scripts/
 │   ├── smoke.js                # regression frequency sweep (npm run smoke)
 │   ├── smoke-deep.js           # editorial per-axis audit
 │   ├── balance-probe.js        # focused import-frequency probe
 │   ├── import-label-check.js   # before/after probe for procedural import labels
+│   ├── historical-coverage.js  # read-only: per-biome pool removal under Historical mode
 │   ├── tag-origins.js          # one-shot data sweep: tag ingredient origins
 │   ├── build-preview-site.mjs  # composes the Pages site (run by CI)
 │   └── lib/

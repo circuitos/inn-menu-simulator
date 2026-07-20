@@ -166,7 +166,7 @@ Return ONLY a JSON object of the same shape with updated "name" and added "descr
 
 World context: ${JSON.stringify(menu.world)}
 Event note: ${menu.event_note || "none"}
-Condition note: ${menu.condition_note || "none"}
+Condition note: ${menu.condition_note || "none"}${menu.historical ? "\nHistorical mode is ON: keep names and descriptions period-plausible for roughly 14th to 16th century Europe. No New World foods (potato, tomato, maize, squash, chocolate, chili), no distilled spirits, no anachronistic techniques." : ""}
 
 Menu:
 ${JSON.stringify(menu.sections, null, 2)}`;

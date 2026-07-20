@@ -41,4 +41,26 @@ function loadGenerator() {
   return globalThis.window.InnMenu;
 }
 
-module.exports = { ROOT, DATA_DIR, loadData, loadGenerator };
+// Node-side mirror of ui.js applyFlavorPacks: merge one or more packs (by id)
+// into a loaded data object. Used by the smoke scripts when REALISM=1 so the
+// sweep exercises the historical content layer the way the browser does.
+function applyPacks(data, packIds) {
+  const ingMap = new Map(data.ingredients.ingredients.map(i => [i.id, i]));
+  const dishes = [...data.authored_dishes.dishes];
+  for (const id of packIds) {
+    const pack = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "flavor_packs", `${id}.json`), "utf8"));
+    for (const ing of pack.ingredients || []) ingMap.set(ing.id, ing);
+    for (const ov of pack.ingredient_overrides || []) {
+      const current = ingMap.get(ov.id);
+      if (current) ingMap.set(ov.id, { ...current, ...ov });
+    }
+    for (const d of pack.dishes || []) dishes.push(d);
+  }
+  return {
+    ...data,
+    ingredients: { ingredients: Array.from(ingMap.values()) },
+    authored_dishes: { dishes }
+  };
+}
+
+module.exports = { ROOT, DATA_DIR, loadData, loadGenerator, applyPacks };
