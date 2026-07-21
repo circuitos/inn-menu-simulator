@@ -130,17 +130,28 @@
       single: charges.length > 0,
       color: charges.some(c => c.color),
       number: charges.length > 0,
-      possessive: charges.some(c => (c.haunts || []).length) || trades.some(t => (t.haunts || []).length),
+      possessive: charges.some(c => (c.haunts || []).length) || trades.some(t => (t.haunts || []).length)
+        || figures.some(f => (f.haunts || []).length),
       waypoint: waypoints.length > 0,
       arms: trades.some(t => t.arms_sign) || (HIGH_TIERS.includes(tier) && royals.length > 0),
       pair: charges.length >= 2,
       on_object: charges.length > 0 &&
         (cfg.objects || []).some(o => !o.subjects || (o.subjects === "figures" && figures.length > 0)),
-      body_part: charges.some(c => (c.parts || []).length) || figures.some(f => (f.parts || []).length)
+      body_part: charges.some(c => (c.parts || []).length) || figures.some(f => (f.parts || []).length),
+      // The genitive pattern (The Khan of the Two Palms) leads with a designator
+      // and hangs a charge, trade, or figure off it; a charge always resolves,
+      // so it is feasible wherever the pool is non-empty.
+      genitive: charges.length > 0
     };
+    // Pattern weights are global, but a biome may override any of them (arid
+    // leans on genitive/waypoint/possessive and drops the heraldic on_object).
+    // A resolved weight of 0 removes the pattern for that biome, which is how
+    // genitive stays arid-only and on_object leaves the desert.
+    const biomeW = (cfg.pattern_biome_weights || {})[biome] || null;
+    const wOf = p => (biomeW && biomeW[p.id] != null) ? biomeW[p.id] : p.weight;
     const usable = (cfg.patterns || []).filter(p =>
-      feasible[p.id] && (!p.tiers || p.tiers.includes(tier)));
-    const pattern = weightedPick(rng, usable.length ? usable : [{ id: "single", weight: 1 }], p => p.weight);
+      feasible[p.id] && (!p.tiers || p.tiers.includes(tier)) && wOf(p) > 0);
+    const pattern = weightedPick(rng, usable.length ? usable : [{ id: "single", weight: 1 }], wOf);
 
     if (pattern.id === "color") {
       const colored = charges.filter(c => c.color);
@@ -150,8 +161,10 @@
 
     if (pattern.id === "number") {
       // "Three" carries almost every numbered sign; a couple of numbers are
-      // locked to a specific charge ("Seven Stars", "Four Birds").
-      const num = weightedPick(rng, cfg.numbers || [], n => n.weight) || { word: "Three" };
+      // locked to a specific charge ("Seven Stars", "Four Birds"), and a number
+      // may carry a biomes list so "Two" ("The Two Palms") stays arid-only.
+      const numbers = numbersFor(cfg, biome);
+      const num = weightedPick(rng, numbers, n => n.weight) || { word: "Three" };
       // A locked number ("Seven Stars", "Four Birds") only fires when its charge
       // is actually reachable in this world; otherwise the sign falls back to a
       // plain "Three <charge>" so a low-tier device can't sneak into a grand inn.
@@ -164,12 +177,62 @@
           };
         }
       }
-      const three = (cfg.numbers || []).find(n => n.word === "Three") || { word: "Three" };
+      // A generic number (Three, or arid's Two) counts a plain charge as itself;
+      // a locked number whose charge was absent degrades to Three rather than
+      // stranding "Seven <charge>" on an unrelated device.
+      const word = num.requires_charge ? "Three" : num.word;
       const plain = charges.filter(c => !isNumberLocked(cfg, c.name));
       const charge = pickW(rng, plain.length ? plain : charges);
       return {
-        name: `The ${three.word} ${charge.plural}`,
-        sign: `${three.word.toLowerCase()} ${lc(charge.plural)}`
+        name: `The ${word} ${charge.plural}`,
+        sign: `${word.toLowerCase()} ${lc(charge.plural)}`
+      };
+    }
+
+    if (pattern.id === "genitive") {
+      // The native grammar of the arid pool: the institution is the head of the
+      // name, followed by a genitive attribute drawn from a charge, a trade, or
+      // a figure (The Khan of the Two Palms, The Caravanserai of the Spicers,
+      // The Funduq of the Vizier). The designator rides inside the name, so the
+      // outer designator-append is suppressed.
+      const head = pickDesignatorWord(rng, cfg, biome, tier) || "Inn";
+      const forms = [];
+      if (charges.length) forms.push("charge");
+      if (trades.length) forms.push("trade");
+      if (figures.length) forms.push("figure");
+      const form = pick(rng, forms.length ? forms : ["charge"]);
+      let attr, sign;
+      if (form === "trade") {
+        const t = pickW(rng, trades);
+        const plural = t.plural || `${t.name}s`;
+        attr = `the ${plural}`;
+        sign = t.arms_sign ? `${article(t.arms_sign)}${t.arms_sign}`
+          : t.sign ? `${article(t.sign)}${t.sign}`
+            : `the sign of the ${plural.toLowerCase()}`;
+      } else if (form === "figure") {
+        const f = pickW(rng, figures);
+        attr = `the ${f.name}`;
+        const noun = f.name.toLowerCase();
+        sign = `${article(noun)}${noun}`;
+      } else {
+        const charge = pickW(rng, charges);
+        // Optionally count the charge ("the Two Palms"); the number pool is
+        // biome-filtered, and a charge-locked number only counts its own charge.
+        const numbers = numbersFor(cfg, biome);
+        let numWord = null;
+        if (numbers.length && rng() < (cfg.tuning.genitive_number_chance || 0)) {
+          const n = weightedPick(rng, numbers, x => x.weight);
+          if (n && (!n.requires_charge || n.requires_charge === charge.name)) numWord = n.word;
+        }
+        attr = numWord ? `the ${numWord} ${charge.plural}` : `the ${charge.plural}`;
+        sign = `${article(charge.sign)}${charge.sign}`;
+      }
+      return {
+        name: `The ${head} of ${attr}`,
+        sign,
+        designator: head,
+        designatorInName: true,
+        hoop: false
       };
     }
 
@@ -188,17 +251,24 @@
     }
 
     if (pattern.id === "possessive") {
-      // A creature's haunt (The Fox's Den, The Gull's Perch) or a trade at
-      // rest (The Drover's Rest). The board shows the subject; the haunt
-      // lives in the name only.
+      // A creature's haunt (The Fox's Den, The Gull's Perch), a trade at rest
+      // (The Drover's Rest), or a figure's stopping place (The Qadi's Rest,
+      // patron-genitive in English clothing). The board shows the subject; the
+      // haunt lives in the name only.
       const subjects = charges.filter(c => (c.haunts || []).length)
-        .concat(trades.filter(t => (t.haunts || []).length));
+        .concat(trades.filter(t => (t.haunts || []).length))
+        .concat(figures.filter(f => (f.haunts || []).length));
       const subject = pickW(rng, subjects);
       const haunt = pick(rng, subject.haunts);
-      const sign = subject.sign || lc(subject.name);
+      const sign = subject.sign || subject.name.toLowerCase();
+      const possessive = subject.possessive || `${subject.name}'s`;
+      // A haunt name is already a complete establishment (The Fox's Den, The
+      // Qadi's Rest); appending a building word would double the noun ("Rest
+      // Cookshop"), so suppress the designator here.
       return {
-        name: `The ${subject.name}'s ${haunt}`,
-        sign: `${article(sign)}${sign}`
+        name: `The ${possessive} ${haunt}`,
+        sign: `${article(sign)}${sign}`,
+        omitDesignator: true
       };
     }
 
@@ -252,7 +322,7 @@
       // Figures give a Head or Hand; animals give a Head or Horn. Restricting
       // the part to what the subject can plausibly show keeps signs coherent.
       const animals = charges.filter(c => (c.parts || []).length);
-      const subjectPool = figures.concat(animals);
+      const subjectPool = figures.filter(f => (f.parts || []).length).concat(animals);
       const subject = pickW(rng, subjectPool);
       const part = pick(rng, subject.parts);
       const possessive = subject.possessive || `${subject.name}'s`;
@@ -272,10 +342,33 @@
     return (cfg.numbers || []).some(n => n.requires_charge === chargeName);
   }
 
-  function chooseDesignator(rng, cfg, tier) {
-    const list = (cfg.designators || {})[tier] || [];
+  // Numbers filtered to this biome: a number with a biomes list ("Two" for arid)
+  // only counts there, so "The Two Palms" stays in the desert.
+  function numbersFor(cfg, biome) {
+    return (cfg.numbers || []).filter(n => !n.biomes || n.biomes.includes(biome));
+  }
+
+  // Designators are keyed by tier, optionally nested under a biome first, so the
+  // arid pool can offer Khan/Funduq/Caravanserai where the default table gives
+  // Inn/Tavern. Biome names never collide with tier names, so a flat lookup is
+  // unambiguous: try designators[biome][tier], then fall back to designators[tier].
+  function designatorList(cfg, biome, tier) {
+    const d = cfg.designators || {};
+    const byBiome = d[biome];
+    return (byBiome && byBiome[tier]) || d[tier] || [];
+  }
+  function chooseDesignator(rng, cfg, biome, tier) {
+    const list = designatorList(cfg, biome, tier);
     if (!list.length) return null;
     if (rng() >= (cfg.tuning.designator_chance || 0)) return null;
+    const d = weightedPick(rng, list, x => x.weight);
+    return d ? d.word : null;
+  }
+  // Like chooseDesignator but never declines: the genitive pattern needs a head
+  // word every time, so it bypasses designator_chance.
+  function pickDesignatorWord(rng, cfg, biome, tier) {
+    const list = designatorList(cfg, biome, tier);
+    if (!list.length) return null;
     const d = weightedPick(rng, list, x => x.weight);
     return d ? d.word : null;
   }
@@ -292,8 +385,17 @@
     const rng = makeRng(`${seed || ""}|${w.biome || ""}|${w.inn_tier || ""}`);
     const core = build(rng, cfg, w);
 
-    const designator = chooseDesignator(rng, cfg, w.inn_tier);
-    let name = designator ? `${core.name} ${designator}` : core.name;
+    // A pattern may build its own designator into the name (the genitive
+    // pattern leads with it) or opt out of one entirely (a possessive haunt is
+    // already a complete name); otherwise append one, biome-aware, at the tail.
+    let designator = null;
+    let name = core.name;
+    if (core.designatorInName) {
+      designator = core.designator != null ? core.designator : null;
+    } else if (!core.omitDesignator) {
+      designator = chooseDesignator(rng, cfg, w.biome, w.inn_tier);
+      if (designator) name = `${core.name} ${designator}`;
+    }
 
     // "on the Hoop" is an archaic-district flourish; skip it when the name
     // already carries an "on/in ..." phrase from the on_object pattern, or

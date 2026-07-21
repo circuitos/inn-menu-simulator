@@ -417,8 +417,13 @@ function renderMenu(menu) {
   const named = innNameFor(menu);
   inn.textContent = named.name;
   // The sign (the substantive element: what the board actually depicts) rides
-  // along as a tooltip so the header stays terse but the flavor is there.
-  if (named.sign) inn.title = `Sign: ${named.sign}`;
+  // along as a tooltip so the header stays terse but the flavor is there. In the
+  // arid biome a khan is known by a motif carved over the gate arch, not a hung
+  // board, so the label follows the institution.
+  if (named.sign) {
+    const label = menu.world && menu.world.biome === "arid" ? "Carved over the gate" : "Sign";
+    inn.title = `${label}: ${named.sign}`;
+  }
   const sub = document.createElement("p");
   sub.className = "menu-sub";
   sub.textContent = describeWorld(menu);

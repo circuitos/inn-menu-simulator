@@ -338,7 +338,7 @@ Known gaps, deliberate for v1:
 
 - `suppress_contains` keys off the `contains` field, which only mains must carry; an untagged meat appetizer (venison sausage, chopped ham) can slip onto a fast-day menu. Fix is a data pass tagging meat/fish appetizers plus widening smoke-deep's C8.
 - Lent-strict egg/dairy suppression reaches only the procedural pool; authored dishes don't declare dairy or eggs.
-- The arid biome's historical layer is thin: the mode's evidence base is northwest European. Research round pending (caravanserai fare, cookshops of the medieval Islamic world, mukhallalat pickles); the modal says so out loud.
+- The arid biome's historical layer, once thin, is now drawn from the medieval Islamic culinary corpus: 51 sourced dishes (caravanserai and cookshop fare, mukhallalat pickles, non-alcoholic syrup drinks) with per-dish provenance in [`ARID_SOURCES.md`](ARID_SOURCES.md). The mode's northwest-European core is still its deepest layer.
 
 ## Flavor packs
 
@@ -467,25 +467,34 @@ The name is seeded on `seed + biome + inn_tier`, so it is stable for a given inn
 
 ### Patterns
 
-`patterns` weights the eight recombinatory templates (weights are relative, not percentages):
+`patterns` weights the recombinatory templates (weights are relative, not percentages):
 
 | Pattern | Example | Weight | Tiers |
 |---|---|---|---|
 | `single` | The Bell | 56 | all |
 | `color` | The White Hart | 16 | all |
-| `number` | The Three Tuns | 8 | all |
-| `possessive` | The Fox's Den, The Drover's Rest | 8 | roadside, common |
+| `number` | The Three Tuns, The Two Palms | 8 | all |
+| `possessive` | The Fox's Den, The Drover's Rest, The Qadi's Rest | 8 | roadside, common |
 | `waypoint` | The Last Shade, The Ninth Milestone | 5 | roadside, common |
 | `arms` | The Miller's Arms, The King's Arms | 6 | common, fine, noble |
 | `pair` | The Rose and Crown | 5 | all |
 | `on_object` | The George on Horseback | 3 | all |
 | `body_part` | The Nomad's Head | 2 | all |
+| `genitive` | The Khan of the Two Palms, The Caravanserai of the Spicers | 0 (arid 30) | common, fine, noble |
 
-A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name. A pattern with a `tiers` list additionally only fires at those tiers: `possessive` is a low-tier, plainspoken register, while guild and royal `arms` carry prestige.
+A pattern that the current world can't satisfy (e.g. `pair` when the biome/tier pool has fewer than two charges) is dropped and its weight redistributed, so every world resolves to a name. A pattern with a `tiers` list additionally only fires at those tiers: `possessive` is a low-tier, plainspoken register, while guild and royal `arms` carry prestige. A `possessive` name is a complete establishment (`The Fox's Den`, `The Qadi's Rest`), so it never takes an appended designator.
+
+**Genitive (`genitive`)** inverts the English-signboard syntax: the building word becomes the *head* of the name, followed by a genitive attribute drawn from a charge (`The Khan of the Two Palms`), a trade pluralized (`The Caravanserai of the Spicers`), or a figure (`The Funduq of the Vizier`). It exists for the arid pool, whose real naming grammar is genitive and personal (khans named for a commodity, guild, patron, or feature), not heraldic. Its global weight is 0; only the per-biome table below turns it on. See [`ARID_NAMING.md`](ARID_NAMING.md) for the reasoning.
+
+**Per-biome pattern weights.** `pattern_biome_weights` overrides the global weight of any pattern for a given biome; an unlisted pattern keeps its global weight, and a resolved weight of 0 removes the pattern there. Arid uses this to lead with `genitive`, lean on `waypoint` and `possessive` (caravan-route and patron naming), damp the heraldic `color`/`single` register, and drop `on_object` entirely. This is how one biome re-shapes the whole grammar rather than only swapping its vocabulary.
 
 ### Biome and tier gating
 
 Each charge, figure, and trade carries `biomes` (concrete members of this project's five biomes) and `tiers` (`roadside`/`common`/`fine`/`noble`). The charge pool is filtered to the world's biome and tier; if biome filtering empties the pool it falls back to the tier-eligible set, then to all charges, so a name always resolves. Figures (`King`, `Nomad`, ...) and trades (`Miller`, `Shipwright`, ...) are filtered **strictly** by biome and tier so royalty stays out of roadside alehouses, the Nomad's Head stays in the desert, and a Furrier's Arms hangs only in the frostlands. `designators` maps each tier to a weighted list of building words (`Alehouse`/`Brewhouse` low, `Inn`/`Tavern` mid, `Great Inn`/`Hospitium` high).
+
+**Biome-keyed designators.** `designators` may nest a biome key whose value is its own tier map; the lookup tries `designators[biome][tier]` first and falls back to the flat `designators[tier]`. Biome names never collide with tier names, so the flat lookup stays unambiguous. Arid overrides all four tiers with its own institution ladder (`Cookshop`/`Wayhouse`/`Rest`/`Khan` roadside, up through `Great Caravanserai`/`Royal Khan` noble), so the tier still reads but through the institution rather than the English building word. The genitive pattern draws its head word from this same table.
+
+A `number` entry may carry a `biomes` list so a count stays regional: `Two` (`The Two Palms`) is arid-only, while `Three` carries the rest everywhere.
 
 **Keep each biome stocked to the top tier.** Two failure modes make names feel predictable, and both come from thin pools, not from the pattern engine (`single` and `color`, ~82% of names, pick uniformly from the pool, so pool composition *is* the distribution):
 
@@ -499,14 +508,15 @@ A quick check: `require('src/innname.js')`, generate a few thousand names for `<
 - **Body parts**: figures show a `Head` or `Hand`; horned animals a `Head` or `Horn`; other animals a `Head` only. Allowed parts live in each entry's `parts` list.
 - **Numbers**: `Three` carries almost every numbered sign. `Seven` and `Four` are locked to a specific charge (`Seven Stars`, `Four Birds`) via `requires_charge`, and only fire when that charge is reachable at the world's tier; otherwise the sign falls back to `Three <charge>`.
 - **Postures** (`Ramping`, `Spread`, `Flying`, ...) attach only at `fine`/`noble` tiers, only to charges that list them, and only `posture_chance` of the time.
-- **Haunts**: the `possessive` pattern draws only from entries with a `haunts` list, and the haunt must fit the subject: birds get `Perch`/`Nest`, den animals `Den`, climbers `Leap`, beasts of burden and trades `Rest`. The board shows the subject (the charge's `sign`, or the trade's); the haunt lives in the name only.
+- **Haunts**: the `possessive` pattern draws only from entries with a `haunts` list, and the haunt must fit the subject: birds get `Perch`/`Nest`, den animals `Den`, climbers `Leap`, beasts of burden, trades, and figures `Rest`. Figures with a `haunts` list join the pool so a patron-genitive reads in English clothing (`The Qadi's Rest`). The board shows the subject (the charge's or trade's `sign`, or the figure's lowercased name); the haunt lives in the name only.
+- **Genitive attribute**: the `genitive` pattern's attribute is a charge (`the [plural]`, optionally counted), a trade (`the [plural]`, its `arms_sign` or `sign` on the board), or a figure (`the [Name]`). The head designator comes from the biome's designator table and is not appended a second time.
 - **Arms**: the `arms` pattern draws from trades with an `arms_sign` (a blazon-flavored shield description), plus royal figures at `fine`/`noble` only, so `The King's Arms` stays a high-tier sign while `The Brewer's Arms` can hang in a market town.
 - **Riders**: an object marked `subjects: "figures"` (`on Horseback`) takes a figure, never a charge; the world gets `The Jarl on Horseback`, not `The Camel on Horseback`.
 - **Waypoints**: the `waypoint` pattern names an inn by its position on a route: an ordinal from `ordinals` (weighted toward `Last`) plus a biome-tagged stop from `waypoints` (`The Last Shade`, `The Third Well`, `The Ninth Milestone`). Waypoints filter strictly by biome and tier, and the hoop suffix never attaches (a waypoint is already a place).
 
 ### Tuning
 
-The `tuning` block holds the flair probabilities: `designator_chance` (append a building word), `archaic_color_chance` (use `Alba`/`Redd`/`Blake`/`Gilt` instead of `White`/`Red`/`Black`/`Golden`), `posture_chance`, and `hoop_suffix_chance` (the archaic "on the Hoop" suffix).
+The `tuning` block holds the flair probabilities: `designator_chance` (append a building word), `archaic_color_chance` (use `Alba`/`Redd`/`Blake`/`Gilt` instead of `White`/`Red`/`Black`/`Golden`), `posture_chance`, `hoop_suffix_chance` (the archaic "on the Hoop" suffix), and `genitive_number_chance` (how often the genitive pattern counts its charge, as in `The Khan of the Two Palms`).
 
 ### Adding a charge
 
