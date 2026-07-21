@@ -9,6 +9,15 @@
       "hidden": true
     },
     {
+      "id": "osr-bestiary",
+      "label": "OSR Bestiary",
+      "file": "osr-bestiary.json",
+      "description": "Huntable-monster fare for tables that like their inns a little wilder: owlbear rashers, slime soup, wyvern tail stew, mastodon pot roast, and some eighty more beasts added to the larder as dishes and procedural ingredients. The creature roster is drawn from Clay Davis' OSR Bestiary, itself built on the Basic Fantasy RPG. Leans beastly rather than sentient; no undead, nothing obviously venomous on the plate.",
+      "link": "https://clayadavis.gitlab.io/osr-bestiary/",
+      "link_label": "Clay Davis' OSR Bestiary",
+      "default_active": false
+    },
+    {
       "id": "mog",
       "label": "Mog",
       "file": "mog.json",

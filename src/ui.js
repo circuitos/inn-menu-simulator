@@ -156,6 +156,19 @@ function openPackInfo(entry) {
   if (!modal || typeof modal.showModal !== "function") return;
   qs("pack-info-title").textContent = `Flavor pack: ${entry.label}`;
   qs("pack-info-body").textContent = entry.description || "";
+  // Packs may cite where their content comes from (link + link_label in the
+  // manifest); the line only renders when a link is declared.
+  const linkLine = qs("pack-info-link");
+  if (linkLine) {
+    const a = linkLine.querySelector("a");
+    if (entry.link && a) {
+      a.href = entry.link;
+      a.textContent = entry.link_label || entry.link;
+      linkLine.hidden = false;
+    } else {
+      linkLine.hidden = true;
+    }
+  }
   modal.showModal();
 }
 
@@ -235,6 +248,81 @@ function setSelect(id, value) {
   if (!el) return;
   const option = Array.from(el.options).find(o => o.value === value);
   if (option) el.value = value;
+}
+
+// ---------- shareable URLs ----------
+// Every dial plus the seed can round-trip through the query string, so a menu
+// can be shared, bookmarked, or preset by an external tool (a VTT macro can
+// link straight to ?biome=frostlands&season=winter&seed=...). Params are read
+// on load; the link itself is only built on demand by the Share link action,
+// so the address bar never churns while dialing. Values equal to the Reset
+// defaults are omitted to keep links short.
+const PARAM_IDS = ["biome","season","weather","inn_tier","economy","condition","event"];
+const PARAM_ALIASES = { inn_tier: "tier" };
+function paramName(id) { return PARAM_ALIASES[id] || id; }
+
+function readUrlState() {
+  const p = new URLSearchParams(location.search);
+  const state = {
+    seed: p.get("seed"),
+    historical: p.get("historical") === "1",
+    packs: p.get("packs") !== null ? p.get("packs").split(",").filter(Boolean) : null
+  };
+  for (const id of PARAM_IDS) state[id] = p.get(paramName(id));
+  return state;
+}
+
+// setSelect ignores values that don't match an option, so junk params fall
+// back to the defaults instead of erroring.
+function applyUrlState(state) {
+  for (const id of PARAM_IDS) if (state[id]) setSelect(id, state[id]);
+  applyWeatherCompatibility();
+  if (state.packs) {
+    for (const t of document.querySelectorAll(".flavor-pack-toggle")) {
+      t.checked = state.packs.includes(t.value);
+    }
+  }
+}
+
+function buildShareUrl(world, seed, packIds) {
+  const p = new URLSearchParams();
+  for (const id of PARAM_IDS) {
+    if (world[id] !== DEFAULTS[id]) p.set(paramName(id), world[id]);
+  }
+  if (world.historical) p.set("historical", "1");
+  if (packIds.length) p.set("packs", packIds.join(","));
+  p.set("seed", seed);
+  return `${location.origin}${location.pathname}?${p.toString()}`;
+}
+
+function lastShareUrl() {
+  const s = window.__lastShare;
+  return s ? buildShareUrl(s.world, s.seed, s.packIds) : null;
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy") ? resolve() : reject(new Error("copy failed"));
+    } finally { ta.remove(); }
+  });
+}
+
+function flashButton(btn, label) {
+  if (btn.dataset.flashing) return;
+  const original = btn.textContent;
+  btn.dataset.flashing = "1";
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = original; delete btn.dataset.flashing; }, 1200);
 }
 
 // Per-field lock state. Locked fields are skipped by Randomize / New seed.
@@ -343,13 +431,11 @@ function renderMenu(menu) {
   if (menu.condition_note) notes.push(menu.condition_note);
   if (menu.event_note) notes.push(menu.event_note);
   if (menu.calendar_note) notes.push(menu.calendar_note);
-  if (notes.length) {
-    for (const n of notes) {
-      const p = document.createElement("p");
-      p.className = "event-note";
-      p.textContent = n;
-      root.appendChild(p);
-    }
+  for (const n of notes) {
+    const p = document.createElement("p");
+    p.className = "event-note";
+    p.textContent = n;
+    root.appendChild(p);
   }
 
   const order = ["appetizer","main","dessert","drink"];
@@ -404,6 +490,36 @@ function renderMenu(menu) {
   root.appendChild(footer);
 }
 
+// Plain-text rendering of the last menu, for pasting into session notes or a
+// VTT journal. Mirrors the on-page order: name, world line, notes, sections.
+function menuAsText(menu) {
+  const lines = [];
+  const named = innNameFor(menu);
+  lines.push(named.name);
+  lines.push(describeWorld(menu));
+  lines.push("");
+  const notes = [];
+  if (menu.condition_note) notes.push(`${conditionLabel(menu)}: ${menu.condition_note}`);
+  if (menu.event_note) notes.push(`${eventLabel(menu)}: ${menu.event_note}`);
+  if (menu.calendar_note) notes.push(`Calendar: ${menu.calendar_note}`);
+  if (notes.length) { lines.push(...notes, ""); }
+  const order = ["appetizer","main","dessert","drink"];
+  for (const sectionId of order) {
+    const section = menu.sections[sectionId];
+    if (!section || !section.dishes.length) continue;
+    lines.push(section.label.toUpperCase());
+    for (const d of section.dishes) {
+      lines.push(`- ${d.name} (${d.price_text})`);
+      if (d.flavor) lines.push(`    ${d.flavor}`);
+    }
+    lines.push("");
+  }
+  lines.push(`Seed: ${menu.seed}`);
+  const url = lastShareUrl();
+  if (url) lines.push(url);
+  return lines.join("\n");
+}
+
 // Sign-based inn name from the world (biome + tier) and seed, via innname.js.
 // Falls back to a terse hashed name if the module or its data is unavailable,
 // so the header always has a name even before inn_names.json loads.
@@ -422,10 +538,22 @@ function innNameFromSeed(seed) {
   return `The ${adj[h % adj.length]} ${noun[(h >>> 8) % noun.length]}`;
 }
 
+// Same order as the parameter form (biome, season, weather, tier, economy,
+// condition) so the line under the inn name reads as an echo of the dials.
 function describeWorld(menu) {
   const w = menu.world;
   const biomeLabel = menu.biome_label || w.biome;
-  return `${cap(w.season)} · ${w.weather} · ${biomeLabel} · ${w.inn_tier} inn · ${w.economy} year · ${w.condition}`;
+  return `${biomeLabel} · ${w.season} · ${w.weather} · ${w.inn_tier} inn · ${w.economy} year · ${w.condition}`;
+}
+
+function conditionLabel(menu) {
+  const c = DATA && DATA.modifiers.conditions[menu.world.condition];
+  return (c && c.label) || cap(menu.world.condition);
+}
+
+function eventLabel(menu) {
+  const e = DATA && DATA.events.events.find(ev => ev.id === menu.world.event);
+  return (e && e.label) || "Event";
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
@@ -434,13 +562,14 @@ let DATA = null;
 
 async function init() {
   DATA = await loadData();
+  const urlState = readUrlState();
   populateSelects(DATA);
   populateFlavorPacks(DATA);
-  applyWeatherCompatibility();
+  applyUrlState(urlState);
   installLockButtons();
   qs("biome").addEventListener("change", applyWeatherCompatibility);
   qs("season").addEventListener("change", applyWeatherCompatibility);
-  qs("seed").value = randomSeed();
+  qs("seed").value = urlState.seed || randomSeed();
   qs("generate").addEventListener("click", generate);
   qs("reroll").addEventListener("click", () => {
     if (!locks.seed) qs("seed").value = randomSeed();
@@ -457,7 +586,38 @@ async function init() {
     qs("seed").value = randomSeed();
     generate();
   });
-  initHistorical();
+  qs("share").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const url = lastShareUrl();
+    if (!url) return;
+    try {
+      await copyToClipboard(url);
+      flashButton(qs("share"), "Link copied");
+    } catch (err) {
+      flashButton(qs("share"), "Copy failed");
+    }
+  });
+  qs("copy-text").addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (!window.__lastMenu) return;
+    try {
+      await copyToClipboard(menuAsText(window.__lastMenu));
+      flashButton(qs("copy-text"), "Copied");
+    } catch (err) {
+      flashButton(qs("copy-text"), "Copy failed");
+    }
+  });
+  qs("print").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.print();
+  });
+  const howto = qs("howto-link");
+  if (howto) howto.addEventListener("click", (e) => {
+    e.preventDefault();
+    const dlg = qs("howto-modal");
+    if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+  });
+  initHistorical(urlState.historical);
   initPolish();
   qs("polish").addEventListener("click", polish);
   generate();
@@ -467,7 +627,7 @@ async function init() {
 // layers claim different worlds). Checking it stores each pack toggle's state,
 // unchecks and disables them; unchecking restores what the user had. The modal
 // opens on the first activation and from the "what does this do?" link.
-function initHistorical() {
+function initHistorical(activeFromUrl) {
   const cb = qs("historical-mode");
   const modal = qs("historical-modal");
   if (!cb) return;
@@ -510,6 +670,13 @@ function initHistorical() {
   });
   const info = qs("historical-info");
   if (info) info.addEventListener("click", openModal);
+
+  // A shared ?historical=1 link arrives pre-checked, without the first-time
+  // modal: the recipient asked for a menu, not an explainer.
+  if (activeFromUrl && !cb.checked) {
+    cb.checked = true;
+    setPacksDisabled(true);
+  }
 
   // Shared dismissal for both info dialogs: the corner X, a click on the
   // backdrop (which registers on the dialog element itself), and Escape
@@ -574,6 +741,7 @@ function generate() {
   // Historical mode rides the pack machinery for its content layer: the
   // hidden "historical" pack merges in whenever the checkbox is on.
   const packIds = activeFlavorPackIds();
+  window.__lastShare = { world, seed, packIds: packIds.slice() };
   if (world.historical) packIds.push("historical");
   const data = applyFlavorPacks(DATA, packIds);
   const menu = window.InnMenu.generateMenu(world, data, seed);

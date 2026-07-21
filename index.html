@@ -100,7 +100,13 @@ a { color: var(--rubric); text-decoration: none; } a:hover { color: var(--ink); 
 /* ---------- left page: parameters ---------- */
 .page-head { margin-bottom: 1.5rem; }
 .page-l h1 { font-family: var(--fell); font-weight: 400; font-size: 1.7rem; line-height: 1.1; margin: 0 0 0.15rem; }
-.tagline { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rubric); margin: 0; }
+.tagline {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--rubric); margin: 0;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+}
+.tagline a { color: var(--ink-faint); }
+.tagline a:hover { color: var(--rubric); }
 .page-head::after { content: ""; display: block; margin-top: 0.9rem; border-top: 1px solid var(--rule); }
 fieldset { border: none; padding: 0; margin: 0; }
 .register-line {
@@ -165,6 +171,13 @@ select option:disabled { color: var(--ink-faint); }
 .flavor-pack-row input { accent-color: var(--rubric); width: 15px; height: 15px; cursor: pointer; }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
 .button-row + .button-row { margin-top: 0.5rem; }
+.util-links {
+  margin: 0.9rem 0 0; display: flex; justify-content: center; gap: 0.6rem;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.util-links a { color: var(--ink-soft); }
+.util-links a:hover { color: var(--rubric); }
 .btn {
   flex: 1; padding: 0.55rem 0.5rem; min-height: 42px;
   background: transparent; color: var(--ink); border: 1px solid var(--ink-soft); border-radius: 2px;
@@ -276,6 +289,22 @@ select option:disabled { color: var(--ink-faint); }
   .page-l, .page-r { padding: 1.75rem 1.5rem; }
   .register-line { grid-template-columns: 84px 1fr auto; }
 }
+
+/* ---------- print: just the menu page, always on light paper ---------- */
+@media print {
+  :root, [data-theme="dark"] {
+    --desk: #fff; --page: #fff; --page-warm: #fff;
+    --ink: #2c2216; --ink-soft: #5c5140; --ink-faint: #8f8471;
+    --rule: #d8cba9; --rubric: #9e2b25; --rubric-soft: #b5554a;
+    color-scheme: light;
+  }
+  body { background: #fff; }
+  .theme-toggle, .ribbon-tabs, .mobile-actions, .page-l { display: none !important; }
+  .wrap { display: block; padding: 0; min-height: 0; }
+  .book { display: block; max-width: none; border: none; box-shadow: none; border-radius: 0; }
+  .book::before { display: none; }
+  .page-r { display: block !important; padding: 0.5rem 0; border-radius: 0; }
+}
 </style>
 <script>
   (function () {
@@ -309,7 +338,7 @@ select option:disabled { color: var(--ink-faint); }
     <aside class="page-l">
       <div class="page-head">
         <h1>Inn Menu</h1>
-        <p class="tagline">a system-agnostic inn menu generator</p>
+        <p class="tagline"><span>a system-agnostic inn menu generator</span><a href="#" id="howto-link">how it works?</a></p>
       </div>
 
       <fieldset>
@@ -379,6 +408,21 @@ select option:disabled { color: var(--ink-faint); }
         <button type="button" class="modal-x" aria-label="Close">&#215;</button>
         <h3 id="pack-info-title"></h3>
         <p id="pack-info-body"></p>
+        <p id="pack-info-link" hidden>Source: <a target="_blank" rel="noopener"></a></p>
+      </dialog>
+
+      <dialog id="howto-modal" class="info-modal">
+        <button type="button" class="modal-x" aria-label="Close">&#215;</button>
+        <h3>How it works</h3>
+        <p>Set the world on the left and press Generate. The menu is built from hand-written dishes and tagged ingredients, filtered and priced by what the dials say about the world. No AI is involved: the rules are deterministic and the data files are open.</p>
+        <ul>
+          <li><strong>Seed.</strong> The same seed with the same dials always rebuilds the same menu. New seed rerolls it, and the lock icons hold any dial (or the seed) in place while you explore.</li>
+          <li><strong>Share link.</strong> Copies a URL carrying every dial and the seed, so a menu can be bookmarked, shared, or preset by an external tool.</li>
+          <li><strong>Events and conditions.</strong> Events (a market day, a caravan, a feast) are one-night color that nudges the kitchen. Conditions (war, plague, siege) cut trade routes and thin the larder. The labeled notes above the menu say what is acting on the kitchen tonight.</li>
+          <li><strong>Prices.</strong> Base cost times inn tier, economy, condition, event and import distance. Imported dishes are labeled and marked up; a siege seals the gates entirely.</li>
+          <li><strong>Historical Mode.</strong> An optional bias toward what a kitchen in roughly 14th to 16th century Europe could serve. The info button next to it has the details.</li>
+          <li><strong>Export.</strong> Copy text puts a paste-ready version on the clipboard for session notes; Print / PDF prints just the menu page.</li>
+        </ul>
       </dialog>
 
       <dialog id="historical-modal" class="info-modal">
@@ -411,6 +455,9 @@ select option:disabled { color: var(--ink-faint); }
           <button class="btn" id="randomize">Randomize</button>
           <button class="btn" id="reset">Reset</button>
         </div>
+        <p class="util-links">
+          <a href="#" id="share">Share link</a><span>&#183;</span><a href="#" id="copy-text">Copy text</a><span>&#183;</span><a href="#" id="print">Print PDF</a>
+        </p>
       </div>
 
       <!-- LLM polish is hidden for now (option shelved, code kept). Remove
@@ -447,9 +494,9 @@ select option:disabled { color: var(--ink-faint); }
       <p class="footnote">
         This is a hobby project by Alex Monge,
         <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>.
-        If you enjoyed it, feel free to
-        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>,
-        or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
+        If you enjoyed it,
+        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>
+        or <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>
     </aside>
 
