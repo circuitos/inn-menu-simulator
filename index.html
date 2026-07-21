@@ -100,7 +100,13 @@ a { color: var(--rubric); text-decoration: none; } a:hover { color: var(--ink); 
 /* ---------- left page: parameters ---------- */
 .page-head { margin-bottom: 1.5rem; }
 .page-l h1 { font-family: var(--fell); font-weight: 400; font-size: 1.7rem; line-height: 1.1; margin: 0 0 0.15rem; }
-.tagline { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rubric); margin: 0; }
+.tagline {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--rubric); margin: 0;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+}
+.tagline a { color: var(--ink-faint); }
+.tagline a:hover { color: var(--rubric); }
 .page-head::after { content: ""; display: block; margin-top: 0.9rem; border-top: 1px solid var(--rule); }
 fieldset { border: none; padding: 0; margin: 0; }
 .register-line {
@@ -165,6 +171,13 @@ select option:disabled { color: var(--ink-faint); }
 .flavor-pack-row input { accent-color: var(--rubric); width: 15px; height: 15px; cursor: pointer; }
 .button-row { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
 .button-row + .button-row { margin-top: 0.5rem; }
+.util-links {
+  margin: 0.9rem 0 0; display: flex; justify-content: center; gap: 0.6rem;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.util-links a { color: var(--ink-soft); }
+.util-links a:hover { color: var(--rubric); }
 .btn {
   flex: 1; padding: 0.55rem 0.5rem; min-height: 42px;
   background: transparent; color: var(--ink); border: 1px solid var(--ink-soft); border-radius: 2px;
@@ -191,11 +204,6 @@ select option:disabled { color: var(--ink-faint); }
 .menu-header::after { content: ""; display: block; margin-top: 1.1rem; border-top: 1px solid var(--rule); }
 .event-note { text-align: center; font-style: italic; color: var(--rubric); margin: 0 auto 0.55rem; font-size: 0.98rem; text-wrap: balance; }
 .event-note::before { content: "\00B6\2002"; font-style: normal; color: var(--rubric-soft); }
-.note-kicker {
-  font-family: var(--mono); font-style: normal; font-size: 10px;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
-  margin-right: 0.5rem; vertical-align: 0.08em;
-}
 .section-heading {
   font-family: var(--fell); font-weight: 400; font-size: 1.4rem;
   text-align: center; color: var(--ink); margin: 2.1rem 0 0.7rem;
@@ -330,7 +338,7 @@ select option:disabled { color: var(--ink-faint); }
     <aside class="page-l">
       <div class="page-head">
         <h1>Inn Menu</h1>
-        <p class="tagline">a system-agnostic inn menu generator</p>
+        <p class="tagline"><span>a system-agnostic inn menu generator</span><a href="#" id="howto-link">how it works?</a></p>
       </div>
 
       <fieldset>
@@ -446,11 +454,9 @@ select option:disabled { color: var(--ink-faint); }
           <button class="btn" id="randomize">Randomize</button>
           <button class="btn" id="reset">Reset</button>
         </div>
-        <div class="button-row">
-          <button class="btn" id="share">Share link</button>
-          <button class="btn" id="copy-text">Copy text</button>
-          <button class="btn" id="print">Print / PDF</button>
-        </div>
+        <p class="util-links">
+          <a href="#" id="share">Share link</a><span>&#183;</span><a href="#" id="copy-text">Copy text</a><span>&#183;</span><a href="#" id="print">Print PDF</a>
+        </p>
       </div>
 
       <!-- LLM polish is hidden for now (option shelved, code kept). Remove
@@ -486,11 +492,10 @@ select option:disabled { color: var(--ink-faint); }
 
       <p class="footnote">
         This is a hobby project by Alex Monge,
-        <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>
-        (<a href="#" id="howto-link">how it works</a>).
-        If you enjoyed it, you can
-        <a href="https://github.com/circuitos/inn-menu-simulator/issues" target="_blank" rel="noopener">let me know on GitHub</a>,
-        or even <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
+        <a href="https://github.com/circuitos/inn-menu-simulator" target="_blank" rel="noopener">free and open source</a>.
+        If you enjoyed it,
+        <a href="https://github.com/circuitos" target="_blank" rel="noopener">let me know</a>
+        or <a href="https://ko-fi.com/circuitos" target="_blank" rel="noopener">send me a tip on Ko-fi</a>.
       </p>
     </aside>
 

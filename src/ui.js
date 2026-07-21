@@ -238,10 +238,12 @@ function setSelect(id, value) {
 }
 
 // ---------- shareable URLs ----------
-// Every dial plus the seed round-trips through the query string, so a menu
+// Every dial plus the seed can round-trip through the query string, so a menu
 // can be shared, bookmarked, or preset by an external tool (a VTT macro can
-// link straight to ?biome=frostlands&season=winter&seed=...). Values equal
-// to the Reset defaults are omitted to keep links short.
+// link straight to ?biome=frostlands&season=winter&seed=...). Params are read
+// on load; the link itself is only built on demand by the Share link action,
+// so the address bar never churns while dialing. Values equal to the Reset
+// defaults are omitted to keep links short.
 const PARAM_IDS = ["biome","season","weather","inn_tier","economy","condition","event"];
 const PARAM_ALIASES = { inn_tier: "tier" };
 function paramName(id) { return PARAM_ALIASES[id] || id; }
@@ -269,7 +271,7 @@ function applyUrlState(state) {
   }
 }
 
-function syncUrl(world, seed, packIds) {
+function buildShareUrl(world, seed, packIds) {
   const p = new URLSearchParams();
   for (const id of PARAM_IDS) {
     if (world[id] !== DEFAULTS[id]) p.set(paramName(id), world[id]);
@@ -277,7 +279,12 @@ function syncUrl(world, seed, packIds) {
   if (world.historical) p.set("historical", "1");
   if (packIds.length) p.set("packs", packIds.join(","));
   p.set("seed", seed);
-  try { history.replaceState(null, "", `${location.pathname}?${p.toString()}`); } catch (e) {}
+  return `${location.origin}${location.pathname}?${p.toString()}`;
+}
+
+function lastShareUrl() {
+  const s = window.__lastShare;
+  return s ? buildShareUrl(s.world, s.seed, s.packIds) : null;
 }
 
 function copyToClipboard(text) {
@@ -407,22 +414,14 @@ function renderMenu(menu) {
   header.appendChild(sub);
   root.appendChild(header);
 
-  // Each note carries a small label naming its source (the condition, the
-  // event, the calendar), so the lines read as world state, not stray flavor.
   const notes = [];
-  if (menu.condition_note) notes.push({ kicker: conditionLabel(menu), text: menu.condition_note });
-  if (menu.event_note) notes.push({ kicker: eventLabel(menu), text: menu.event_note });
-  if (menu.calendar_note) notes.push({ kicker: "Calendar", text: menu.calendar_note });
+  if (menu.condition_note) notes.push(menu.condition_note);
+  if (menu.event_note) notes.push(menu.event_note);
+  if (menu.calendar_note) notes.push(menu.calendar_note);
   for (const n of notes) {
     const p = document.createElement("p");
     p.className = "event-note";
-    if (n.kicker) {
-      const k = document.createElement("span");
-      k.className = "note-kicker";
-      k.textContent = n.kicker;
-      p.appendChild(k);
-    }
-    p.appendChild(document.createTextNode(n.text));
+    p.textContent = n;
     root.appendChild(p);
   }
 
@@ -503,7 +502,8 @@ function menuAsText(menu) {
     lines.push("");
   }
   lines.push(`Seed: ${menu.seed}`);
-  lines.push(location.href);
+  const url = lastShareUrl();
+  if (url) lines.push(url);
   return lines.join("\n");
 }
 
@@ -573,24 +573,31 @@ async function init() {
     qs("seed").value = randomSeed();
     generate();
   });
-  qs("share").addEventListener("click", async () => {
+  qs("share").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const url = lastShareUrl();
+    if (!url) return;
     try {
-      await copyToClipboard(location.href);
+      await copyToClipboard(url);
       flashButton(qs("share"), "Link copied");
-    } catch (e) {
+    } catch (err) {
       flashButton(qs("share"), "Copy failed");
     }
   });
-  qs("copy-text").addEventListener("click", async () => {
+  qs("copy-text").addEventListener("click", async (e) => {
+    e.preventDefault();
     if (!window.__lastMenu) return;
     try {
       await copyToClipboard(menuAsText(window.__lastMenu));
       flashButton(qs("copy-text"), "Copied");
-    } catch (e) {
+    } catch (err) {
       flashButton(qs("copy-text"), "Copy failed");
     }
   });
-  qs("print").addEventListener("click", () => window.print());
+  qs("print").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.print();
+  });
   const howto = qs("howto-link");
   if (howto) howto.addEventListener("click", (e) => {
     e.preventDefault();
@@ -721,7 +728,7 @@ function generate() {
   // Historical mode rides the pack machinery for its content layer: the
   // hidden "historical" pack merges in whenever the checkbox is on.
   const packIds = activeFlavorPackIds();
-  syncUrl(world, seed, packIds);
+  window.__lastShare = { world, seed, packIds: packIds.slice() };
   if (world.historical) packIds.push("historical");
   const data = applyFlavorPacks(DATA, packIds);
   const menu = window.InnMenu.generateMenu(world, data, seed);
