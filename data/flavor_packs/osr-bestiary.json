@@ -1,7 +1,7 @@
 {
   "id": "osr-bestiary",
   "label": "OSR Bestiary",
-  "description": "Huntable-monster fare with a creature roster drawn from the OSR Free Bestiary, itself built on the Basic Fantasy RPG. Leans beastly rather than sentient; no undead, nothing obviously venomous on the plate.",
+  "description": "Huntable-monster fare with a creature roster drawn from Clay Davis' OSR Bestiary (clayadavis.gitlab.io/osr-bestiary), itself built on the Basic Fantasy RPG. Leans beastly rather than sentient; no undead, nothing obviously venomous on the plate.",
   "ingredient_overrides": [],
   "ingredients": [
     { "id": "osr-great-hare",    "name": "great hare",        "roles": ["protein","game"],           "tags": ["autumn","winter","forest","common","heartland"],                          "cost": 2, "affinities": ["roasts-well","stews-well","requires-cooking"] },

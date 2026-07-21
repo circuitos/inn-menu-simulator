@@ -156,6 +156,19 @@ function openPackInfo(entry) {
   if (!modal || typeof modal.showModal !== "function") return;
   qs("pack-info-title").textContent = `Flavor pack: ${entry.label}`;
   qs("pack-info-body").textContent = entry.description || "";
+  // Packs may cite where their content comes from (link + link_label in the
+  // manifest); the line only renders when a link is declared.
+  const linkLine = qs("pack-info-link");
+  if (linkLine) {
+    const a = linkLine.querySelector("a");
+    if (entry.link && a) {
+      a.href = entry.link;
+      a.textContent = entry.link_label || entry.link;
+      linkLine.hidden = false;
+    } else {
+      linkLine.hidden = true;
+    }
+  }
   modal.showModal();
 }
 
