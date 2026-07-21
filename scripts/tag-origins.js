@@ -4,8 +4,8 @@
 // the file's per-ingredient single-line layout is preserved.
 //
 // Pantry staples that grow/are produced everywhere (bread, milk, eggs, basic
-// offal, common roots, common herbs, basic poultry) stay ambient — no biome
-// tag — so they continue to pass the procedural pool filter in every world.
+// offal, common roots, common herbs, basic poultry) stay ambient (no biome
+// tag), so they continue to pass the procedural pool filter in every world.
 "use strict";
 
 const fs = require("fs");

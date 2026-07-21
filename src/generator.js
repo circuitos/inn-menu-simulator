@@ -37,7 +37,7 @@ const TUNING = {
   // longer hard-filters them; instead the engine keeps them rare via weight.
   // Pity: the first peculiar candidate per menu gets a boost so peculiar
   // content surfaces somewhere; subsequent ones revert to base. Hardship
-  // (war/plague/siege/isolation/famine) raises base — desperate kitchens reach
+  // (war/plague/siege/isolation/famine) raises base; desperate kitchens reach
   // for what's nearby and weird. Authored and procedural use separate base
   // weights because authored dishes are pre-curated (a higher floor makes
   // sense) while procedural peculiar should stay quite rare.
@@ -54,6 +54,49 @@ const TUNING = {
   peasant_high_tier_dampener: 0.7
 };
 
+// ---------- Historical mode ----------
+// Opt-in (world.historical, set by the UI checkbox). Biases generation toward
+// a broadly 14th-16th century Western European frame: anachronism tags are
+// filtered, fish days roll probabilistically, section caps tighten in the
+// spirit of the 1363 sumptuary statutes, and staple prices hold steady per
+// the assize. The default (fantasy) path never consults this block.
+const REALISM = {
+  // Meat was off the table roughly 195 days a year (Wed/Fri/Sat + Advent +
+  // Lent). Rolled per generation from a dedicated seed stream; not a
+  // liturgical calendar and not pretending to be one.
+  fish_day_chance: 195 / 365,
+  // Share of fish days that are Lent-strict: eggs and dairy drop too
+  // (procedural pool only; authored dishes don't declare dairy/eggs yet).
+  lent_share: 0.2,
+  // The fish-day mechanic is Christian-calendar logic; the arid biome
+  // follows different rhythms and skips the roll entirely.
+  fish_day_exempt_biomes: new Set(["arid"]),
+  // Anachronism tags filtered by the mode. post-medieval-west is exempt in
+  // the arid biome: vinegar pickles (mukhallalat) are period there, and the
+  // historians' "lose the pickles" verdict was explicitly Western.
+  filtered_tags: ["new-world", "post-medieval"],
+  west_only_tag: "post-medieval-west",
+  pickle_exempt_biome: "arid",
+  // Sumptuary tightening (1363: five dishes for lords, three for gentlemen,
+  // two for grooms). Same shape as TIER_CAPS; replaces it when the mode is on.
+  tier_caps: {
+    roadside: { appetizer: 1, main_meatfish: 1, main_meatless: 1, drink: 2 },
+    common:   { appetizer: 2, main_meat: 1, main_fish: 1, main_meatless: 1, drink: 3 },
+    fine:     { appetizer: 3, main_meat: 1, main_fish: 1, main_meatless: 2, drink: 4 },
+    noble:    { appetizer: 3, main_meat: 2, main_fish: 2, main_meatless: 2, drink: 5 }
+  },
+  // Assize: bread and ale prices were fixed by statute. Staples (cheap
+  // drinks and dishes) keep this fraction of the economy/event price swing;
+  // 0 = fully pegged, 1 = normal swing. Condition multipliers still apply:
+  // a siege broke every assize in practice.
+  staple_swing: 0.35,
+  staple_cost_max: 2,
+  // Menu vocabulary: the word "menu" is 1718. The UI shows this instead.
+  header_label: "Bill of Fare",
+  fish_day_note: "A fast day. No flesh served; the kitchen keeps the calendar.",
+  lent_note: "Lenten fare. No flesh, eggs, or dairy; the kitchen keeps the calendar."
+};
+
 // ---------- condition-based menu caps ----------
 // Roadside and Common inns get tightened up by world conditions: a poorer world
 // produces a smaller menu, with little or no meat/fish unless a special event
@@ -67,7 +110,7 @@ const PLENTIFUL_EVENTS = new Set([
 
 // Extreme scarcity is counted independently from `economy === "famine"`. Each
 // condition met removes 1 from every numeric cap. War is intentionally NOT
-// listed — it disrupts trade but doesn't necessarily empty the larder.
+// listed; it disrupts trade but doesn't necessarily empty the larder.
 const EXTREME_SCARCITY_CONDITIONS = new Set(["plague", "isolation", "siege"]);
 
 // Hardship conditions that bias dish weighting toward peasant/common fare.
@@ -76,7 +119,7 @@ const HARDSHIP_CONDITION_LABELS = new Set(["war", "plague", "siege", "isolation"
 
 // Per-tier base caps. Roadside uses a single combined meat-or-fish cap;
 // the others split meat and fish. Fine and Noble are sized so their default
-// (0 scarcity) behavior matches the existing count_max for each section —
+// (0 scarcity) behavior matches the existing count_max for each section:
 // the caps only bite once scarcity reductions kick in.
 const TIER_CAPS = {
   roadside: { appetizer: 2, main_meatfish: 1, main_meatless: 2, drink: 2 },
@@ -93,12 +136,19 @@ const TAGS_STRIPPED_AT_SEVERE_SCARCITY = new Set(["noble", "exotic"]);
 const TAGS_ADDED_AT_SEVERE_SCARCITY = new Set(["peasant", "common"]);
 
 // Cultural-tier tags that gate dishes/ingredients via inn_tier.allowed_tags.
-// `exotic` is intentionally NOT here — it's a distance modifier, not a tier
+// `exotic` is intentionally NOT here: it's a distance modifier, not a tier
 // gate (see resolveImportDistance). Noble inns still list `exotic` in their
 // allowed_tags as a coarse signal, but actual gating is via distance.
 const TIER_TAGS = ["peasant", "common", "refined", "noble"];
 
-// Effective import distance contributed by the `exotic` tag — items off the
+// Same gate for the procedural ingredient pool, plus `exotic`. Ingredients have
+// no single native biome to measure distance from (most spices have no biome at
+// all), so the procedural path leans on the inn-tier allowed_tags check to keep
+// exotic items at noble tier only. Derived from TIER_TAGS so a new cultural tag
+// added above flows into both gates at once.
+const ING_TIER_TAGS = [...TIER_TAGS, "exotic"];
+
+// Effective import distance contributed by the `exotic` tag: items off the
 // world map (saffron, sugar, true rare spices) act as if they came from two
 // regions away, regardless of their nominal biome. Stacks with biome distance
 // via max(): a heartland-native noble dish tagged `exotic` is still distance 2.
@@ -135,7 +185,8 @@ function classifyMain(dish) {
 // post-floor; the caller can spend them directly.
 function computeCaps(world) {
   if (PLENTIFUL_EVENTS.has(world.event)) return null;
-  const base = TIER_CAPS[world.inn_tier];
+  const capTable = world.historical ? REALISM.tier_caps : TIER_CAPS;
+  const base = capTable[world.inn_tier];
   if (!base) return null;
 
   let scarcity = 0;
@@ -249,6 +300,7 @@ const COST_BASE = { 1: 2, 2: 6, 3: 18, 4: 55, 5: 180 };
 const TIER_INDEX = { roadside: 1, common: 2, fine: 3, noble: 4 };
 
 function resolveWorld(world, data) {
+  const event = data.events.events.find(e => e.id === world.event) || data.events.events[0];
   return {
     biome: world.biome,
     season: world.season,
@@ -257,8 +309,20 @@ function resolveWorld(world, data) {
     tierIdx: TIER_INDEX[world.inn_tier],
     economy: data.modifiers.economy[world.economy],
     condition: data.modifiers.conditions[world.condition],
-    event: data.events.events.find(e => e.id === world.event) || data.events.events[0],
-    biomeRelations: (data.modifiers || {}).biome_relations || {}
+    event,
+    historical: !!world.historical,
+    // Kinds ("meat" / "fish") the active event bans outright. Unlike
+    // boost_roles, which only tilt weights, suppression is a hard gate: the
+    // Religious Fast note promises "no meat tonight" and the filter has to
+    // keep that promise. Authored dishes gate on their `contains` field;
+    // procedural proteins gate on ingredientMainKind. Historical fish days
+    // add "meat" to this set in generateMenuInternal.
+    suppressKinds: new Set(event.suppress_contains || []),
+    // Lent-strict flag (Historical mode): drops eggs and dairy from the
+    // procedural pool on top of meat suppression.
+    lentStrict: false,
+    biomeRelations: (data.modifiers || {}).biome_relations || {},
+    biomes: (data.modifiers || {}).biomes || {}
   };
 }
 
@@ -272,7 +336,7 @@ const ALL_BIOME_TAGS = [...TOP_BIOMES, ...SUB_BIOMES];
 
 // ---------- biome-distance helpers ----------
 // Returns 0 (native), 1 (regional), 2 (distant), or null (no relation table /
-// unrecognized biome — caller should treat as "off the map" / not importable).
+// unrecognized biome; caller should treat as "off the map" / not importable).
 function biomeDistance(fromBiome, toBiome, relations) {
   if (fromBiome === toBiome) return 0;
   const rel = relations && relations[fromBiome];
@@ -282,16 +346,21 @@ function biomeDistance(fromBiome, toBiome, relations) {
   return null;
 }
 
-// Min biome-distance from any biome in `biomes` to `target`. Returns null if
-// no biome in the list resolves against the relation table.
-function closestBiomeDistance(biomes, target, relations) {
-  let best = null;
+// Min biome-distance from any biome in `biomes` to `target`, plus which biome
+// won. dist is null (and origin null) if no biome in the list resolves against
+// the relation table.
+function closestBiomeOrigin(biomes, target, relations) {
+  let best = null, origin = null;
   for (const b of biomes) {
     const d = biomeDistance(b, target, relations);
     if (d === null) continue;
-    if (best === null || d < best) best = d;
+    if (best === null || d < best) { best = d; origin = b; }
   }
-  return best;
+  return { dist: best, origin };
+}
+
+function closestBiomeDistance(biomes, target, relations) {
+  return closestBiomeOrigin(biomes, target, relations).dist;
 }
 
 // Effective import-distance ceiling for a world: the lower of (tier ceiling,
@@ -321,21 +390,38 @@ function resolveImportDistance(dish, w, data) {
 }
 
 // ---------- authored dish filter ----------
+// Historical anachronism gate, shared by both pools. Returns true when the
+// entry should be EXCLUDED under Historical mode.
+function historicalExcludes(tags, w) {
+  if (!w.historical) return false;
+  for (const t of REALISM.filtered_tags) if (tags.includes(t)) return true;
+  if (tags.includes(REALISM.west_only_tag) && w.biome !== REALISM.pickle_exempt_biome) return true;
+  return false;
+}
+
 function filterAuthored(dishes, w, data) {
   const relations = (data.modifiers || {}).biome_relations || {};
   return dishes.filter(d => {
+    // Historical mode: anachronisms out (pickled vegetables stay in arid).
+    if (historicalExcludes(d.tags || [], w)) return false;
     // Distance gate: combines biome-relation distance with the `exotic` modifier.
     // Events can lift the tier ceiling (e.g. Merchant Caravan brings regional
-    // goods to a common inn that normally allows none). Condition still caps —
+    // goods to a common inn that normally allows none). Condition still caps:
     // siege/plague block trade regardless of caravans.
     const dist = resolveImportDistance(d, w, data);
     if (dist === null) return false;
     if (dist > effectiveImportMax(w)) return false;
-    // Biome-only distance for pricing/labeling — exotic native items shouldn't
+    // Biome-only distance for pricing/labeling: exotic native items shouldn't
     // pay transport markup, so we keep this separate from the filtering distance.
-    d._importDistance = d.biomes.includes("any")
-      ? 0
-      : (closestBiomeDistance(d.biomes || [], w.biome, relations) ?? 0);
+    // The winning biome is kept as the label origin ("from the coast").
+    if (d.biomes.includes("any")) {
+      d._importDistance = 0;
+      d._importOrigin = null;
+    } else {
+      const closest = closestBiomeOrigin(d.biomes || [], w.biome, relations);
+      d._importDistance = closest.dist ?? 0;
+      d._importOrigin = closest.origin;
+    }
 
     // Season
     if (!d.seasons.includes("all-seasons") && !d.seasons.includes(w.season)) return false;
@@ -351,7 +437,13 @@ function filterAuthored(dishes, w, data) {
     // Economy: cost ceiling shrinks under shortage/famine
     if (d.cost > w.economy.remove_above_cost) return false;
 
-    // "peculiar" dishes appear only rarely — handled via weighting, not filtering. Under
+    // Event suppression (Religious Fast): dishes whose `contains` names a
+    // banned kind drop out. Dishes without the field pass; only mains are
+    // required to carry it today, so a meat appetizer can still slip through
+    // until the data pass that tags appetizers lands.
+    if (w.suppressKinds.size && d.contains && w.suppressKinds.has(d.contains)) return false;
+
+    // "peculiar" dishes appear only rarely; handled via weighting, not filtering. Under
     // war/plague/siege/isolation, peculiar stays allowed because those are local poor-food
     // dishes mostly.
 
@@ -384,7 +476,7 @@ function noveltyFactor(d, menuState) {
 }
 
 // Peculiar weighting. Same shape for authored and procedural paths, just a
-// different base. Hardship conditions raise weight — desperate kitchens reach
+// different base. Hardship conditions raise weight: desperate kitchens reach
 // for the local-weird. The first peculiar candidate per menu gets a pity
 // boost so the tag actually surfaces somewhere; once met, subsequent peculiar
 // items revert to base.
@@ -419,7 +511,7 @@ function weightAuthored(d, w, menuState) {
   // Event boosts: match boost_tags against the dish's tags or biomes (some events
   // key off biome-style values like "coastal"/"forest"), and treat fish/shellfish/game
   // boost_roles as proxies for the authored `contains` classifier. "protein" is
-  // intentionally not mapped — it's too broad to be a useful focus signal.
+  // intentionally not mapped: it's too broad to be a useful focus signal.
   const eventBoost = 1 + (TUNING.authored_event_tag_boost - 1) * TUNING.event_weight_mult;
   for (const t of w.event.boost_tags || []) {
     if ((d.tags || []).includes(t) || (d.biomes || []).includes(t)) weight *= eventBoost;
@@ -440,7 +532,7 @@ function weightAuthored(d, w, menuState) {
   if ((d.tags || []).includes("peculiar")) {
     weight *= peculiarFactor(TUNING.peculiar_authored_base, w, menuState);
   }
-  // "exotic" dishes are rare by definition — extra dampening on top of distance.
+  // "exotic" dishes are rare by definition; extra dampening on top of distance.
   if ((d.tags || []).includes("exotic")) weight *= 0.75;
 
   // Specificity: replaces the old hard-coded any+all-seasons rule with a
@@ -460,32 +552,54 @@ function weightAuthored(d, w, menuState) {
 
 // Per-distance price multiplier. Native = 1.0, regional adds ~30%, distant adds ~70%.
 // Exotic native dishes (effective filter distance bumped by EXOTIC_DISTANCE) keep
-// their biomeDist-based price — the rare ingredient is already priced into the
+// their biomeDist-based price: the rare ingredient is already priced into the
 // dish's `cost`, no transport markup applies on top.
 const IMPORT_PRICE_MULT = { 0: 1.0, 1: 1.3, 2: 1.7 };
+
+// Assize (Historical mode): staple drinks keep only `staple_swing` of the
+// economy and event price movement; bread and ale prices were fixed by
+// statute. Condition multipliers still apply in full: a siege broke every
+// assize in practice. Fantasy mode passes through unchanged.
+function economyEventMult(w, isStaple) {
+  let eco = w.economy.price_mult;
+  let evt = w.event.price_mult || 1;
+  if (w.historical && isStaple) {
+    eco = 1 + (eco - 1) * REALISM.staple_swing;
+    evt = 1 + (evt - 1) * REALISM.staple_swing;
+  }
+  return eco * evt;
+}
+
+function isStapleAuthored(d) {
+  return d.section === "drink" && d.cost <= REALISM.staple_cost_max;
+}
 
 function priceAuthoredDish(d, w) {
   const base = COST_BASE[d.cost] || 6;
   const importMult = IMPORT_PRICE_MULT[d._importDistance] ?? 1.0;
-  const price = base * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
+  const price = base * w.tier.price_mult * economyEventMult(w, isStapleAuthored(d)) * w.condition.price_mult * importMult;
   return Math.max(1, Math.round(price));
 }
 
-function importLabel(distance) {
-  if (distance === 1) return " (imported)";
-  if (distance >= 2) return " (rare import)";
-  return "";
+// Origin-flavored import labels: regional imports read "(from the coast)"
+// via the origin biome's `import_phrase`, distant ones "(rare desert
+// delicacy)" via its `import_adjective` (both in modifiers.json). Items with
+// no resolvable origin (off-map exotics, custom biomes without the fields)
+// keep the generic labels.
+function importLabel(distance, origin, w) {
+  if (!distance) return "";
+  const biome = origin && w.biomes[origin];
+  if (distance === 1) {
+    return biome && biome.import_phrase ? ` (from ${biome.import_phrase})` : " (imported)";
+  }
+  return biome && biome.import_adjective ? ` (rare ${biome.import_adjective} delicacy)` : " (rare import)";
 }
 
 // ---------- procedural fallback (unchanged in spirit from v1) ----------
 function filterIngredientPool(ingredients, w, data) {
   const SEASONS = ["spring","summer","autumn","winter"];
-  // Procedural ingredients gate on the same cultural-tier tags. `exotic` is
-  // now a distance modifier, but in the procedural pipeline we don't have a
-  // single "native biome" for an ingredient — most spices have no biome at
-  // all. We fall back to the inn-tier allowed_tags check: only noble inns
-  // list `exotic`, so exotic ingredients still surface only at noble tier.
-  const ING_TIER_TAGS = ["peasant","common","refined","noble","exotic"];
+  // Procedural ingredients gate on the same cultural-tier tags via the
+  // module-level ING_TIER_TAGS (TIER_TAGS + `exotic`).
 
   // Effective import-distance ceiling for this world: same min(tier, condition)
   // rule the authored path uses. Ingredients native to a non-matching biome can
@@ -496,6 +610,13 @@ function filterIngredientPool(ingredients, w, data) {
 
   return ingredients.filter(ing => {
     const tags = ing.tags || [];
+
+    // Historical mode: anachronisms out; Lent-strict days also drop eggs
+    // and fresh dairy from the pool.
+    if (historicalExcludes(tags, w)) return false;
+    if (w.lentStrict) {
+      if ((ing.roles || []).includes("dairy") || ing.id === "egg") return false;
+    }
 
     // Biome: native match passes outright. Otherwise, if at least one top-biome
     // tag is within the world's import distance, the ingredient passes as an
@@ -513,7 +634,7 @@ function filterIngredientPool(ingredients, w, data) {
         } else if (!subBiomeTags.length) {
           return false;
         }
-        // else: only sub-biome tags — ambient, keep.
+        // else: only sub-biome tags (ambient); keep.
       }
     }
 
@@ -522,7 +643,7 @@ function filterIngredientPool(ingredients, w, data) {
     const allSeason = tags.includes("all-seasons");
     if (seasonTags.length && !seasonTags.includes(w.season) && !allSeason) return false;
 
-    // Tier ceiling (no floor — cheap ingredients are fine anywhere as supporting roles)
+    // Tier ceiling (no floor: cheap ingredients are fine anywhere as supporting roles)
     if (ing.cost > w.tier.cost_max) return false;
 
     // Cultural tag gate
@@ -547,6 +668,14 @@ function filterIngredientPool(ingredients, w, data) {
 
     // Famine protein restriction
     if (w.economy.restrict_role && (ing.roles || []).includes(w.economy.restrict_role) && ing.cost > 2) return false;
+
+    // Event suppression (Religious Fast): proteins that classify as a banned
+    // kind (meat / fish) leave the pool entirely, so no template can pull
+    // them into any section.
+    if (w.suppressKinds.size) {
+      const kind = ingredientMainKind(ing);
+      if (kind && w.suppressKinds.has(kind)) return false;
+    }
 
     // Peculiar ingredients are no longer hard-filtered. They pass through with
     // a heavy weight dampener (see weightIngredient → peculiarFactor) so they
@@ -613,7 +742,7 @@ function weightIngredient(ing, w, menuState) {
   return weight;
 }
 
-// The "headline" ingredient is the one the dish is named after — protein for
+// The "headline" ingredient is the one the dish is named after: protein for
 // mains, otherwise the first non-optional filled slot. Used to decide whether
 // a procedural dish should carry an import label: a stew of native veg with a
 // regional fish in it is a regional import; a native dish that merely contains
@@ -634,16 +763,20 @@ function headlineIngredient(template, picked) {
 // Mirrors resolveImportDistance but operates on one ingredient: `exotic` forces
 // EXOTIC_DISTANCE, otherwise we take the min distance across the ingredient's
 // top-biome tags. Ingredients with no biome tag are treated as ambient/native.
-function ingredientImportDistance(ing, w, data) {
-  if (!ing) return 0;
+function ingredientImport(ing, w, data) {
+  if (!ing) return { dist: 0, origin: null };
   const tags = ing.tags || [];
   let dist = tags.includes("exotic") ? EXOTIC_DISTANCE : 0;
+  let origin = null;
   const biomeTags = tags.filter(t => TOP_BIOMES.includes(t));
   if (biomeTags.length) {
-    const best = closestBiomeDistance(biomeTags, w.biome, (data.modifiers || {}).biome_relations || {});
-    if (best !== null && best > dist) dist = best;
+    const best = closestBiomeOrigin(biomeTags, w.biome, (data.modifiers || {}).biome_relations || {});
+    if (best.dist !== null) {
+      if (best.dist > 0) origin = best.origin;
+      if (best.dist > dist) dist = best.dist;
+    }
   }
-  return dist;
+  return { dist, origin };
 }
 
 // Per-menu state used by the novelty / repeat / peculiar-pity dampeners. One
@@ -657,9 +790,17 @@ function makeMenuState() {
   };
 }
 
+// Annotation tags that mark historical provenance rather than culinary
+// character. They are filtered by Historical mode and must stay OUT of the
+// novelty ledger: two dishes sharing "new-world" are not similar food, and
+// letting the tag accumulate would make annotations shift fantasy-mode
+// output.
+const META_TAGS = new Set(["new-world", "post-medieval", "post-medieval-west"]);
+
 function commitAuthoredToMenu(menuState, dish) {
   if (!menuState) return;
   for (const t of (dish.tags || [])) {
+    if (META_TAGS.has(t)) continue;
     menuState.authoredFamiliarity.set(t, (menuState.authoredFamiliarity.get(t) || 0) + 1);
   }
   if ((dish.tags || []).includes("peculiar")) menuState.hasPeculiar = true;
@@ -678,10 +819,16 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   const picked = {};
   const usedIds = new Set();
 
+  // Historical mode: pickled vegetables are post-medieval in the West; the
+  // pickled prep refuses vegetable-role slots outside the arid biome (where
+  // vinegar pickles are period). Fish brining is unaffected.
+  const pickleBlocked = w.historical && w.biome !== REALISM.pickle_exempt_biome && prep.id === "pickled";
+
   for (const slot of template.slots) {
     const candidates = pool.filter(ing => {
       if (usedIds.has(ing.id)) return false;
       if (!(ing.roles || []).includes(slot.role)) return false;
+      if (pickleBlocked && (ing.roles || []).includes("vegetable")) return false;
       const affs = ing.affinities || [];
       if (!prep.accepts.some(a => affs.includes(a))) return false;
       return true;
@@ -710,9 +857,11 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   const baseCopper = ingredientsUsed.reduce((sum, ing) => sum + (COST_BASE[ing.cost] || 2), 0);
   const labor = prep.labor_add || 0;
   const headline = headlineIngredient(template, picked);
-  const importDistance = ingredientImportDistance(headline, w, data);
+  const { dist: importDistance, origin: importOrigin } = ingredientImport(headline, w, data);
   const importMult = IMPORT_PRICE_MULT[importDistance] ?? 1.0;
-  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * w.economy.price_mult * w.condition.price_mult * (w.event.price_mult || 1) * importMult;
+  const staple = template.section === "drink"
+    && ingredientsUsed.every(ing => ing.cost <= REALISM.staple_cost_max);
+  const priceCp = (baseCopper + labor) * prep.cost_mult * w.tier.price_mult * economyEventMult(w, staple) * w.condition.price_mult * importMult;
 
   // Stamp meat/fish/meatless on mains so the cap loop can classify procedural dishes.
   let mainKind = null;
@@ -724,7 +873,7 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
 
   if (trace) {
     // Drinks route through templates with prep "raw", but a drink isn't really
-    // "prepared" — counting it would swamp the prep histogram. Skip the prep
+    // "prepared"; counting it would swamp the prep histogram. Skip the prep
     // log for drink templates; ingredients still get traced.
     if (template.section !== "drink") trace.preparations.push(prep.id);
     for (const ing of ingredientsUsed) trace.ingredients.push(ing.id);
@@ -735,7 +884,7 @@ function fillTemplate(template, prep, pool, rng, w, data, trace, menuState) {
   return {
     source: "procedural",
     section: template.section,
-    name: capitalize(name) + importLabel(importDistance),
+    name: capitalize(name) + importLabel(importDistance, importOrigin, w),
     price_cp: Math.max(1, Math.round(priceCp)),
     price_text: formatPrice(priceCp),
     importDistance,
@@ -757,7 +906,7 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
     const tpl = pick(rng, from);
     if (!tpl) return null;
     // Weighted by weather's prep_bias (e.g. rain favors stewing/braising over
-    // outdoor methods). Missing keys default to 1.0 — i.e. neutral.
+    // outdoor methods). Missing keys default to 1.0, i.e. neutral.
     const prepBias = w.weather.prep_bias || {};
     const prepId = weightedPick(rng, tpl.prep_pool, id => prepBias[id] ?? 1);
     const prep = data.preparations.preparations.find(p => p.id === prepId);
@@ -780,7 +929,7 @@ function buildAuthoredMenuDish(choice, w) {
   return {
     source: "authored",
     section: choice.section,
-    name: choice.name + importLabel(choice._importDistance),
+    name: choice.name + importLabel(choice._importDistance, choice._importOrigin, w),
     flavor: choice.flavor,
     importDistance: choice._importDistance || 0,
     price_cp: price,
@@ -842,7 +991,7 @@ function generateMenu(world, data, seed) {
 // Same generation pipeline, but returns { menu, trace } where trace lists the
 // ids actually committed during this run (authored dish ids, ingredient ids,
 // preparation ids, template ids). Used by the smoke runner; UI does not need
-// this. Multiplicity is preserved — each emission appends one id.
+// this. Multiplicity is preserved: each emission appends one id.
 function generateMenuTraced(world, data, seed) {
   const trace = { authored: [], ingredients: [], preparations: [], templates: [] };
   const menu = generateMenuInternal(world, data, seed, trace);
@@ -854,6 +1003,30 @@ function generateMenuInternal(world, data, seed, trace) {
   const w = resolveWorld(world, data);
   const sections = data.modifiers.sections;
   const caps = computeCaps(world);
+
+  // Historical fish days. Rolled on a dedicated seed stream so the calendar
+  // is stable for a given seed regardless of other dials. The arid biome
+  // skips the roll: this is Christian-calendar logic and that region keeps
+  // different rhythms. Selecting Religious Fast manually while Historical is
+  // on forces the strict (Lenten) variant.
+  let calendarNote = null;
+  if (w.historical && !REALISM.fish_day_exempt_biomes.has(w.biome)) {
+    if (world.event === "religious-fast") {
+      w.lentStrict = true;
+      calendarNote = "Lenten strictness: no eggs or dairy either.";
+    } else {
+      const fishRng = makeRng(String(seed) + "|fishday");
+      if (fishRng() < REALISM.fish_day_chance) {
+        w.suppressKinds = new Set([...w.suppressKinds, "meat"]);
+        if (fishRng() < REALISM.lent_share) {
+          w.lentStrict = true;
+          calendarNote = REALISM.lent_note;
+        } else {
+          calendarNote = REALISM.fish_day_note;
+        }
+      }
+    }
+  }
 
   // Severe-scarcity tier downgrade: with 2+ extreme scarcity hits, even a
   // noble kitchen can't put on airs. Strip the gilded tags from allowed_tags
@@ -880,6 +1053,9 @@ function generateMenuInternal(world, data, seed, trace) {
     biome_label: (data.modifiers.biomes[w.biome] || {}).label,
     event_note: w.event.note,
     condition_note: w.condition.note,
+    calendar_note: calendarNote,
+    historical: w.historical,
+    header_label: w.historical ? REALISM.header_label : null,
     sections: {}
   };
 

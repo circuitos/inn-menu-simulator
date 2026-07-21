@@ -1,10 +1,27 @@
 {
   "packs": [
     {
+      "id": "historical",
+      "label": "Historical",
+      "file": "historical.json",
+      "description": "Period content layer for Historical mode. Hidden from the pack list; the Historical checkbox activates it.",
+      "default_active": false,
+      "hidden": true
+    },
+    {
+      "id": "osr-bestiary",
+      "label": "OSR Bestiary",
+      "file": "osr-bestiary.json",
+      "description": "Huntable-monster fare for tables that like their inns a little wilder: owlbear rashers, slime soup, wyvern tail stew, mastodon pot roast, and some eighty more beasts added to the larder as dishes and procedural ingredients. The creature roster is drawn from Clay Davis' OSR Bestiary, itself built on the Basic Fantasy RPG. Leans beastly rather than sentient; no undead, nothing obviously venomous on the plate.",
+      "link": "https://clayadavis.gitlab.io/osr-bestiary/",
+      "link_label": "Clay Davis' OSR Bestiary",
+      "default_active": false
+    },
+    {
       "id": "mog",
       "label": "Mog",
       "file": "mog.json",
-      "description": "Setting-specific dishes and ingredient names for the Mog campaign world. Adds named regional fare (Stokvis Bay cod, Briggan wine, Sasani ghostfish) on top of the generic pool.",
+      "description": "An example of a custom worldbuilding pack you can insert into the pool: setting-specific dishes and ingredient names for the Mog campaign world (Stokvis Bay cod, Briggan wine, Sasani ghostfish) overlaid on the generic fare. Forks can add their own setting the same way with one JSON file; see docs/DESIGN.md.",
       "default_active": false
     }
   ]

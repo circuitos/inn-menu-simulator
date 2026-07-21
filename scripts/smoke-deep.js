@@ -7,14 +7,18 @@
 const fs = require("fs");
 const path = require("path");
 const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
-const { ROOT, loadData, loadGenerator } = require("./lib/loader");
+const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
+const { bump, buildWorlds } = require("./lib/sweep");
 
 const OUT_DIR = path.join(ROOT, "out");
 const REPORT_PATH = path.join(OUT_DIR, "smoke-deep.md");
 
 const SAMPLES = parseInt(process.env.SAMPLES || "3", 10);
 
-const data = loadData();
+let data = loadData();
+// REALISM=1: merge the historical content layer so the sweep sees what the
+// browser sees when the Historical checkbox is on.
+if (process.env.REALISM === "1") data = applyPacks(data, ["historical"]);
 const { generateMenuTraced } = loadGenerator();
 
 const VALID_BIOMES = ["coastal","heartland","highland","arid","frostlands"];
@@ -26,31 +30,12 @@ const biomes = VALID_BIOMES;
 const seasons = ["spring","summer","autumn","winter"];
 const weathers = Object.keys(data.modifiers.weather);
 const tiers = Object.keys(data.modifiers.inn_tiers);
-const economies = Object.keys(data.modifiers.economy);
 const conditions = Object.keys(data.modifiers.conditions);
 const events = data.events.events.map(e => e.id);
-const incompat = data.modifiers.weather_incompatibilities || {};
 
-function weatherOk(b, s, w) {
-  const bad = incompat[w]; if (!bad) return true;
-  if ((bad.biomes || []).includes(b)) return false;
-  if ((bad.seasons || []).includes(s)) return false;
-  return true;
-}
-
-// Build worlds keyed by tag-of-interest for cross-tab. We sweep full Cartesian for
-// the per-axis aggregation; this matches scripts/smoke.js scope.
-const worlds = [];
-for (const biome of biomes)
-  for (const season of seasons)
-    for (const weather of weathers) {
-      if (!weatherOk(biome, season, weather)) continue;
-      for (const inn_tier of tiers)
-        for (const economy of economies)
-          for (const condition of conditions)
-            for (const event of events)
-              worlds.push({ biome, season, weather, inn_tier, economy, condition, event });
-    }
+// Full Cartesian sweep (shared with scripts/smoke.js via lib/sweep). The biome
+// axis is pinned to VALID_BIOMES so it matches the per-axis tally buckets below.
+const worlds = buildWorlds(data, { biomes });
 
 // ---------- per-axis tallies ----------
 function emptyAxis(values) {
@@ -69,7 +54,6 @@ const byEvent = emptyAxis(events);
 const biomeTier = {};
 for (const b of biomes) for (const t of tiers) biomeTier[`${b}|${t}`] = { ingredients: new Map() };
 
-function bump(map, k) { map.set(k, (map.get(k) || 0) + 1); }
 function record(axis, key, trace) {
   const slot = axis[key];
   slot.n++;
@@ -165,7 +149,7 @@ for (const d of data.authored_dishes.dishes) {
 }
 const dupNames = [...nameSeen.entries()].filter(([_, ids]) => ids.length > 1);
 
-// 6. Section coverage per biome × season — any (biome, season) with very few authored dishes?
+// 6. Section coverage per biome × season: any (biome, season) with very few authored dishes?
 function authoredFor(biome, season) {
   return data.authored_dishes.dishes.filter(d => {
     if (!(d.biomes || []).includes("any") && !(d.biomes || []).includes(biome)) return false;
@@ -229,7 +213,7 @@ for (const d of data.authored_dishes.dishes) {
   }
 }
 
-// 12. Per-biome top-3 ingredients on roadside vs noble inns — useful for tier/scope checks.
+// 12. Per-biome top-3 ingredients on roadside vs noble inns; useful for tier/scope checks.
 //     `biomeTier` was populated alongside the per-axis tallies in the main sweep above.
 
 // ---------- write report ----------
@@ -237,7 +221,7 @@ function ingLabel(id) { const x = ingById.get(id); return x ? `${x.name} [${(x.r
 function dishLabel(id) { const x = dishById.get(id); return x ? x.name : id; }
 
 const lines = [];
-lines.push("# Inn Menu Simulator — Deep Smoke Report");
+lines.push("# Inn Menu Simulator: Deep Smoke Report");
 lines.push("");
 lines.push(`- worlds: **${worlds.length}**, samples/world: **${SAMPLES}**, total menus: **${menus}**`);
 lines.push(`- elapsed: **${(elapsedMs/1000).toFixed(1)}s**`);
@@ -256,16 +240,16 @@ function axisBlock(title, axis, universeIngs, universeDishes, axisKeys) {
     lines.push("");
     lines.push(`Top 5 ingredients`);
     for (const r of topN(slot.ingredients, 5, ingLabel))
-      lines.push(`- ${r.id} — ${r.label} — ${r.count}`);
+      lines.push(`- ${r.id}: ${r.label} (${r.count})`);
     lines.push("");
     lines.push(`Top 5 authored dishes`);
     for (const r of topN(slot.authored, 5, dishLabel))
-      lines.push(`- ${r.id} — ${r.label} — ${r.count}`);
+      lines.push(`- ${r.id}: ${r.label} (${r.count})`);
     lines.push("");
     const zero = universeIngs.filter(id => !slot.ingredients.has(id));
     lines.push(`Ingredients never appearing in this slice: **${zero.length}** (of ${universeIngs.length})`);
     if (zero.length && zero.length <= 30) {
-      for (const id of zero) lines.push(`  - ${id} — ${ingLabel(id)}`);
+      for (const id of zero) lines.push(`  - ${id}: ${ingLabel(id)}`);
     }
     lines.push("");
   }
@@ -307,10 +291,10 @@ if (invalidBiomesInDishes.length) {
 lines.push("");
 
 lines.push(`### C2. Authored dishes whose only biomes are orphan tokens (${dishesOnlyOrphanBiome.length})`);
-lines.push("These dishes have no chance of native match — they only appear as imports at fine+ inns.");
+lines.push("These dishes have no chance of native match; they only appear as imports at fine+ inns.");
 lines.push("");
 if (dishesOnlyOrphanBiome.length) {
-  for (const d of dishesOnlyOrphanBiome) lines.push(`- ${d.id} — ${d.name} — biomes: ${(d.biomes||[]).join(", ")}`);
+  for (const d of dishesOnlyOrphanBiome) lines.push(`- ${d.id}: ${d.name} (biomes: ${(d.biomes||[]).join(", ")})`);
 } else lines.push("None.");
 lines.push("");
 
@@ -325,7 +309,7 @@ lines.push(`### C4. Ingredients with non-biome biome-like tags only (${ingredien
 lines.push("These tags don't gate the ingredient (treated as ambient) but suggest a misspelling or scope drift (e.g. 'mediterranean' is a cuisine tag here, not a biome).");
 lines.push("");
 if (ingredientBadBiomeTags.length) {
-  for (const x of ingredientBadBiomeTags) lines.push(`- ${x.id} — ${x.name} — tags: ${x.tags.join(", ")}`);
+  for (const x of ingredientBadBiomeTags) lines.push(`- ${x.id}: ${x.name} (tags: ${x.tags.join(", ")})`);
 } else lines.push("None worth flagging.");
 lines.push("");
 
@@ -334,14 +318,14 @@ lines.push("Non-peculiar ingredients no template+prep combination can pull. The 
 lines.push("");
 if (unreachableIngredients.length) {
   for (const ing of unreachableIngredients)
-    lines.push(`- ${ing.id} — ${ing.name} — roles: ${(ing.roles||[]).join(",")} — affinities: ${(ing.affinities||[]).join(",")}`);
+    lines.push(`- ${ing.id}: ${ing.name} (roles: ${(ing.roles||[]).join(",")}; affinities: ${(ing.affinities||[]).join(",")})`);
 } else lines.push("All non-peculiar ingredients reachable.");
 lines.push("");
 
 lines.push(`### C6. Duplicate dish names (${dupNames.length})`);
 lines.push("");
 if (dupNames.length) {
-  for (const [name, ids] of dupNames) lines.push(`- "${name}" — ${ids.join(", ")}`);
+  for (const [name, ids] of dupNames) lines.push(`- "${name}": ${ids.join(", ")}`);
 } else lines.push("None.");
 lines.push("");
 
@@ -365,7 +349,7 @@ lines.push("");
 lines.push(`### C8. Authored mains missing 'contains' field (${mainsMissingContains.length})`);
 lines.push("Without `contains`, the cap system treats them as meatless. May or may not be intentional.");
 lines.push("");
-if (mainsMissingContains.length) for (const d of mainsMissingContains) lines.push(`- ${d.id} — ${d.name} — biomes: ${(d.biomes||[]).join(",")}`);
+if (mainsMissingContains.length) for (const d of mainsMissingContains) lines.push(`- ${d.id}: ${d.name} (biomes: ${(d.biomes||[]).join(",")})`);
 else lines.push("None.");
 lines.push("");
 

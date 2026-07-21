@@ -390,6 +390,81 @@
       ],
       "name_template": "{starch} stew with {protein}",
       "name_template_with_vegetable": "{starch} stew with {protein} and {vegetable}"
+    },
+    {
+      "id": "meatball",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["braised","stewed","pan-fried"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "herb", "name_key": "herb" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{protein} meatballs with {herb}",
+      "name_template_with_spice": "{spice}-spiced {protein} meatballs with {herb}"
+    },
+    {
+      "id": "offal-dish",
+      "section": "main",
+      "tier_min": 1,
+      "tier_max": 3,
+      "prep_pool": ["stewed","braised","pan-fried"],
+      "slots": [
+        { "role": "offal", "name_key": "protein" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{prep} {protein}",
+      "name_template_with_herb": "{prep} {protein} with {herb}"
+    },
+    {
+      "id": "gelatin-jelly",
+      "section": "dessert",
+      "tier_min": 3,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "set {fruit} jelly with {sweet}",
+      "name_template_with_spice": "{spice}-scented {fruit} jelly"
+    },
+    {
+      "id": "fruit-preserve",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet" }
+      ],
+      "name_template": "preserved {fruit} in {sweet}"
+    },
+    {
+      "id": "fruit-compote",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{fruit} compote",
+      "name_template_with_spice": "{spice}-scented {fruit} compote"
+    },
+    {
+      "id": "cookie",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "nut", "name_key": "nut" },
+        { "role": "sweetener", "name_key": "sweet" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{nut} and {sweet} cookies",
+      "name_template_with_spice": "{spice} {nut} cookies"
     }
   ]
 }

@@ -24,7 +24,8 @@ const {
   mainsMissingContains,
   unreachableNonUnusualIngredients,
 } = require("./lib/checks");
-const { ROOT, loadData, loadGenerator } = require("./lib/loader");
+const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
+const { bump, buildWorlds } = require("./lib/sweep");
 
 const OUT_DIR = path.join(ROOT, "out");
 const HISTORY_DIR = path.join(OUT_DIR, "history");
@@ -39,43 +40,14 @@ const WORLDS_CAP = process.env.WORLDS ? parseInt(process.env.WORLDS, 10) : null;
 const RARE_FACTOR = parseFloat(process.env.RARE_FACTOR || "0.2");
 const OVER_FACTOR = parseFloat(process.env.OVER_FACTOR || "5");
 
-const data = loadData();
+let data = loadData();
+// REALISM=1: merge the historical content layer so the sweep sees what the
+// browser sees when the Historical checkbox is on.
+if (process.env.REALISM === "1") data = applyPacks(data, ["historical"]);
 const { generateMenuTraced, filterAuthored, resolveWorld } = loadGenerator();
 
 // ---------- world sweep ----------
-const biomes = Object.keys(data.modifiers.biomes);
-const seasons = ["spring", "summer", "autumn", "winter"];
-const weathers = Object.keys(data.modifiers.weather);
-const tiers = Object.keys(data.modifiers.inn_tiers);
-const economies = Object.keys(data.modifiers.economy);
-const conditions = Object.keys(data.modifiers.conditions);
-const events = data.events.events.map(e => e.id);
-const incompat = data.modifiers.weather_incompatibilities || {};
-
-function isWeatherCompatible(biome, season, weather) {
-  const bad = incompat[weather];
-  if (!bad) return true;
-  if ((bad.biomes || []).includes(biome)) return false;
-  if ((bad.seasons || []).includes(season)) return false;
-  return true;
-}
-
-function buildWorlds() {
-  const list = [];
-  for (const biome of biomes)
-    for (const season of seasons)
-      for (const weather of weathers) {
-        if (!isWeatherCompatible(biome, season, weather)) continue;
-        for (const inn_tier of tiers)
-          for (const economy of economies)
-            for (const condition of conditions)
-              for (const event of events)
-                list.push({ biome, season, weather, inn_tier, economy, condition, event });
-      }
-  return list;
-}
-
-let worlds = buildWorlds();
+let worlds = buildWorlds(data);
 if (WORLDS_CAP && worlds.length > WORLDS_CAP) {
   // Deterministic stride sampling so a small cap still spans all axes.
   const stride = worlds.length / WORLDS_CAP;
@@ -112,8 +84,6 @@ for (let w = 0; w < worlds.length; w++) {
   }
 }
 const elapsedMs = Date.now() - t0;
-
-function bump(map, key) { map.set(key, (map.get(key) || 0) + 1); }
 
 // ---------- analysis ----------
 const allAuthored = data.authored_dishes.dishes;
@@ -209,7 +179,7 @@ function tableRows(rows, opts = {}) {
 
 function buildReport() {
   const lines = [];
-  lines.push("# Inn Menu Simulator — Smoke Report");
+  lines.push("# Inn Menu Simulator: Smoke Report");
   lines.push("");
   lines.push("## Run config");
   lines.push("");
@@ -278,13 +248,13 @@ function buildReport() {
   lines.push("## Sanity checks");
   lines.push("");
   const checks = [];
-  checks.push(["all 9 preparations appear at least once", prepSum.never.length === 0]);
-  checks.push(["all 22 templates appear at least once", templateSum.never.length === 0]);
+  checks.push([`all ${allPreps.length} preparations appear at least once`, prepSum.never.length === 0]);
+  checks.push([`all ${allTemplates.length} templates appear at least once`, templateSum.never.length === 0]);
   checks.push(["total ingredient slots > 0", totalIngredientSlots > 0]);
   checks.push(["≥ 80% authored dishes appear at least once",
     (allAuthored.length - authoredSum.never.length) / allAuthored.length >= 0.8]);
 
-  // Structural data-shape checks (don't depend on the sweep — pure on the data files).
+  // Structural data-shape checks (don't depend on the sweep; pure on the data files).
   const badBiomes = dishesWithBadBiomes(allAuthored);
   const missingContains = mainsMissingContains(allAuthored);
   const trueOrphans = unreachableNonUnusualIngredients(
