@@ -491,6 +491,11 @@ function peculiarFactor(base, w, menuState) {
 
 function weightAuthored(d, w, menuState) {
   let weight = 1;
+  // Optional per-dish weight (default 1). A curated set can be foregrounded
+  // without touching the tag/tier machinery: the arid scholarly-pass dishes
+  // carry a boost so the biome reads as distinctly its own rather than sharing
+  // its table evenly with the older, more generic arid entries.
+  if (typeof d.weight === "number") weight *= d.weight;
   // Native biome gets a big boost
   if (d.biomes.includes(w.biome)) weight *= 3.0;
   // "Any" biome dishes are neutral

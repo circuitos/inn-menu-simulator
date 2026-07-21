@@ -282,7 +282,8 @@ Field notes:
 - **cost**: 1 to 5. Drives base price. Scales through tier/economy/condition/event multipliers.
 - **tags**: cultural (`peasant`, `common`, `refined`, `noble`), origin (`exotic`), cuisine (`mediterranean`, `nordic`), and flags (`peculiar`). The `exotic` tag means "no fixed origin, off-map trade good" (saffron, sugar, hothouse spices) and is treated as effective import distance 2 (see Imports below). The `peculiar` tag marks weird local items (rat, lamprey, seal); it dampens weight but doesn't gate.
 - **contains** (mains only, optional): `"meat"` or `"fish"`. Omit for meatless mains (the bucket the cap system treats as the safe fallback under scarcity). Used by the per-kind cap loop; see the Condition-based menu caps section. Animal byproducts (eggs, dairy, lard) do not require this field; they count as meatless.
-- **flavor** (optional): a short description the optional LLM polish can use. Mostly used for dishes whose names don't fully explain themselves ("Hypocras" → "spiced wine").
+- **flavor** (optional): a short description shown under the dish (and reused by the optional LLM polish). Mostly used for dishes whose names don't fully explain themselves ("Hypocras" → "spiced wine").
+- **weight** (optional, default 1): a flat multiplier on the dish's selection weight, applied first in `weightAuthored` before every other factor. Use it to foreground a curated set without bending the tag/tier rules. The arid scholarly-pass dishes carry `3`, which lifts them from ~66% to ~81% of committed arid dishes so the biome reads as distinctly its own; the older, more generic arid entries stay in as the minority. Prefer tags/tiers/seasons for ordinary tuning and reach for `weight` only to promote a deliberate group.
 
 ### Imports
 
@@ -421,7 +422,8 @@ Dishes and ingredients like rat skewer, seal tail, albatross pie, basking shark,
      For non-drink sections, per slot:
        Roll rng() < TUNING.authored_ratio → prefer authored this slot; else prefer procedural.
        Try the preferred source first; fall back to the other if empty.
-         authored weights: native biome ×3.0, season match ×1.8, event boost ×1.7
+         authored weights: per-dish weight ×(d.weight||1), native biome ×3.0,
+                           season match ×1.8, event boost ×1.7
                            (scaled by event_weight_mult), 'any' biome ×1.2,
                            regional import ×0.4, distant/exotic-effective import ×0.2,
                            peculiar (per Peculiar knobs), exotic-tag ×0.75,
