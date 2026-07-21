@@ -5,7 +5,8 @@
     "designator_chance": 0.6,
     "archaic_color_chance": 0.15,
     "posture_chance": 0.5,
-    "hoop_suffix_chance": 0.01
+    "hoop_suffix_chance": 0.01,
+    "genitive_number_chance": 0.4
   },
 
   "patterns": [
@@ -17,8 +18,24 @@
     { "id": "arms",       "weight": 6, "tiers": ["common", "fine", "noble"] },
     { "id": "pair",       "weight": 5 },
     { "id": "on_object",  "weight": 3 },
-    { "id": "body_part",  "weight": 2 }
+    { "id": "body_part",  "weight": 2 },
+    { "id": "genitive",   "weight": 0, "tiers": ["common", "fine", "noble"] }
   ],
+
+  "_pattern_biome_weights_note": "Per-biome overrides of the global pattern weights above; an unlisted pattern keeps its global weight, and a resolved weight of 0 removes the pattern for that biome. Arid inverts the English-signboard defaults: it leads with the genitive 'The Khan of the Two Palms' grammar, leans on waypoint and possessive (caravan-route and patron naming), keeps only a little of the heraldic color/single register, and drops on_object entirely.",
+  "pattern_biome_weights": {
+    "arid": {
+      "genitive":   30,
+      "possessive": 20,
+      "waypoint":   15,
+      "single":     20,
+      "number":      8,
+      "arms":        5,
+      "color":       2,
+      "on_object":   0,
+      "body_part":   2
+    }
+  },
 
   "colors": [
     { "word": "White",  "archaic": "Alba" },
@@ -29,6 +46,7 @@
 
   "numbers": [
     { "word": "Three", "weight": 80 },
+    { "word": "Two",   "weight": 25, "biomes": ["arid"] },
     { "word": "Seven", "weight": 12, "requires_charge": "Star" },
     { "word": "Four",  "weight": 8,  "requires_charge": "Bird" }
   ],
@@ -60,6 +78,10 @@
     { "name": "Nomad",    "possessive": "Nomad's",    "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["common", "fine", "noble"], "flavor": ["martial"] },
     { "name": "Raider",   "possessive": "Raider's",   "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["common", "fine"],          "flavor": ["martial"] },
     { "name": "Sultan",   "possessive": "Sultan's",   "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["fine", "noble"],           "flavor": ["royal"] },
+    { "name": "Vizier",   "possessive": "Vizier's",   "parts": ["Head"], "haunts": ["Rest"], "biomes": ["arid"],                                 "tiers": ["fine", "noble"],           "flavor": ["idiomatic"] },
+    { "name": "Qadi",     "possessive": "Qadi's",     "parts": ["Head"], "haunts": ["Rest"], "biomes": ["arid"],                                 "tiers": ["common", "fine", "noble"], "flavor": ["idiomatic"] },
+    { "name": "Caravan-Master","possessive": "Caravan-Master's", "haunts": ["Rest"], "biomes": ["arid"],                                        "tiers": ["common", "fine"],          "flavor": ["idiomatic"] },
+    { "name": "Pilgrim",  "possessive": "Pilgrim's",  "haunts": ["Rest"], "biomes": ["arid"],                                                 "tiers": ["roadside", "common"],      "flavor": ["idiomatic"] },
     { "name": "Jarl",     "possessive": "Jarl's",     "parts": ["Head"],         "biomes": ["frostlands"],                                    "tiers": ["common", "fine", "noble"], "flavor": ["martial"] }
   ],
 
@@ -81,7 +103,13 @@
     { "name": "Goldsmith",  "arms_sign": "shield of three covered cups",           "biomes": ["heartland"],             "tiers": ["fine", "noble"] },
     { "name": "Vintner",    "arms_sign": "shield of three wine tuns",              "biomes": ["heartland"],             "tiers": ["fine", "noble"] },
     { "name": "Silversmith","arms_sign": "shield of three silver ingots",          "biomes": ["highland"],              "tiers": ["fine", "noble"] },
-    { "name": "Gemcutter",  "arms_sign": "shield of three faceted stones",         "biomes": ["arid"],                  "tiers": ["fine", "noble"] }
+    { "name": "Gemcutter",  "arms_sign": "shield of three faceted stones",         "biomes": ["arid"],                  "tiers": ["fine", "noble"] },
+    { "name": "Perfumer",   "arms_sign": "shield of three stoppered phials",       "biomes": ["arid"],                  "tiers": ["common", "fine"] },
+    { "name": "Soapmaker",  "arms_sign": "shield charged with a cake of soap",     "biomes": ["arid"],                  "tiers": ["common", "fine"] },
+    { "name": "Silk Merchant","arms_sign": "shield of three coiled silk skeins",   "biomes": ["arid"],                  "tiers": ["fine", "noble"] },
+    { "name": "Camel-Driver","sign": "camel-driver dozing beside his beast",       "biomes": ["arid"],                  "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Well-Keeper", "sign": "well-keeper hauling the rope",               "biomes": ["arid"],                  "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Date-Seller", "sign": "date-seller at a laden stall",               "biomes": ["arid"],                  "tiers": ["roadside", "common"],          "haunts": ["Rest"] }
   ],
 
   "ordinals": [
@@ -104,6 +132,9 @@
     { "word": "Cairn",     "sign": "stacked wayfarers' cairn",    "biomes": ["highland"],              "tiers": ["roadside", "common"] },
     { "word": "Well",      "sign": "stone well",                  "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
     { "word": "Shade",     "sign": "canvas awning on poles",      "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
+    { "word": "Cistern",   "sign": "vaulted cistern mouth",       "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
+    { "word": "Spring",    "sign": "trickling desert spring",     "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
+    { "word": "Palm",      "sign": "lone palm",                   "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
     { "word": "Crossing",  "sign": "signpost at crossed roads",   "biomes": ["frostlands", "heartland"],"tiers": ["roadside", "common"] }
   ],
 
@@ -121,7 +152,7 @@
     { "name": "Gull",      "plural": "Gulls",      "sign": "wheeling gull",                       "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [], "haunts": ["Perch", "Nest"] },
     { "name": "Crab",      "plural": "Crabs",      "sign": "scuttling crab",                      "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
     { "name": "Whale",     "plural": "Whales",     "sign": "breaching whale",                     "biomes": ["coastal"],               "tiers": ["fine", "noble"],                       "flavor": ["naturalistic"], "color": true,  "postures": [] },
-    { "name": "Star",      "plural": "Stars",      "sign": "star",                                "biomes": ["coastal", "frostlands"], "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Star",      "weight": 0.6,  "plural": "Stars",      "sign": "star",                                "biomes": ["coastal", "frostlands", "arid"], "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
     { "name": "Heron",     "plural": "Herons",     "sign": "heron in the shallows",              "biomes": ["coastal"],               "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": true,  "postures": [] },
     { "name": "Compass",   "plural": "Compasses",  "sign": "mariner's compass",                  "biomes": ["coastal"],               "tiers": ["common", "fine"],                      "flavor": ["maritime"],     "color": false, "postures": [] },
 
@@ -186,6 +217,9 @@
     { "name": "Cypress",   "plural": "Cypresses",  "sign": "crooked cypress",                     "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": false, "postures": [] },
     { "name": "Lotus",     "plural": "Lotuses",    "sign": "open lotus",                          "biomes": ["arid"],                  "tiers": ["fine", "noble"],                       "flavor": ["naturalistic"], "color": true,  "postures": [] },
     { "name": "Vulture",   "plural": "Vultures",   "sign": "hunched vulture",                     "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Column",    "plural": "Columns",    "sign": "lone standing column",               "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Cistern",   "plural": "Cisterns",   "sign": "vaulted cistern mouth",              "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine"],          "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Dome",      "plural": "Domes",      "sign": "tiled dome",                          "biomes": ["arid"],                  "tiers": ["common", "fine", "noble"],             "flavor": ["idiomatic"],    "color": false, "postures": [] },
 
     { "name": "Wolf",      "plural": "Wolves",     "sign": "prowling wolf",                       "biomes": ["frostlands"],            "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": ["passant"],  "parts": ["Head"], "haunts": ["Den"] },
     { "name": "Wolfhound", "plural": "Wolfhounds", "sign": "shaggy wolfhound",                   "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"] },
@@ -208,6 +242,7 @@
     { "name": "Beacon",    "plural": "Beacons",    "sign": "flaming hilltop beacon",             "biomes": ["coastal", "highland"],     "tiers": ["common", "fine", "noble"],             "flavor": ["martial"],      "color": false, "postures": [] }
   ],
 
+  "_designators_note": "Keyed by tier for the default English register, and optionally nested under a biome first so a biome can offer its own building words (see innname.js designatorList). Biome names never collide with tier names, so the lookup tries designators[biome][tier] then falls back to designators[tier]. Arid trades caravanserai/cookshop/khan/funduq for the anglo alehouse/inn/great-inn ladder; the tier still reads through the institution.",
   "designators": {
     "roadside": [
       { "word": "Alehouse", "weight": 40 },
@@ -229,6 +264,28 @@
       { "word": "Great Inn", "weight": 55 },
       { "word": "Inn", "weight": 30 },
       { "word": "Hospitium", "weight": 15 }
-    ]
+    ],
+    "arid": {
+      "roadside": [
+        { "word": "Cookshop", "weight": 35 },
+        { "word": "Wayhouse", "weight": 30 },
+        { "word": "Rest", "weight": 25 },
+        { "word": "Khan", "weight": 10 }
+      ],
+      "common": [
+        { "word": "Khan", "weight": 50 },
+        { "word": "Funduq", "weight": 30 },
+        { "word": "Hostel", "weight": 20 }
+      ],
+      "fine": [
+        { "word": "Caravanserai", "weight": 55 },
+        { "word": "Khan", "weight": 35 },
+        { "word": "Funduq", "weight": 10 }
+      ],
+      "noble": [
+        { "word": "Great Caravanserai", "weight": 60 },
+        { "word": "Royal Khan", "weight": 40 }
+      ]
+    }
   }
 }

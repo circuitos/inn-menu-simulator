@@ -491,6 +491,11 @@ function peculiarFactor(base, w, menuState) {
 
 function weightAuthored(d, w, menuState) {
   let weight = 1;
+  // Optional per-dish weight (default 1). A curated set can be foregrounded
+  // without touching the tag/tier machinery: the arid scholarly-pass dishes
+  // carry a boost so the biome reads as distinctly its own rather than sharing
+  // its table evenly with the older, more generic arid entries.
+  if (typeof d.weight === "number") weight *= d.weight;
   // Native biome gets a big boost
   if (d.biomes.includes(w.biome)) weight *= 3.0;
   // "Any" biome dishes are neutral
@@ -926,10 +931,16 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
 // meatless-floor) stay in lockstep.
 function buildAuthoredMenuDish(choice, w) {
   const price = priceAuthoredDish(choice, w);
+  // A dish that leads with its local name at home (arid's "Sikbaj, lamb braised
+  // in vinegar and dates") reverts to the plain descriptive `name_import` once
+  // it travels: on a foreign menu it reads as an imported dish, not a native one.
+  const displayName = (choice._importDistance >= 1 && choice.name_import)
+    ? choice.name_import
+    : choice.name;
   return {
     source: "authored",
     section: choice.section,
-    name: choice.name + importLabel(choice._importDistance, choice._importOrigin, w),
+    name: displayName + importLabel(choice._importDistance, choice._importOrigin, w),
     flavor: choice.flavor,
     importDistance: choice._importDistance || 0,
     price_cp: price,
