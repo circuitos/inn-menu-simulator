@@ -931,10 +931,16 @@ function pickProceduralDish(section, usedTpl, existingNames, pool, rng, w, data,
 // meatless-floor) stay in lockstep.
 function buildAuthoredMenuDish(choice, w) {
   const price = priceAuthoredDish(choice, w);
+  // A dish that leads with its local name at home (arid's "Sikbaj, lamb braised
+  // in vinegar and dates") reverts to the plain descriptive `name_import` once
+  // it travels: on a foreign menu it reads as an imported dish, not a native one.
+  const displayName = (choice._importDistance >= 1 && choice.name_import)
+    ? choice.name_import
+    : choice.name;
   return {
     source: "authored",
     section: choice.section,
-    name: choice.name + importLabel(choice._importDistance, choice._importOrigin, w),
+    name: displayName + importLabel(choice._importDistance, choice._importOrigin, w),
     flavor: choice.flavor,
     importDistance: choice._importDistance || 0,
     price_cp: price,
