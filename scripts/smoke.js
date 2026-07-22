@@ -22,6 +22,7 @@ const path = require("path");
 const {
   dishesWithBadBiomes,
   mainsMissingContains,
+  nonMainMeatMissingContains,
   unreachableNonUnusualIngredients,
 } = require("./lib/checks");
 const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
@@ -257,11 +258,13 @@ function buildReport() {
   // Structural data-shape checks (don't depend on the sweep; pure on the data files).
   const badBiomes = dishesWithBadBiomes(allAuthored);
   const missingContains = mainsMissingContains(allAuthored);
+  const meatLeaks = nonMainMeatMissingContains(allAuthored);
   const trueOrphans = unreachableNonUnusualIngredients(
     allIngredients, allTemplates, data.preparations.preparations
   );
   checks.push(["all dish.biomes use valid tokens", badBiomes.length === 0]);
   checks.push(["all mains have explicit contains or _comment", missingContains.length === 0]);
+  checks.push(["no non-main dish reads as meat without contains (fast-day leak)", meatLeaks.length === 0]);
   checks.push(["all non-peculiar ingredients are procedurally reachable", trueOrphans.length === 0]);
 
   for (const [label, ok] of checks) {

@@ -6,7 +6,7 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const { ingredientReachable, VALID_BIOME_TOKENS } = require("./lib/checks");
+const { ingredientReachable, VALID_BIOME_TOKENS, nonMainMeatMissingContains } = require("./lib/checks");
 const { ROOT, loadData, loadGenerator, applyPacks } = require("./lib/loader");
 const { bump, buildWorlds } = require("./lib/sweep");
 
@@ -186,6 +186,11 @@ const mainsMissingContains = data.authored_dishes.dishes.filter(d =>
   d.section === "main" && d.contains === undefined && !d._comment
 );
 
+// 8b. Fast-day leak guard: non-main authored dishes that name a flesh
+// ingredient but don't declare `contains`, so Religious Fast can't suppress
+// them. Scoped to the always-on authored core (packs are opt-in layers).
+const nonMainMeatLeaks = nonMainMeatMissingContains(data.authored_dishes.dishes);
+
 // 9. Authored biome distribution: dish counts per biome (native).
 const dishesPerBiome = {};
 for (const b of biomes) dishesPerBiome[b] = 0;
@@ -353,6 +358,13 @@ if (mainsMissingContains.length) for (const d of mainsMissingContains) lines.pus
 else lines.push("None.");
 lines.push("");
 
+lines.push(`### C8b. Non-main dishes missing 'contains' that read as meat (${nonMainMeatLeaks.length})`);
+lines.push("These are served on a Religious Fast night: the suppression filter keys off `contains`. Add `contains: \"meat\"` (or `\"fish\"`), or mark the dish meatless/mock in `_comment`.");
+lines.push("");
+if (nonMainMeatLeaks.length) for (const d of nonMainMeatLeaks) lines.push(`- ${d.id}: ${d.name} [${d.section}]`);
+else lines.push("None.");
+lines.push("");
+
 lines.push(`### C9. Authored dish counts per biome (native + 'any')`);
 lines.push("");
 lines.push("| biome | total native dishes |");
@@ -393,3 +405,4 @@ console.log(`  C5 procedurally unreachable ingreds:   ${unreachableIngredients.l
 console.log(`  C6 duplicate dish names:               ${dupNames.length}`);
 console.log(`  C7 sparse biome×season×section cells:  ${sparseBiomeSeasonCells.length}`);
 console.log(`  C8 mains missing 'contains':           ${mainsMissingContains.length}`);
+console.log(`  C8b non-main meat missing 'contains':  ${nonMainMeatLeaks.length}`);
