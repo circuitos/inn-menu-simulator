@@ -438,9 +438,10 @@ function filterAuthored(dishes, w, data) {
     if (d.cost > w.economy.remove_above_cost) return false;
 
     // Event suppression (Religious Fast): dishes whose `contains` names a
-    // banned kind drop out. Dishes without the field pass; only mains are
-    // required to carry it today, so a meat appetizer can still slip through
-    // until the data pass that tags appetizers lands.
+    // banned kind drop out. Dishes without the field pass, so every authored
+    // dish that carries meat/fish must declare it: mains are enforced by
+    // mainsMissingContains, non-mains by nonMainMeatMissingContains (smoke
+    // check "fast-day leak"). Opt-in flavor packs are outside that guard.
     if (w.suppressKinds.size && d.contains && w.suppressKinds.has(d.contains)) return false;
 
     // "peculiar" dishes appear only rarely; handled via weighting, not filtering. Under
