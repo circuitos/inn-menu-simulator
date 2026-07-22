@@ -105,3 +105,5 @@ Code is MIT licensed. Data files are CC-BY-SA 4.0: fork and remix freely, credit
 Jim Chevallier, food historian, and u/iuabv of r/AskFoodHistorians audited the generator's assumptions about what a medieval inn actually served; their sources and corrections shaped the Historical mode's price model, fish days, and larder. Errors that remain are this project's, not theirs.
 
 u/Mephos of r/rpg_generators test-drove the interface; their notes produced the share links, the world summary matching the form's order, and the how-it-works explainer.
+
+u/nedchicane of r/rpg_generators asked for menu export and fantasy ingredients; those requests became the export button and the OSR Bestiary flavor pack. The slime soup is theirs.
