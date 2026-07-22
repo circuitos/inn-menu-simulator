@@ -79,8 +79,7 @@ inn-menu-simulator/
 ├── docs/
 │   ├── DESIGN.md               # architecture, tag taxonomy, decision log
 │   ├── SETUP.md                # GitHub + Pages walkthrough
-│   ├── ARID_SOURCES.md         # provenance for the arid dish pack
-│   ├── ARID_NAMING.md          # arid establishment-naming design notes
+│   ├── SOURCES.md              # bibliography, per-dish provenance, pending reading
 │   └── screenshot-*.png        # README miniatures (light/dark)
 ├── package.json
 ├── LICENSE
@@ -100,3 +99,9 @@ Two Node-only scripts cover regression and curation. `npm run smoke` runs the re
 The data files are the actual content. If you want to add ingredients, dishes, or events, edit the JSON. Schema is documented in `docs/DESIGN.md`. For setting-specific contributions (named regional dishes, proper-noun ingredients), add a flavor pack instead of touching the generic pool: see the Flavor packs section above.
 
 Code is MIT licensed. Data files are CC-BY-SA 4.0: fork and remix freely, credit appreciated.
+
+## Acknowledgments
+
+Jim Chevallier, food historian, and u/iuabv of r/AskFoodHistorians audited the generator's assumptions about what a medieval inn actually served; their sources and corrections shaped the Historical mode's price model, fish days, and larder. Errors that remain are this project's, not theirs.
+
+u/Mephos of r/rpg_generators test-drove the interface; their notes produced the share links, the world summary matching the form's order, and the how-it-works explainer.
