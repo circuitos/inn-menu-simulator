@@ -79,8 +79,7 @@ inn-menu-simulator/
 ├── docs/
 │   ├── DESIGN.md               # architecture, tag taxonomy, decision log
 │   ├── SETUP.md                # GitHub + Pages walkthrough
-│   ├── ARID_SOURCES.md         # provenance for the arid dish pack
-│   ├── ARID_NAMING.md          # arid establishment-naming design notes
+│   ├── SOURCES.md              # bibliography, per-dish provenance, pending reading
 │   └── screenshot-*.png        # README miniatures (light/dark)
 ├── package.json
 ├── LICENSE

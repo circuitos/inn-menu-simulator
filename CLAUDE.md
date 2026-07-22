@@ -10,6 +10,7 @@ One owner per fact: link, don't restate.
 |---|---|
 | Pitch, quick start, project layout | `README.md` |
 | Architecture, tag taxonomy, tuning knobs, editing-data reference | `docs/DESIGN.md` |
+| Bibliography, per-dish provenance, naming evidence, pending reading | `docs/SOURCES.md` |
 | GitHub account/repo/Pages setup, troubleshooting | `docs/SETUP.md` |
 | The actual content (dishes, ingredients, prices, biomes, events) | `data/*.json` |
 | Generation logic, `TUNING` block | `src/generator.js` |
