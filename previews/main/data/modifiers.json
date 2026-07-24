@@ -1,0 +1,55 @@
+{
+  "biomes": {
+    "coastal":    { "label": "Coastal",    "import_phrase": "the coast",      "import_adjective": "coastal",   "description": "Temperate maritime. Fish, shellfish, citrus where warm." },
+    "heartland":  { "label": "Heartland",  "import_phrase": "the heartland",  "import_adjective": "heartland", "description": "Temperate plains and forest. Grain, pork, game, orchard fruit." },
+    "highland":   { "label": "Highland",   "import_phrase": "the highlands",  "import_adjective": "highland",  "description": "Cold mountain. Mutton, dairy, roots, smoked meats." },
+    "arid":       { "label": "Arid",       "import_phrase": "the desert",     "import_adjective": "desert",    "description": "Mediterranean to semi-desert. Olive, legume, goat, warming spices." },
+    "frostlands": { "label": "Frostlands", "import_phrase": "the frostlands", "import_adjective": "frostland", "description": "Arctic subarctic. Seal, reindeer, fermented dairy, preserved fish." }
+  },
+  "biome_relations": {
+    "_comment": "Symmetric trade-distance matrix. A dish/ingredient native to biome X served at biome Y has distance: 0 if X==Y, 1 if Y in regional, 2 if Y in distant. Edit to reshape your campaign world's geography.",
+    "coastal":    { "regional": ["heartland","highland","arid","frostlands"], "distant": [] },
+    "heartland":  { "regional": ["coastal","highland","arid","frostlands"],   "distant": [] },
+    "highland":   { "regional": ["coastal","heartland","frostlands"],         "distant": ["arid"] },
+    "arid":       { "regional": ["coastal","heartland"],                      "distant": ["highland","frostlands"] },
+    "frostlands": { "regional": ["coastal","heartland","highland"],           "distant": ["arid"] }
+  },
+  "inn_tiers": {
+    "roadside": { "label": "Roadside", "cost_max": 2, "price_mult": 0.8, "max_import_distance": 0, "allowed_tags": ["peasant","common"] },
+    "common":   { "label": "Common",   "cost_max": 3, "price_mult": 1.0, "max_import_distance": 1, "allowed_tags": ["peasant","common","refined"] },
+    "fine":     { "label": "Fine",     "cost_max": 4, "price_mult": 1.3, "max_import_distance": 1, "allowed_tags": ["common","refined","noble"] },
+    "noble":    { "label": "Noble",    "cost_max": 5, "price_mult": 1.8, "max_import_distance": 2, "allowed_tags": ["common","refined","noble","exotic"] }
+  },
+  "economy": {
+    "plenty":   { "label": "Plenty",   "price_mult": 0.8, "remove_above_cost": 99 },
+    "normal":   { "label": "Normal",   "price_mult": 1.0, "remove_above_cost": 99 },
+    "shortage": { "label": "Shortage", "price_mult": 1.4, "remove_above_cost": 3 },
+    "famine":   { "label": "Famine",   "price_mult": 2.2, "remove_above_cost": 2, "restrict_role": "protein" }
+  },
+  "conditions": {
+    "peace":     { "label": "Peace",     "price_mult": 1.0, "max_import_distance": 2, "note": null },
+    "war":       { "label": "War",       "price_mult": 1.5, "max_import_distance": 1, "note": "Trade routes are cut. Only the closest goods still arrive." },
+    "plague":    { "label": "Plague",    "price_mult": 1.8, "max_import_distance": 0, "note": "Doors bar at dusk. The kitchen serves what arrived in sealed barrels." },
+    "isolation": { "label": "Isolation", "price_mult": 1.2, "max_import_distance": 0, "note": "Roads are impassable. The larder is whatever the last harvest left." },
+    "siege":     { "label": "Siege",     "price_mult": 2.0, "max_import_distance": 0, "note": "Walls stand closed. Every ingredient is rationed." }
+  },
+  "weather": {
+    "clear":    { "label": "Clear" },
+    "rain":     { "label": "Rain",
+                  "sensitive_mult": 0.5, "robust_mult": 1.6,
+                  "prep_bias": { "stewed": 1.6, "braised": 1.4, "smoked": 1.2,
+                                 "baked": 0.7, "roasted": 0.6, "grilled": 0.5, "pan-fried": 0.8 } },
+    "snow":     { "label": "Snow",     "drops_tags": ["weather-sensitive"],                  "robust_mult": 1.2 },
+    "heatwave": { "label": "Heatwave", "drops_tags": ["weather-sensitive","heat-sensitive"], "robust_mult": 1.2 }
+  },
+  "weather_incompatibilities": {
+    "snow":     { "biomes": ["arid"],       "seasons": ["summer"] },
+    "heatwave": { "biomes": ["frostlands"], "seasons": ["winter"] }
+  },
+  "sections": {
+    "appetizer": { "label": "To Begin",         "count_min": 2, "count_max": 3 },
+    "main":      { "label": "Main Fare",        "count_min": 3, "count_max": 4 },
+    "dessert":   { "label": "To Finish",        "count_min": 1, "count_max": 2 },
+    "drink":     { "label": "From the Cellar",  "count_min": 2, "count_max": 4 }
+  }
+}

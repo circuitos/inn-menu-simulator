@@ -1,0 +1,31 @@
+{
+  "id": "historical",
+  "label": "Historical",
+  "description": "Period content layer for Historical mode: dishes and ingredients the sources insisted on (verjuice, stockfish, pottages, mortrews, wafers), plus period renames (white carrots, small ale). Activated by the Historical checkbox, not listed as a setting pack.",
+  "ingredient_overrides": [
+    { "id": "carrot", "name": "white carrots" },
+    { "id": "cranberry", "name": "lingonberries" },
+    { "id": "ale-pale", "name": "small ale" },
+    { "id": "peated-beer", "name": "smoked malt ale" }
+  ],
+  "ingredients": [
+    { "id": "verjuice",  "name": "verjuice",  "roles": ["liquid","spice"], "tags": ["all-seasons","weather-robust","common","heartland","arid"],                          "cost": 1, "affinities": ["raw-edible"] },
+    { "id": "stockfish", "name": "stockfish", "roles": ["protein","fish"], "tags": ["coastal","frostlands","all-seasons","weather-robust","peasant","common","nordic"],    "cost": 1, "affinities": ["stews-well","requires-cooking"] },
+    { "id": "perry",     "name": "perry",     "roles": ["drink","liquid"], "tags": ["heartland","autumn","winter","weather-robust","peasant","common"],                    "cost": 1, "affinities": ["raw-edible"] },
+    { "id": "metheglin", "name": "metheglin", "roles": ["drink","liquid"], "tags": ["heartland","frostlands","all-seasons","weather-robust","refined"],                    "cost": 3, "affinities": ["raw-edible"] }
+  ],
+  "dishes": [
+    { "id": "hist-wafers-honey",        "name": "Wafers with honey",             "section": "dessert",   "biomes": ["any"],                               "seasons": ["all-seasons"],     "tier_min": 2, "cost": 2, "tags": ["common","refined"], "flavor": "Pressed thin between hot irons, eaten warm." },
+    { "id": "hist-gastel",              "name": "Hot gastels",                   "section": "dessert",   "biomes": ["heartland"],                         "seasons": ["all-seasons"],     "tier_min": 1, "cost": 2, "tags": ["common"], "flavor": "Fine cake-bread, sold warm by the piece." },
+    { "id": "hist-pease-pottage",       "name": "Pease pottage",                 "section": "main",      "biomes": ["heartland","highland","frostlands"], "seasons": ["all-seasons"],     "tier_min": 1, "tier_max": 2, "cost": 1, "tags": ["peasant"], "_comment": "intentionally meatless; the fast-day staple" },
+    { "id": "hist-pease-bacon",         "name": "Pease pottage with bacon",      "section": "main",      "biomes": ["heartland","highland"],              "seasons": ["all-seasons"],     "tier_min": 1, "tier_max": 2, "cost": 1, "tags": ["peasant","common"], "contains": "meat" },
+    { "id": "hist-beef-pottage",        "name": "Beef and sage pottage",         "section": "main",      "biomes": ["heartland"],                         "seasons": ["autumn","winter"], "tier_min": 1, "cost": 2, "tags": ["common"], "contains": "meat" },
+    { "id": "hist-mortrews",            "name": "Mortrews of pork and chicken",  "section": "main",      "biomes": ["heartland"],                         "seasons": ["all-seasons"],     "tier_min": 2, "cost": 3, "tags": ["common","refined"], "contains": "meat", "flavor": "Ground fine with breadcrumbs and spice, served thick." },
+    { "id": "hist-umbles-ale",          "name": "Umbles seethed in ale",         "section": "main",      "biomes": ["heartland","highland"],              "seasons": ["autumn","winter"], "tier_min": 1, "tier_max": 2, "cost": 1, "tags": ["peasant","peculiar"], "contains": "meat", "flavor": "The deer's lesser parts, and proud of it." },
+    { "id": "hist-pike-galantyne",      "name": "Pike in galantyne sauce",       "section": "main",      "biomes": ["heartland","coastal"],               "seasons": ["all-seasons"],     "tier_min": 2, "cost": 3, "tags": ["refined"], "contains": "fish", "flavor": "Dark sauce of bread, vinegar and galingale." },
+    { "id": "hist-eel-pie",             "name": "Eel pie",                       "section": "main",      "biomes": ["coastal","heartland"],               "seasons": ["all-seasons"],     "tier_min": 1, "cost": 2, "tags": ["common"], "contains": "fish" },
+    { "id": "hist-bread-cheese",        "name": "Bread and cheese board",        "section": "appetizer", "biomes": ["any"],                               "seasons": ["all-seasons"],     "tier_min": 1, "cost": 1, "tags": ["peasant","common"] },
+    { "id": "hist-pork-pie",            "name": "Hot pork pie",                  "section": "appetizer", "biomes": ["any"],                               "seasons": ["all-seasons"],     "tier_min": 1, "cost": 2, "tags": ["common"], "contains": "meat", "flavor": "Cookshop fare, sold steaming." },
+    { "id": "hist-salt-herring-mustard","name": "Salted herring with mustard",   "section": "appetizer", "biomes": ["coastal","frostlands"],              "seasons": ["all-seasons"],     "tier_min": 1, "cost": 1, "tags": ["peasant","common"], "contains": "fish" }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "_note": "Sign-based inn/tavern name vocabulary. Names are built from a charge (the painted device on the sign) plus optional color, number, posture, pairing, body-part, haunt, or guild arms, following the structural syntax of medieval and Renaissance English tavern signs. Consumed by src/innname.js. See docs/DESIGN.md 'Inn names' for the model, tuning, and how to add charges. Every charge lists concrete biomes (this project's five) and the tiers it can appear at; keep each biome stocked with charges that reach 'noble' so high-tier pools stay varied and biome-flavored rather than collapsing onto a handful of universal devices. A 'sign' is a bare, color-neutral noun phrase (no leading article): innname.js adds the article and injects the chosen color, so do not bake a tincture into a charge that has color:true. A pattern with a 'tiers' list only fires at those tiers. 'haunts' on a charge or trade feeds the possessive pattern (The Fox's Den); 'arms_sign' on a trade feeds the arms pattern (The Miller's Arms); 'waypoints' plus 'ordinals' feed the waypoint pattern (The Last Shade). Any charge, figure, or trade may carry a 'weight' (default 1); use values below 1 to damp devices that sit in several biome pools at once.",
+
+  "tuning": {
+    "designator_chance": 0.6,
+    "archaic_color_chance": 0.15,
+    "posture_chance": 0.5,
+    "hoop_suffix_chance": 0.01
+  },
+
+  "patterns": [
+    { "id": "single",     "weight": 56 },
+    { "id": "color",      "weight": 16 },
+    { "id": "number",     "weight": 8 },
+    { "id": "possessive", "weight": 8, "tiers": ["roadside", "common"] },
+    { "id": "waypoint",   "weight": 5, "tiers": ["roadside", "common"] },
+    { "id": "arms",       "weight": 6, "tiers": ["common", "fine", "noble"] },
+    { "id": "pair",       "weight": 5 },
+    { "id": "on_object",  "weight": 3 },
+    { "id": "body_part",  "weight": 2 }
+  ],
+
+  "colors": [
+    { "word": "White",  "archaic": "Alba" },
+    { "word": "Red",    "archaic": "Redd" },
+    { "word": "Black",  "archaic": "Blake" },
+    { "word": "Golden", "archaic": "Gilt" }
+  ],
+
+  "numbers": [
+    { "word": "Three", "weight": 80 },
+    { "word": "Seven", "weight": 12, "requires_charge": "Star" },
+    { "word": "Four",  "weight": 8,  "requires_charge": "Bird" }
+  ],
+
+  "postures": {
+    "ramping":   { "word": "Ramping" },
+    "passant":   { "word": "Passant" },
+    "spread":    { "word": "Spread" },
+    "rampant":   { "word": "Rampant" },
+    "segreant":  { "word": "Segreant" },
+    "flying":    { "word": "Flying" },
+    "trippant":  { "word": "Trippant" },
+    "springing": { "word": "Springing" }
+  },
+
+  "objects": [
+    { "prep": "on",  "object": "Horseback", "subjects": "figures" },
+    { "prep": "in",  "object": "the Pot" },
+    { "prep": "in",  "object": "the Bush" },
+    { "prep": "in",  "object": "the Basket" }
+  ],
+
+  "figures": [
+    { "name": "King",     "possessive": "King's",     "weight": 0.6, "parts": ["Head", "Hand"], "biomes": ["heartland", "coastal", "highland", "frostlands"], "tiers": ["fine", "noble"],           "flavor": ["royal"] },
+    { "name": "Queen",    "possessive": "Queen's",    "weight": 0.6, "parts": ["Head", "Hand"], "biomes": ["heartland", "coastal", "highland", "frostlands"], "tiers": ["fine", "noble"],           "flavor": ["royal"] },
+    { "name": "Maiden",   "possessive": "Maiden's",   "parts": ["Head", "Hand"], "biomes": ["heartland", "coastal", "highland", "frostlands"], "tiers": ["common", "fine", "noble"], "flavor": ["idiomatic"] },
+    { "name": "Prelate",  "possessive": "Prelate's",  "parts": ["Head", "Hand"], "biomes": ["heartland", "coastal"],                          "tiers": ["common", "fine", "noble"], "flavor": ["religious"] },
+    { "name": "Oracle",   "possessive": "Oracle's",   "parts": ["Head", "Hand"], "biomes": ["heartland"],                                     "tiers": ["fine", "noble"],           "flavor": ["religious"] },
+    { "name": "Nomad",    "possessive": "Nomad's",    "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["common", "fine", "noble"], "flavor": ["martial"] },
+    { "name": "Raider",   "possessive": "Raider's",   "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["common", "fine"],          "flavor": ["martial"] },
+    { "name": "Sultan",   "possessive": "Sultan's",   "parts": ["Head"],         "biomes": ["arid"],                                          "tiers": ["fine", "noble"],           "flavor": ["royal"] },
+    { "name": "Jarl",     "possessive": "Jarl's",     "parts": ["Head"],         "biomes": ["frostlands"],                                    "tiers": ["common", "fine", "noble"], "flavor": ["martial"] }
+  ],
+
+  "trades": [
+    { "name": "Shipwright", "arms_sign": "shield bearing adze and auger",          "biomes": ["coastal"],               "tiers": ["common", "fine"] },
+    { "name": "Fishmonger", "arms_sign": "shield of three fishes naiant",          "biomes": ["coastal"],               "tiers": ["common", "fine"] },
+    { "name": "Fisherman",  "sign": "fisherman asleep beside a creel",             "biomes": ["coastal"],               "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Miller",     "arms_sign": "shield charged with an iron mill-rind",  "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],  "haunts": ["Rest"], "sign": "miller dusted white with flour" },
+    { "name": "Brewer",     "arms_sign": "shield of three barley sheaves",         "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],  "haunts": ["Rest"], "sign": "brewer astride a barrel" },
+    { "name": "Drover",     "sign": "drover resting at a stile",                   "biomes": ["heartland"],             "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Blacksmith", "arms_sign": "shield of hammer and tongs",             "biomes": ["heartland", "highland"], "tiers": ["common", "fine"] },
+    { "name": "Shepherd",   "sign": "shepherd leaning on a crook",                 "biomes": ["highland"],              "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Mason",      "arms_sign": "shield of square and compasses",         "biomes": ["highland"],              "tiers": ["common", "fine"] },
+    { "name": "Spicer",     "arms_sign": "shield of three cloves",                 "biomes": ["arid"],                  "tiers": ["common", "fine"] },
+    { "name": "Dyer",       "arms_sign": "shield of three madder sprigs",          "biomes": ["arid"],                  "tiers": ["common", "fine"] },
+    { "name": "Furrier",    "arms_sign": "shield lined with ermine",               "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"] },
+    { "name": "Trapper",    "sign": "trapper hauling a sledge of pelts",           "biomes": ["frostlands"],            "tiers": ["roadside", "common"],          "haunts": ["Rest"] },
+    { "name": "Merchant",   "arms_sign": "shield of a ship above a balance",       "biomes": ["coastal"],               "tiers": ["fine", "noble"] },
+    { "name": "Goldsmith",  "arms_sign": "shield of three covered cups",           "biomes": ["heartland"],             "tiers": ["fine", "noble"] },
+    { "name": "Vintner",    "arms_sign": "shield of three wine tuns",              "biomes": ["heartland"],             "tiers": ["fine", "noble"] },
+    { "name": "Silversmith","arms_sign": "shield of three silver ingots",          "biomes": ["highland"],              "tiers": ["fine", "noble"] },
+    { "name": "Gemcutter",  "arms_sign": "shield of three faceted stones",         "biomes": ["arid"],                  "tiers": ["fine", "noble"] }
+  ],
+
+  "ordinals": [
+    { "word": "Last",    "weight": 30 },
+    { "word": "First",   "weight": 20 },
+    { "word": "Third",   "weight": 20 },
+    { "word": "Seventh", "weight": 15 },
+    { "word": "Ninth",   "weight": 15 }
+  ],
+
+  "waypoints": [
+    { "word": "Ferry",     "sign": "rope ferry",                  "biomes": ["coastal"],               "tiers": ["roadside", "common"] },
+    { "word": "Harbor",    "sign": "harbor lantern on a post",    "biomes": ["coastal"],               "tiers": ["roadside", "common"] },
+    { "word": "Weir",      "sign": "timber weir",                 "biomes": ["coastal", "heartland"],  "tiers": ["roadside", "common"] },
+    { "word": "Ford",      "sign": "staked river ford",           "biomes": ["heartland"],             "tiers": ["roadside", "common"] },
+    { "word": "Bridge",    "sign": "arched stone bridge",         "biomes": ["heartland"],             "tiers": ["roadside", "common"] },
+    { "word": "Gate",      "sign": "iron-studded gate",           "biomes": ["heartland", "arid"],     "tiers": ["roadside", "common"] },
+    { "word": "Milestone", "sign": "leaning milestone",           "biomes": ["heartland", "arid"],     "tiers": ["roadside", "common"] },
+    { "word": "Pass",      "sign": "notch between two peaks",     "biomes": ["highland"],              "tiers": ["roadside", "common"] },
+    { "word": "Cairn",     "sign": "stacked wayfarers' cairn",    "biomes": ["highland"],              "tiers": ["roadside", "common"] },
+    { "word": "Well",      "sign": "stone well",                  "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
+    { "word": "Shade",     "sign": "canvas awning on poles",      "biomes": ["arid"],                  "tiers": ["roadside", "common"] },
+    { "word": "Crossing",  "sign": "signpost at crossed roads",   "biomes": ["frostlands", "heartland"],"tiers": ["roadside", "common"] }
+  ],
+
+  "charges": [
+    { "name": "Anchor",    "plural": "Anchors",    "sign": "iron anchor",                        "biomes": ["coastal"],               "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["maritime"],     "color": true,  "postures": [] },
+    { "name": "Ship",      "plural": "Ships",      "sign": "ship under full sail",               "biomes": ["coastal"],               "tiers": ["common", "fine", "noble"],             "flavor": ["maritime"],     "color": true,  "postures": [] },
+    { "name": "Barge",     "plural": "Barges",     "sign": "river barge",                        "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["maritime"],     "color": false, "postures": [] },
+    { "name": "Galley",    "plural": "Galleys",    "sign": "many-oared galley",                  "biomes": ["coastal"],               "tiers": ["common", "fine", "noble"],             "flavor": ["maritime"],     "color": false, "postures": [] },
+    { "name": "Dolphin",   "plural": "Dolphins",   "sign": "leaping dolphin",                    "biomes": ["coastal"],               "tiers": ["common", "fine", "noble"],             "flavor": ["maritime"],     "color": true,  "postures": [] },
+    { "name": "Salmon",    "plural": "Salmons",    "sign": "salmon on the leap",                 "biomes": ["coastal"],               "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Herring",   "plural": "Herrings",   "sign": "silvered herring",                   "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Mermaid",   "plural": "Mermaids",   "sign": "mermaid with comb and glass",        "biomes": ["coastal"],               "tiers": ["common", "fine", "noble"],             "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Pelican",   "plural": "Pelicans",   "sign": "pelican tending her brood",          "biomes": ["coastal"],               "tiers": ["fine", "noble"],                       "flavor": ["naturalistic"],    "color": true,  "postures": [] },
+    { "name": "Trident",   "plural": "Tridents",   "sign": "three-pronged trident",              "biomes": ["coastal"],               "tiers": ["common", "fine", "noble"],             "flavor": ["martial"],      "color": false, "postures": [] },
+    { "name": "Gull",      "plural": "Gulls",      "sign": "wheeling gull",                       "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [], "haunts": ["Perch", "Nest"] },
+    { "name": "Crab",      "plural": "Crabs",      "sign": "scuttling crab",                      "biomes": ["coastal"],               "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Whale",     "plural": "Whales",     "sign": "breaching whale",                     "biomes": ["coastal"],               "tiers": ["fine", "noble"],                       "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Star",      "plural": "Stars",      "sign": "star",                                "biomes": ["coastal", "frostlands"], "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Heron",     "plural": "Herons",     "sign": "heron in the shallows",              "biomes": ["coastal"],               "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Compass",   "plural": "Compasses",  "sign": "mariner's compass",                  "biomes": ["coastal"],               "tiers": ["common", "fine"],                      "flavor": ["maritime"],     "color": false, "postures": [] },
+
+    { "name": "Bell",      "plural": "Bells",      "sign": "hanging bell",                        "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Cup",       "plural": "Cups",       "sign": "covered cup",                         "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],          "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Tun",       "plural": "Tuns",       "sign": "great wine tun",                      "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Crown",     "plural": "Crowns",     "sign": "royal crown",                         "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["royal"],        "color": true,  "postures": [] },
+    { "name": "Waystone",  "plural": "Waystones",  "sign": "graven waystone",                     "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],          "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Plough",    "plural": "Ploughs",    "sign": "wooden plough",                       "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Dial",      "plural": "Dials",      "sign": "painted sundial",                     "biomes": ["heartland"],             "tiers": ["common", "fine"],                      "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Keys",      "plural": "Keys",       "sign": "pair of crossed keys",               "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Rose",      "plural": "Roses",      "sign": "heraldic rose",                       "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["royal"],        "color": true,  "postures": [] },
+    { "name": "Temple",    "plural": "Temples",    "sign": "columned temple",                      "biomes": ["heartland"],             "tiers": ["fine", "noble"],                       "flavor": ["religious"],    "color": false, "postures": [] },
+    { "name": "Guardian",  "plural": "Guardians",  "sign": "winged guardian",            "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["religious"],    "color": true,  "postures": [] },
+    { "name": "Cockerel",  "plural": "Cockerels",  "sign": "crowing cockerel",                    "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Hart",      "plural": "Harts",      "sign": "hart, collared and chained in gold", "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": ["trippant"], "parts": ["Head", "Horn"], "haunts": ["Leap"] },
+    { "name": "Hind",      "plural": "Hinds",      "sign": "hind at rest",                        "biomes": ["heartland"],             "tiers": ["common", "fine"],                      "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"] },
+    { "name": "Fox",       "plural": "Foxes",      "sign": "running fox",                         "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"], "haunts": ["Den"] },
+    { "name": "Greyhound", "plural": "Greyhounds", "sign": "coursing greyhound",                 "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": ["passant"],  "parts": ["Head"] },
+    { "name": "Bull",      "plural": "Bulls",      "sign": "standing bull",                       "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": ["passant"],  "parts": ["Head", "Horn"] },
+    { "name": "Oak",       "weight": 0.6,  "plural": "Oaks",       "sign": "spreading oak",                       "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Horse",     "plural": "Horses",     "sign": "rearing horse",                       "biomes": ["heartland"],             "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": ["flying"],   "parts": ["Head"] },
+    { "name": "Bird",      "plural": "Birds",      "sign": "bird",                                "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Moon",      "plural": "Moons",      "sign": "silvered moon at the full",          "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],          "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Harp",      "plural": "Harps",      "sign": "standing harp",                       "biomes": ["heartland"],             "tiers": ["common", "fine"],                      "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Boot",      "plural": "Boots",      "sign": "travel-worn boot",                    "biomes": ["heartland"],             "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Cartwheel", "plural": "Cartwheels", "sign": "iron-shod cartwheel",                "biomes": ["heartland"],             "tiers": ["roadside"],                            "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Hare",      "plural": "Hares",      "sign": "running hare",                        "biomes": ["heartland"],             "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Lantern",   "plural": "Lanterns",   "sign": "horn lantern",                        "biomes": ["heartland", "coastal"],  "tiers": ["roadside", "common", "fine"],          "flavor": ["idiomatic"],    "color": false, "postures": [] },
+
+    { "name": "Ram",       "weight": 0.6,  "plural": "Rams",       "sign": "ram with curled horns",              "biomes": ["highland"],              "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head", "Horn"] },
+    { "name": "Goat",      "plural": "Goats",      "sign": "climbing goat",                       "biomes": ["highland"],              "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head", "Horn"], "haunts": ["Leap"] },
+    { "name": "Ibex",      "plural": "Ibexes",     "sign": "long-horned ibex",                   "biomes": ["highland"],              "tiers": ["common", "fine"],                      "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head", "Horn"], "haunts": ["Leap"] },
+    { "name": "Leopard",   "plural": "Leopards",   "sign": "spotted leopard",                    "biomes": ["highland"],              "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": ["passant"],  "parts": ["Head"] },
+    { "name": "Griffin",   "plural": "Griffins",   "sign": "griffin with raised claw",           "biomes": ["highland"],              "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": ["segreant"] },
+    { "name": "Dragon",    "plural": "Dragons",    "sign": "coiled dragon",                       "biomes": ["highland"],              "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": ["rampant"] },
+    { "name": "Wyvern",    "plural": "Wyverns",    "sign": "winged wyvern",                       "biomes": ["highland"],              "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": ["rampant"] },
+    { "name": "Castle",    "plural": "Castles",    "sign": "triple-towered castle",              "biomes": ["highland"],              "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["martial"],      "color": false, "postures": [] },
+    { "name": "Eagle",     "weight": 0.6,  "plural": "Eagles",     "sign": "eagle with spread wings",            "biomes": ["highland"],              "tiers": ["common", "fine", "noble"],             "flavor": ["royal"],        "color": true,  "postures": ["spread"], "haunts": ["Nest"] },
+    { "name": "Hammer",    "plural": "Hammers",    "sign": "miner's hammer",                      "biomes": ["highland"],              "tiers": ["roadside", "common"],                  "flavor": ["martial"],      "color": false, "postures": [] },
+    { "name": "Axe",       "plural": "Axes",       "sign": "broad axe",                           "biomes": ["highland"],              "tiers": ["roadside", "common"],                  "flavor": ["martial"],      "color": false, "postures": [] },
+    { "name": "Heather",   "plural": "Heathers",   "sign": "sprig of flowering heather",         "biomes": ["highland"],              "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Juniper",   "plural": "Junipers",   "sign": "wind-bent juniper",                  "biomes": ["highland"],              "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": false, "postures": [] },
+
+    { "name": "Sun",       "plural": "Suns",       "sign": "sun in splendour",                    "biomes": ["arid"],                  "tiers": ["common", "fine", "noble"],             "flavor": ["royal"],        "color": true,  "postures": [] },
+    { "name": "Crescent",  "plural": "Crescents",  "sign": "crescent moon",                       "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Serpent",   "plural": "Serpents",   "sign": "coiled serpent",                      "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Scorpion",  "plural": "Scorpions",  "sign": "scorpion, tail raised",              "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["martial"],      "color": true,  "postures": [] },
+    { "name": "Scarab",    "plural": "Scarabs",    "sign": "scarab",                              "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Camel",     "plural": "Camels",     "sign": "laden camel",                         "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [], "haunts": ["Rest"] },
+    { "name": "Jackal",    "plural": "Jackals",    "sign": "watchful jackal",                     "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"], "haunts": ["Den"] },
+    { "name": "Palm",      "plural": "Palms",      "sign": "palm tree",                           "biomes": ["arid"],                  "tiers": ["common", "fine"],                      "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Lion",      "plural": "Lions",      "sign": "standing lion",                       "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["royal"],        "color": true,  "postures": ["ramping", "passant"], "parts": ["Head"] },
+    { "name": "Phoenix",   "plural": "Phoenixes",  "sign": "phoenix rising from flame",          "biomes": ["arid"],                  "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": [] },
+    { "name": "Sphinx",    "plural": "Sphinxes",   "sign": "couchant sphinx",                     "biomes": ["arid"],                  "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": false, "postures": [] },
+    { "name": "Oryx",      "plural": "Oryxes",     "sign": "straight-horned oryx",               "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": ["springing"], "parts": ["Head", "Horn"] },
+    { "name": "Basilisk",  "plural": "Basilisks",  "sign": "crowned basilisk",                   "biomes": ["arid"],                  "tiers": ["fine", "noble"],                       "flavor": ["royal"],        "color": true,  "postures": ["rampant"] },
+    { "name": "Obelisk",   "plural": "Obelisks",   "sign": "graven obelisk",                      "biomes": ["arid"],                  "tiers": ["common", "fine", "noble"],             "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Falcon",    "plural": "Falcons",    "sign": "hooded falcon",                       "biomes": ["highland", "arid"],      "tiers": ["common", "fine", "noble"],             "flavor": ["royal"],        "color": true,  "postures": [],           "haunts": ["Perch"] },
+    { "name": "Well",      "plural": "Wells",      "sign": "stone well",                          "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Ibis",      "plural": "Ibises",     "sign": "wading ibis",                         "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Cypress",   "plural": "Cypresses",  "sign": "crooked cypress",                     "biomes": ["arid"],                  "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Lotus",     "plural": "Lotuses",    "sign": "open lotus",                          "biomes": ["arid"],                  "tiers": ["fine", "noble"],                       "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Vulture",   "plural": "Vultures",   "sign": "hunched vulture",                     "biomes": ["arid"],                  "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [] },
+
+    { "name": "Wolf",      "plural": "Wolves",     "sign": "prowling wolf",                       "biomes": ["frostlands"],            "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": ["passant"],  "parts": ["Head"], "haunts": ["Den"] },
+    { "name": "Wolfhound", "plural": "Wolfhounds", "sign": "shaggy wolfhound",                   "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"] },
+    { "name": "Elk",       "plural": "Elks",       "sign": "broad-antlered elk",                 "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head", "Horn"] },
+    { "name": "Owl",       "plural": "Owls",       "sign": "perched owl",                         "biomes": ["frostlands"],            "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": true,  "postures": [], "haunts": ["Perch", "Nest"] },
+    { "name": "Pine",      "plural": "Pines",      "sign": "tall pine",                           "biomes": ["frostlands"],            "tiers": ["roadside", "common"],                  "flavor": ["naturalistic"], "color": false, "postures": [] },
+    { "name": "Antler",    "plural": "Antlers",    "sign": "shed antler",                         "biomes": ["frostlands"],            "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Walrus",    "plural": "Walruses",   "sign": "tusked walrus",                       "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": [],           "parts": ["Head"] },
+    { "name": "Longship",  "weight": 0.5,  "plural": "Longships",  "sign": "dragon-prowed longship",             "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["martial"],      "color": false, "postures": [] },
+    { "name": "Northlight","plural": "Northlights","sign": "ribbon of dancing light",            "biomes": ["frostlands"],            "tiers": ["fine", "noble"],                       "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Ironwood",  "plural": "Ironwoods",  "sign": "gnarled ironwood tree",              "biomes": ["frostlands"],            "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": false, "postures": [] },
+
+    { "name": "Boar",      "weight": 0.5,  "plural": "Boars",      "sign": "bristling boar",                      "biomes": ["heartland", "frostlands"], "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": [],          "parts": ["Head"] },
+    { "name": "Bear",      "weight": 0.4,  "plural": "Bears",      "sign": "bear and ragged staff",              "biomes": ["highland", "frostlands"],  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["naturalistic"], "color": true,  "postures": ["rampant"], "parts": ["Head"], "haunts": ["Den"] },
+    { "name": "Raven",     "weight": 0.4,  "plural": "Ravens",     "sign": "raven, wings folded",                "biomes": ["highland", "frostlands"],  "tiers": ["roadside", "common", "fine", "noble"], "flavor": ["idiomatic"],    "color": true,  "postures": [], "haunts": ["Perch"] },
+    { "name": "Swan",      "plural": "Swans",      "sign": "swan with raised wings",             "biomes": ["coastal", "heartland"],    "tiers": ["common", "fine", "noble"],             "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Hearth",    "plural": "Hearths",    "sign": "glowing hearth",                      "biomes": ["heartland", "frostlands"], "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": false, "postures": [] },
+    { "name": "Moth",      "plural": "Moths",      "sign": "moth at a lantern",                   "biomes": ["heartland", "frostlands"], "tiers": ["roadside", "common"],                  "flavor": ["idiomatic"],    "color": true,  "postures": [] },
+    { "name": "Seal",      "plural": "Seals",      "sign": "sleek seal on a rock",               "biomes": ["coastal", "frostlands"],   "tiers": ["roadside", "common", "fine"],          "flavor": ["naturalistic"], "color": true,  "postures": [] },
+    { "name": "Beacon",    "plural": "Beacons",    "sign": "flaming hilltop beacon",             "biomes": ["coastal", "highland"],     "tiers": ["common", "fine", "noble"],             "flavor": ["martial"],      "color": false, "postures": [] }
+  ],
+
+  "designators": {
+    "roadside": [
+      { "word": "Alehouse", "weight": 40 },
+      { "word": "Brewhouse", "weight": 30 },
+      { "word": "Tavern", "weight": 20 },
+      { "word": "Tenement", "weight": 10 }
+    ],
+    "common": [
+      { "word": "Inn", "weight": 45 },
+      { "word": "Tavern", "weight": 40 },
+      { "word": "Hostel", "weight": 15 }
+    ],
+    "fine": [
+      { "word": "Inn", "weight": 55 },
+      { "word": "Great Inn", "weight": 35 },
+      { "word": "Hostel", "weight": 10 }
+    ],
+    "noble": [
+      { "word": "Great Inn", "weight": 55 },
+      { "word": "Inn", "weight": 30 },
+      { "word": "Hospitium", "weight": 15 }
+    ]
+  }
+}

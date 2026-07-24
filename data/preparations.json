@@ -1,0 +1,14 @@
+{
+  "_comment": "Preparations combine with ingredients in the procedural fallback path. 'accepts' lists affinities a prep will work with.",
+  "preparations": [
+    { "id": "stewed",    "name": "stewed",    "accepts": ["stews-well","requires-cooking"],                "cost_mult": 1.0,  "labor_add": 0, "verb": "stewed" },
+    { "id": "braised",   "name": "braised",   "accepts": ["stews-well","roasts-well","requires-cooking"],  "cost_mult": 1.25, "labor_add": 2, "verb": "braised" },
+    { "id": "roasted",   "name": "roasted",   "accepts": ["roasts-well","requires-cooking"],               "cost_mult": 1.1,  "labor_add": 1, "verb": "roasted" },
+    { "id": "grilled",   "name": "grilled",   "accepts": ["grills-well","requires-cooking"],               "cost_mult": 1.1,  "labor_add": 1, "verb": "grilled" },
+    { "id": "baked",     "name": "baked",     "accepts": ["bakes-into","requires-cooking"],                "cost_mult": 1.15, "labor_add": 2, "verb": "baked" },
+    { "id": "pan-fried", "name": "pan-fried", "accepts": ["pan-fried","requires-cooking","grills-well"],   "cost_mult": 1.05, "labor_add": 1, "verb": "pan-fried" },
+    { "id": "pickled",   "name": "pickled",   "accepts": ["pickles-well","cures-well","raw-edible"],       "cost_mult": 1.0,  "labor_add": 0, "verb": "pickled" },
+    { "id": "smoked",    "name": "smoked",    "accepts": ["cures-well","requires-cooking"],                "cost_mult": 1.2,  "labor_add": 2, "verb": "smoked" },
+    { "id": "raw",       "name": "raw",       "accepts": ["raw-edible"],                                    "cost_mult": 1.0,  "labor_add": 0, "verb": "dressed raw" }
+  ]
+}

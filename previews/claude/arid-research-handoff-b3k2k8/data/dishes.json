@@ -1,0 +1,470 @@
+{
+  "_comment": "Procedural fallback templates. Used when authored dishes cannot fill a slot, or when the TUNING.authored_ratio knob in generator.js routes a slot to procedural. Templates use ingredient affinities and roles to stay plausible; prep in prep_pool gates which ingredients are compatible. See docs/DESIGN.md.",
+  "templates": [
+    {
+      "id": "hearty-stew",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["stewed","braised"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "starch", "name_key": "starch", "optional": true }
+      ],
+      "name_template": "{protein} stewed with {vegetable}",
+      "name_template_with_starch": "{protein} stewed with {vegetable} and {starch}"
+    },
+    {
+      "id": "roast-plate",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["roasted","pan-fried","braised","smoked"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "side" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{prep} {protein} with {side}",
+      "name_template_with_herb": "{prep} {protein} with {side}, finished with {herb}"
+    },
+    {
+      "id": "grilled-plate",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["grilled","pan-fried"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "starch", "name_key": "starch" }
+      ],
+      "name_template": "{prep} {protein} over {starch}"
+    },
+    {
+      "id": "pottage",
+      "section": "main",
+      "tier_max": 2,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "{starch} pottage with {vegetable}"
+    },
+    {
+      "id": "savory-pie",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["stewed","baked","braised"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "{protein} and {vegetable} pie"
+    },
+    {
+      "id": "herb-crusted",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["roasted","pan-fried","smoked"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{prep} {protein}",
+      "name_template_with_herb": "{herb}-crusted {protein}"
+    },
+    {
+      "id": "fruit-sauce-main",
+      "section": "main",
+      "tier_min": 3,
+      "prep_pool": ["braised","stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "fruit", "name_key": "fruit" }
+      ],
+      "name_template": "{protein} in {fruit} sauce"
+    },
+    {
+      "id": "skewer-main",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["grilled"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "{protein} skewers with {vegetable}"
+    },
+    {
+      "id": "gratin",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["baked","roasted"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "cheese", "name_key": "cheese" }
+      ],
+      "name_template": "{vegetable} gratin with {cheese}"
+    },
+    {
+      "id": "cheese-board",
+      "section": "appetizer",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "cheese", "name_key": "cheese" },
+        { "role": "fruit", "name_key": "fruit", "optional": true }
+      ],
+      "name_template": "board of {cheese}",
+      "name_template_with_fruit": "board of {cheese} with {fruit}"
+    },
+    {
+      "id": "pickle-plate",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["pickled"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" }
+      ],
+      "name_template": "pickled {vegetable}"
+    },
+    {
+      "id": "broth",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "base", "optional": true },
+        { "role": "herb", "name_key": "herb" }
+      ],
+      "name_template": "clear broth with {herb}",
+      "name_template_with_base": "{base} broth with {herb}"
+    },
+    {
+      "id": "fresh-salad",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "fruit", "name_key": "fruit", "optional": true }
+      ],
+      "name_template": "{vegetable} salad",
+      "name_template_with_fruit": "{vegetable} and {fruit} salad"
+    },
+    {
+      "id": "fritter-plate",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["pan-fried"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{vegetable} fritters",
+      "name_template_with_herb": "{vegetable} fritters with {herb}"
+    },
+    {
+      "id": "smoked-plate",
+      "section": "appetizer",
+      "tier_min": 2,
+      "prep_pool": ["smoked"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "side", "optional": true }
+      ],
+      "name_template": "smoked {protein}",
+      "name_template_with_side": "smoked {protein} with {side}"
+    },
+    {
+      "id": "vegetable-soup",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{vegetable} soup",
+      "name_template_with_herb": "{vegetable} soup with {herb}"
+    },
+    {
+      "id": "fruit-dessert",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet", "optional": true }
+      ],
+      "name_template": "{prep} {fruit}",
+      "name_template_with_sweet": "{prep} {fruit} with {sweet}"
+    },
+    {
+      "id": "fruit-tart",
+      "section": "dessert",
+      "tier_min": 2,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet", "optional": true }
+      ],
+      "name_template": "{fruit} tart",
+      "name_template_with_sweet": "{fruit} tart with {sweet}"
+    },
+    {
+      "id": "nut-cake",
+      "section": "dessert",
+      "tier_min": 2,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "nut", "name_key": "nut" },
+        { "role": "fruit", "name_key": "fruit", "optional": true }
+      ],
+      "name_template": "{nut} cake",
+      "name_template_with_fruit": "{nut} and {fruit} cake"
+    },
+    {
+      "id": "honeyed-fruit",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["stewed","baked"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet" }
+      ],
+      "name_template": "{fruit} in {sweet}"
+    },
+    {
+      "id": "cheese-tart",
+      "section": "dessert",
+      "tier_min": 2,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "cheese", "name_key": "cheese" },
+        { "role": "fruit", "name_key": "fruit", "optional": true }
+      ],
+      "name_template": "{cheese} tart",
+      "name_template_with_fruit": "{cheese} and {fruit} tart"
+    },
+    {
+      "id": "drink-simple",
+      "section": "drink",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" }
+      ],
+      "name_template": "{drink}"
+    },
+    {
+      "id": "spiced-protein",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["braised","stewed","roasted"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "{spice}-spiced {protein} with {vegetable}"
+    },
+    {
+      "id": "spiced-fruit",
+      "section": "dessert",
+      "tier_min": 2,
+      "prep_pool": ["baked","stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "{spice}-scented {fruit}"
+    },
+    {
+      "id": "dairy-braise",
+      "section": "main",
+      "tier_min": 2,
+      "prep_pool": ["braised","stewed"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "dairy", "name_key": "dairy" }
+      ],
+      "name_template": "{protein} braised in {dairy}"
+    },
+    {
+      "id": "creamed-vegetable",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "vegetable", "name_key": "vegetable" },
+        { "role": "dairy", "name_key": "dairy" }
+      ],
+      "name_template": "{vegetable} in {dairy}"
+    },
+    {
+      "id": "curd-plate",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "dairy", "name_key": "dairy" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "fresh {dairy}",
+      "name_template_with_herb": "fresh {dairy} with {herb}"
+    },
+    {
+      "id": "raw-bar",
+      "section": "appetizer",
+      "tier_min": 3,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" }
+      ],
+      "name_template": "chilled {protein}"
+    },
+    {
+      "id": "tartine",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "cheese", "name_key": "cheese" }
+      ],
+      "name_template": "{starch} with {cheese}"
+    },
+    {
+      "id": "mulled-drink",
+      "section": "drink",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "spice", "name_key": "spice" }
+      ],
+      "name_template": "mulled {drink} with {spice}"
+    },
+    {
+      "id": "infused-drink",
+      "section": "drink",
+      "tier_min": 2,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "herb", "name_key": "herb" }
+      ],
+      "name_template": "{herb}-infused {drink}"
+    },
+    {
+      "id": "sweetened-drink",
+      "section": "drink",
+      "tier_min": 1,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "drink", "name_key": "drink" },
+        { "role": "sweetener", "name_key": "sweet" }
+      ],
+      "name_template": "{drink} with {sweet}"
+    },
+    {
+      "id": "confit",
+      "section": "main",
+      "tier_min": 3,
+      "prep_pool": ["braised"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "fat", "name_key": "fat" }
+      ],
+      "name_template": "{protein} confit in {fat}"
+    },
+    {
+      "id": "grain-stew",
+      "section": "main",
+      "tier_max": 2,
+      "prep_pool": ["stewed","braised"],
+      "slots": [
+        { "role": "starch", "name_key": "starch" },
+        { "role": "protein", "name_key": "protein" },
+        { "role": "vegetable", "name_key": "vegetable", "optional": true }
+      ],
+      "name_template": "{starch} stew with {protein}",
+      "name_template_with_vegetable": "{starch} stew with {protein} and {vegetable}"
+    },
+    {
+      "id": "meatball",
+      "section": "main",
+      "tier_min": 1,
+      "prep_pool": ["braised","stewed","pan-fried"],
+      "slots": [
+        { "role": "protein", "name_key": "protein" },
+        { "role": "herb", "name_key": "herb" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{protein} meatballs with {herb}",
+      "name_template_with_spice": "{spice}-spiced {protein} meatballs with {herb}"
+    },
+    {
+      "id": "offal-dish",
+      "section": "main",
+      "tier_min": 1,
+      "tier_max": 3,
+      "prep_pool": ["stewed","braised","pan-fried"],
+      "slots": [
+        { "role": "offal", "name_key": "protein" },
+        { "role": "herb", "name_key": "herb", "optional": true }
+      ],
+      "name_template": "{prep} {protein}",
+      "name_template_with_herb": "{prep} {protein} with {herb}"
+    },
+    {
+      "id": "gelatin-jelly",
+      "section": "dessert",
+      "tier_min": 3,
+      "prep_pool": ["raw"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "set {fruit} jelly with {sweet}",
+      "name_template_with_spice": "{spice}-scented {fruit} jelly"
+    },
+    {
+      "id": "fruit-preserve",
+      "section": "appetizer",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "sweetener", "name_key": "sweet" }
+      ],
+      "name_template": "preserved {fruit} in {sweet}"
+    },
+    {
+      "id": "fruit-compote",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["stewed"],
+      "slots": [
+        { "role": "fruit", "name_key": "fruit" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{fruit} compote",
+      "name_template_with_spice": "{spice}-scented {fruit} compote"
+    },
+    {
+      "id": "cookie",
+      "section": "dessert",
+      "tier_min": 1,
+      "prep_pool": ["baked"],
+      "slots": [
+        { "role": "nut", "name_key": "nut" },
+        { "role": "sweetener", "name_key": "sweet" },
+        { "role": "spice", "name_key": "spice", "optional": true }
+      ],
+      "name_template": "{nut} and {sweet} cookies",
+      "name_template_with_spice": "{spice} {nut} cookies"
+    }
+  ]
+}
